@@ -92,9 +92,8 @@ export default function CollateralForm({
       try {
         parsedMetadata = JSON.parse(metadataInput)
       } catch (error) {
+        alert('Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung')
         return
-          alert('Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung')
-          error.message = 'Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung'
       }
     }
 

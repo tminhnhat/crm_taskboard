@@ -67,7 +67,15 @@ export default function ProductsPage() {
       if (editingProduct) {
         await updateProduct(editingProduct.product_id, productData)
       } else {
-        await createProduct(productData)
+        // Convert undefined metadata to null to match the expected type
+        const createData: Omit<Product, 'product_id'> = {
+          product_name: productData.product_name || '',
+          product_type: productData.product_type || null,
+          description: productData.description || null,
+          status: productData.status || 'draft',
+          metadata: productData.metadata === undefined ? null : productData.metadata
+        }
+        await createProduct(createData)
       }
       setShowForm(false)
       setEditingProduct(null)
