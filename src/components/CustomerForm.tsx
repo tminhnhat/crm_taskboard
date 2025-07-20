@@ -70,6 +70,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       } catch (error) {
         return
           alert('Định dạng JSON không hợp lệ trong dữ liệu thần số học')
+          error.message = 'Định dạng JSON không hợp lệ trong dữ liệu thần số học'
 
       }
     }

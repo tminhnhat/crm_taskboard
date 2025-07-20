@@ -94,7 +94,7 @@ export default function CollateralForm({
       } catch (error) {
         return
           alert('Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung')
-
+          error.message = 'Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung'
       }
     }
 

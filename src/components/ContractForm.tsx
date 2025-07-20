@@ -107,6 +107,7 @@ export default function ContractForm({
         
         return
           alert('Định dạng JSON không hợp lệ trong trường metadata')
+          error.message = 'Định dạng JSON không hợp lệ trong trường metadata'
       }
     }
 

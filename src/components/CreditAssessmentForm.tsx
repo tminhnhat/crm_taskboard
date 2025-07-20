@@ -75,6 +75,7 @@ export default function CreditAssessmentForm({
         
         return
           alert('Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung')
+          error.message = 'Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung'
       }
     }
 
