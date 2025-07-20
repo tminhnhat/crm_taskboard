@@ -31,6 +31,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
       } catch (error) {
         return
           alert('Định dạng JSON không hợp lệ trong trường metadata')
+          error.message = 'Định dạng JSON không hợp lệ trong trường metadata'
 
       }
     }
