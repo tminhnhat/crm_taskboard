@@ -204,7 +204,7 @@ export function useInteractions() {
   }
 
   // Fetch customers for form dropdown
-  const fetchCustomers = async (): Promise<Customer[]> => {
+  const fetchCustomers = async (): Promise<Pick<Customer, 'customer_id' | 'full_name' | 'email' | 'phone' | 'customer_type' | 'status'>[]> => {
     try {
       const { data, error } = await supabase
         .from('customers')
@@ -224,7 +224,7 @@ export function useInteractions() {
   }
 
   // Fetch staff for form dropdown
-  const fetchStaff = async (): Promise<Staff[]> => {
+  const fetchStaff = async (): Promise<Pick<Staff, 'staff_id' | 'full_name' | 'email' | 'position' | 'department' | 'status'>[]> => {
     try {
       const { data, error } = await supabase
         .from('staff')

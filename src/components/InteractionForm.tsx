@@ -8,8 +8,8 @@ interface InteractionFormProps {
   onSave: (interactionData: Partial<Interaction>) => void
   onCancel: () => void
   isLoading?: boolean
-  fetchCustomers: () => Promise<Customer[]>
-  fetchStaff: () => Promise<Staff[]>
+  fetchCustomers: () => Promise<Pick<Customer, 'customer_id' | 'full_name' | 'email' | 'phone' | 'customer_type' | 'status'>[]>
+  fetchStaff: () => Promise<Pick<Staff, 'staff_id' | 'full_name' | 'email' | 'position' | 'department' | 'status'>[]>
 }
 
 export default function InteractionForm({ 
@@ -27,8 +27,8 @@ export default function InteractionForm({
     notes: interaction?.notes || ''
   })
 
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [staff, setStaff] = useState<Staff[]>([])
+  const [customers, setCustomers] = useState<Pick<Customer, 'customer_id' | 'full_name' | 'email' | 'phone' | 'customer_type' | 'status'>[]>([])
+  const [staff, setStaff] = useState<Pick<Staff, 'staff_id' | 'full_name' | 'email' | 'position' | 'department' | 'status'>[]>([])
   const [loadingOptions, setLoadingOptions] = useState(true)
 
   // Load customers and staff for dropdowns

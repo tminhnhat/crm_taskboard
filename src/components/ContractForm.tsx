@@ -341,7 +341,7 @@ export default function ContractForm({
             <div className="flex gap-3 pt-4">
               <button
                 type="submit"
-                disabled={isLoading || !formData.customer_id || !formData.product_id || !formData.contract_number.trim() || !formData.signed_by || contractNumberError}
+                disabled={isLoading || !formData.customer_id || !formData.product_id || !formData.contract_number.trim() || !formData.signed_by || !!contractNumberError}
                 className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Đang Lưu...' : (contract ? 'Cập Nhật Hợp Đồng' : 'Tạo Hợp Đồng')}
