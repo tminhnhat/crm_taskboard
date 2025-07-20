@@ -1,4 +1,4 @@
-import { Customer, CustomerType } from '@/lib/supabase'
+import { Customer } from '@/lib/supabase'
 import { 
   UserIcon, 
   BuildingOfficeIcon,

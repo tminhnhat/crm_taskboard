@@ -104,8 +104,9 @@ export default function ContractForm({
       try {
         parsedMetadata = JSON.parse(metadataInput)
       } catch (error) {
-        alert('Định dạng JSON không hợp lệ trong trường metadata')
+        
         return
+          alert('Định dạng JSON không hợp lệ trong trường metadata')
       }
     }
 
