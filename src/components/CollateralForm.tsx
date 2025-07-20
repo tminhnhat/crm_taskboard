@@ -91,7 +91,7 @@ export default function CollateralForm({
     if (metadataInput.trim()) {
       try {
         parsedMetadata = JSON.parse(metadataInput)
-      } catch (error) {
+      } catch {
         alert('Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung')
         return
       }

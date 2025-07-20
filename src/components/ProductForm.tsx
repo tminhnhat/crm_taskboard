@@ -28,11 +28,9 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
     if (metadataInput.trim()) {
       try {
         parsedMetadata = JSON.parse(metadataInput)
-      } catch (error) {
+      } catch {
+        alert('Định dạng JSON không hợp lệ trong trường metadata')
         return
-          alert('Định dạng JSON không hợp lệ trong trường metadata')
-          error.message = 'Định dạng JSON không hợp lệ trong trường metadata'
-
       }
     }
 

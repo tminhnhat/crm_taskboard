@@ -67,11 +67,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     if (formData.numerology_data.trim()) {
       try {
         numerologyData = JSON.parse(formData.numerology_data)
-      } catch (error) {
+      } catch {
+        alert('Định dạng JSON không hợp lệ trong dữ liệu thần số học')
         return
-          alert('Định dạng JSON không hợp lệ trong dữ liệu thần số học')
-          error.message = 'Định dạng JSON không hợp lệ trong dữ liệu thần số học'
-
       }
     }
 
