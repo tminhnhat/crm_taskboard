@@ -58,7 +58,7 @@ export interface Customer {
   updated_at: string
   account_number: string
   cif_number: string | null
-  numerology_data: Record<string, any> | null // JSONB type
+  numerology_data: Record<string, unknown> | null // JSONB type
 }
 
 // Product types
@@ -68,7 +68,7 @@ export interface Product {
   product_type: string | null
   description: string | null
   status: string
-  metadata: Record<string, any> | null // JSONB type
+  metadata: Record<string, unknown> | null // JSONB type
 }
 
 // Staff types
@@ -122,7 +122,7 @@ export interface Contract {
   end_date: string | null
   status: string
   signed_by: number
-  metadata: Record<string, any> | null // JSONB type
+  metadata: Record<string, unknown> | null // JSONB type
   // Extended fields for joins
   customer?: Customer
   product?: Product
@@ -139,7 +139,7 @@ export interface CreditAssessment {
   assessment_result: string | null
   comments: string | null
   documents: string | null // link or file name
-  metadata: Record<string, any> | null // JSONB type
+  metadata: Record<string, unknown> | null // JSONB type
   created_at: string
   // Extended fields for joins
   customer?: Customer
@@ -158,7 +158,7 @@ export interface Collateral {
   location: string | null
   owner_info: string | null
   status: string | null // e.g., frozen, released, etc.
-  metadata: Record<string, any> | null // JSONB type
+  metadata: Record<string, unknown> | null // JSONB type
   created_at: string
   // Extended fields for joins
   customer?: Customer

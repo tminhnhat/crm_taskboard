@@ -23,7 +23,7 @@ export default function CustomersPage() {
 
   // Filter and sort customers based on current filters
   const filteredCustomers = useMemo(() => {
-    let filtered = customers.filter(customer => {
+    const filtered = customers.filter(customer => {
       const matchesType = !filters.customerType || customer.customer_type === filters.customerType
       const matchesStatus = !filters.status || customer.status === filters.status
       const matchesSearch = !filters.search || 

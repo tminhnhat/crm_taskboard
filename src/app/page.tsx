@@ -6,7 +6,7 @@ import Navigation from '@/components/Navigation'
 import TaskCard from '@/components/TaskCard'
 import TaskForm from '@/components/TaskForm'
 import TaskFilters from '@/components/TaskFilters'
-import LoadingSpinner, { TaskCardSkeleton } from '@/components/LoadingSpinner'
+import { TaskCardSkeleton } from '@/components/LoadingSpinner'
 import { useTasks } from '@/hooks/useTasks'
 import { Task, TaskStatusEnum } from '@/lib/supabase'
 
@@ -24,7 +24,7 @@ export default function TaskDashboard() {
 
   // Filter and sort tasks based on current filters
   const filteredTasks = useMemo(() => {
-    let filtered = tasks.filter(task => {
+    const filtered = tasks.filter(task => {
       const matchesStatus = !filters.status || task.task_status === filters.status
       const matchesPriority = !filters.priority || task.task_priority === filters.priority
       const matchesTaskType = !filters.taskType || task.task_type === filters.taskType
