@@ -29,7 +29,7 @@ export function useCustomers() {
   const createCustomer = async (customerData: Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>) => {
     try {
       // Auto-calculate numerology if name and birth date are provided
-      let finalCustomerData = { ...customerData }
+      const finalCustomerData = { ...customerData }
       if (customerData.full_name && customerData.date_of_birth) {
         const numerologyData = calculateNumerologyData(customerData.full_name, customerData.date_of_birth)
         finalCustomerData.numerology_data = numerologyData
@@ -53,7 +53,7 @@ export function useCustomers() {
   const updateCustomer = async (id: number, updates: Partial<Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>>) => {
     try {
       // Auto-calculate numerology if name or birth date are being updated
-      let finalUpdates = { ...updates }
+      const finalUpdates = { ...updates }
       
       // Get current customer data to have complete info for numerology calculation
       const { data: currentCustomer } = await supabase
