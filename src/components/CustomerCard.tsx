@@ -14,6 +14,7 @@ interface CustomerCardProps {
   onEdit: (customer: Customer) => void
   onDelete: (customerId: number) => void
   onStatusChange: (customerId: number, status: string) => void
+  onRecalculateNumerology?: (customerId: number) => void
 }
 
 const customerTypeColors = {
@@ -32,7 +33,7 @@ const customerTypeIcons = {
   corporate: BuildingOfficeIcon
 }
 
-export default function CustomerCard({ customer, onEdit, onDelete, onStatusChange }: CustomerCardProps) {
+export default function CustomerCard({ customer, onEdit, onDelete, onStatusChange, onRecalculateNumerology }: CustomerCardProps) {
   const TypeIcon = customerTypeIcons[customer.customer_type]
 
   return (
@@ -123,6 +124,15 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
             >
               Sửa
             </button>
+            {onRecalculateNumerology && customer.full_name && customer.date_of_birth && (
+              <button
+                onClick={() => onRecalculateNumerology(customer.customer_id)}
+                className="text-purple-600 hover:text-purple-800 text-sm font-medium ml-2"
+                title="Tính lại thần số học"
+              >
+                🔢
+              </button>
+            )}
             <button
               onClick={() => onDelete(customer.customer_id)}
               className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase, Customer } from '@/lib/supabase'
+import { calculateNumerologyData } from '@/lib/numerology'
 
 export function useCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -27,9 +28,16 @@ export function useCustomers() {
   // Create a new customer
   const createCustomer = async (customerData: Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Auto-calculate numerology if name and birth date are provided
+      let finalCustomerData = { ...customerData }
+      if (customerData.full_name && customerData.date_of_birth) {
+        const numerologyData = calculateNumerologyData(customerData.full_name, customerData.date_of_birth)
+        finalCustomerData.numerology_data = numerologyData
+      }
+
       const { data, error } = await supabase
         .from('customers')
-        .insert([customerData])
+        .insert([finalCustomerData])
         .select()
         .single()
 
@@ -44,9 +52,30 @@ export function useCustomers() {
   // Update a customer
   const updateCustomer = async (id: number, updates: Partial<Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>>) => {
     try {
+      // Auto-calculate numerology if name or birth date are being updated
+      let finalUpdates = { ...updates }
+      
+      // Get current customer data to have complete info for numerology calculation
+      const { data: currentCustomer } = await supabase
+        .from('customers')
+        .select('full_name, date_of_birth')
+        .eq('customer_id', id)
+        .single()
+
+      if (currentCustomer) {
+        const fullName = updates.full_name || currentCustomer.full_name
+        const dateOfBirth = updates.date_of_birth || currentCustomer.date_of_birth
+        
+        // Recalculate numerology if we have both name and birth date
+        if (fullName && dateOfBirth && (updates.full_name || updates.date_of_birth)) {
+          const numerologyData = calculateNumerologyData(fullName, dateOfBirth)
+          finalUpdates.numerology_data = numerologyData
+        }
+      }
+
       const { data, error } = await supabase
         .from('customers')
-        .update(updates)
+        .update(finalUpdates)
         .eq('customer_id', id)
         .select()
         .single()
@@ -95,6 +124,38 @@ export function useCustomers() {
     }
   }
 
+  // Manually recalculate numerology for a customer
+  const recalculateNumerology = async (id: number) => {
+    try {
+      const { data: customer, error: fetchError } = await supabase
+        .from('customers')
+        .select('full_name, date_of_birth')
+        .eq('customer_id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      if (!customer.full_name || !customer.date_of_birth) {
+        throw new Error('Customer must have both full name and date of birth to calculate numerology')
+      }
+
+      const numerologyData = calculateNumerologyData(customer.full_name, customer.date_of_birth)
+
+      const { data, error } = await supabase
+        .from('customers')
+        .update({ numerology_data: numerologyData })
+        .eq('customer_id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+      setCustomers(prev => prev.map(cust => cust.customer_id === id ? data : cust))
+      return data
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to recalculate numerology')
+    }
+  }
+
   useEffect(() => {
     fetchCustomers()
   }, [])
@@ -108,6 +169,7 @@ export function useCustomers() {
     deleteCustomer,
     updateCustomerStatus,
     searchCustomers,
+    recalculateNumerology,
     refetch: fetchCustomers
   }
 }

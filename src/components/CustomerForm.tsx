@@ -277,13 +277,19 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               <label htmlFor="numerology_data" className="block text-sm font-medium text-gray-700 mb-1">
                 Dữ Liệu Thần Số Học (JSON)
               </label>
+              <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-700">
+                  💡 <strong>Tự động tính toán:</strong> Khi bạn cung cấp đầy đủ <strong>Họ Tên</strong> và <strong>Ngày Sinh</strong>, 
+                  hệ thống sẽ tự động tính toán và cập nhật dữ liệu thần số học. Bạn cũng có thể nhập thủ công nếu muốn.
+                </p>
+              </div>
               <textarea
                 id="numerology_data"
                 rows={4}
                 value={formData.numerology_data}
                 onChange={(e) => setFormData({ ...formData, numerology_data: e.target.value })}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder='Nhập dữ liệu JSON, ví dụ: {"life_path": 7, "expression": 3}'
+                placeholder='Dữ liệu thần số học sẽ được tự động tạo hoặc nhập thủ công dạng JSON'
               />
             </div>
 

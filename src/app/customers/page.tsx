@@ -11,7 +11,7 @@ import { useCustomers } from '@/hooks/useCustomers'
 import { Customer } from '@/lib/supabase'
 
 export default function CustomersPage() {
-  const { customers, loading, error, createCustomer, updateCustomer, deleteCustomer, updateCustomerStatus } = useCustomers()
+  const { customers, loading, error, createCustomer, updateCustomer, deleteCustomer, updateCustomerStatus, recalculateNumerology } = useCustomers()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
   const [filters, setFilters] = useState({
@@ -124,6 +124,16 @@ export default function CustomersPage() {
     setEditingCustomer(null)
   }
 
+  const handleRecalculateNumerology = async (customerId: number) => {
+    try {
+      await recalculateNumerology(customerId)
+      alert('Đã tính toán lại dữ liệu thần số học thành công!')
+    } catch (err) {
+      console.error('Failed to recalculate numerology:', err)
+      alert('Tính toán thần số học thất bại. Vui lòng thử lại.')
+    }
+  }
+
   // Customer statistics
   const stats = useMemo(() => {
     const total = customers.length
@@ -219,6 +229,7 @@ export default function CustomersPage() {
                 onEdit={handleEditCustomer}
                 onDelete={handleDeleteCustomer}
                 onStatusChange={handleStatusChange}
+                onRecalculateNumerology={handleRecalculateNumerology}
               />
             ))}
           </div>
