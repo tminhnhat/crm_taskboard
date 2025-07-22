@@ -14,6 +14,18 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline'
 
+// Interface for numerology data structure
+interface NumerologyData {
+  walksOfLife?: number | string
+  mission?: number | string
+  soul?: number | string
+  connect?: number | string
+  personality?: number | string
+  passion?: number | string
+  missingNumbers?: number[] | string[] | string
+  [key: string]: unknown
+}
+
 interface CustomerCardProps {
   customer: Customer
   onEdit: (customer: Customer) => void
@@ -121,10 +133,91 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               
               {showNumerology && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-md border border-gray-200">
-                  <div className="max-h-40 overflow-y-auto">
-                    <pre className="text-xs text-gray-600 whitespace-pre-wrap">
-                      {JSON.stringify(customer.numerology_data, null, 2)}
-                    </pre>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    {(() => {
+                      const numerology = customer.numerology_data as NumerologyData;
+                      
+                      return (
+                        <>
+                          {/* Path of Life */}
+                          {numerology?.walksOfLife && (
+                            <div className="flex items-center justify-between p-2 bg-white rounded border">
+                              <span className="font-medium text-gray-700">Đường đời:</span>
+                              <span className="font-bold text-blue-600">{numerology.walksOfLife}</span>
+                            </div>
+                          )}
+                          
+                          {/* Mission */}
+                          {numerology?.mission && (
+                            <div className="flex items-center justify-between p-2 bg-white rounded border">
+                              <span className="font-medium text-gray-700">Sứ mệnh:</span>
+                              <span className="font-bold text-green-600">{numerology.mission}</span>
+                            </div>
+                          )}
+                          
+                          {/* Soul */}
+                          {numerology?.soul && (
+                            <div className="flex items-center justify-between p-2 bg-white rounded border">
+                              <span className="font-medium text-gray-700">Linh hồn:</span>
+                              <span className="font-bold text-purple-600">{numerology.soul}</span>
+                            </div>
+                          )}
+                          
+                          {/* Connection */}
+                          {numerology?.connect && (
+                            <div className="flex items-center justify-between p-2 bg-white rounded border">
+                              <span className="font-medium text-gray-700">Kết nối:</span>
+                              <span className="font-bold text-orange-600">{numerology.connect}</span>
+                            </div>
+                          )}
+                          
+                          {/* Personality */}
+                          {numerology?.personality && (
+                            <div className="flex items-center justify-between p-2 bg-white rounded border">
+                              <span className="font-medium text-gray-700">Nhân cách:</span>
+                              <span className="font-bold text-indigo-600">{numerology.personality}</span>
+                            </div>
+                          )}
+                          
+                          {/* Passion */}
+                          {numerology?.passion && (
+                            <div className="flex items-center justify-between p-2 bg-white rounded border">
+                              <span className="font-medium text-gray-700">Đam mê:</span>
+                              <span className="font-bold text-red-600">{numerology.passion}</span>
+                            </div>
+                          )}
+                          
+                          {/* Missing Numbers */}
+                          {numerology?.missingNumbers && (
+                            <div className="col-span-1 md:col-span-2 p-2 bg-white rounded border">
+                              <span className="font-medium text-gray-700">Số thiếu:</span>
+                              <div className="mt-1">
+                                <span className="inline-block px-2 py-1 bg-gray-200 text-gray-800 rounded text-xs font-mono">
+                                  {Array.isArray(numerology.missingNumbers) 
+                                    ? numerology.missingNumbers.join(', ')
+                                    : String(numerology.missingNumbers)}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Additional info if no specific fields are available */}
+                          {!numerology?.walksOfLife && 
+                           !numerology?.mission && 
+                           !numerology?.soul && 
+                           !numerology?.connect && 
+                           !numerology?.personality && 
+                           !numerology?.passion && 
+                           !numerology?.missingNumbers && (
+                            <div className="col-span-1 md:col-span-2 p-2 bg-yellow-50 rounded border border-yellow-200">
+                              <p className="text-yellow-800 text-xs">
+                                Dữ liệu thần số học có thể cần được tính toán lại. Nhấn nút 🔢 để cập nhật.
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}

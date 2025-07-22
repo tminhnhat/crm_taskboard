@@ -21,7 +21,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [filters, setFilters] = useState({
     search: '',
-    status: '',
+    status: 'active',
     productType: ''
   })
 

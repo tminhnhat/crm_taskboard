@@ -15,7 +15,7 @@ export default function TaskDashboard() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState({
-    status: '',
+    status: 'needsAction',
     priority: '',
     search: '',
     sortBy: 'task_date_start',

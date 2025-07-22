@@ -109,7 +109,6 @@ export default function ContractFilters({
             <option value="pending">Chờ duyệt</option>
             <option value="active">Đang hiệu lực</option>
             <option value="expired">Đã hết hạn</option>
-            <option value="terminated">Đã chấm dứt</option>
           </select>
         </div>
 
@@ -204,11 +203,10 @@ export default function ContractFilters({
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Tất cả hạn mức</option>
-            <option value="0-10000">$0 - $10,000</option>
-            <option value="10000-50000">$10,000 - $50,000</option>
-            <option value="50000-100000">$50,000 - $100,000</option>
-            <option value="100000-500000">$100,000 - $500,000</option>
-            <option value="500000+">$500,000+</option>
+            <option value="0-2000000000">0 - 2 tỷ đồng</option>
+            <option value="1000000000-5000000000">1 tỷ - 5 tỷ đồng</option>
+            <option value="5000000000-10000000000">5 tỷ - 10 tỷ đồng</option>
+            <option value="10000000000+">10 tỷ đồng+</option>
           </select>
         </div>
       </div>

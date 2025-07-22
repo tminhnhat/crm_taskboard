@@ -16,7 +16,7 @@ export default function CustomersPage() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
   const [filters, setFilters] = useState({
     customerType: '',
-    status: '',
+    status: 'active',
     search: '',
     sortBy: 'created_at'
   })

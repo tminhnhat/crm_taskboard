@@ -33,7 +33,7 @@ export default function ContractsPage() {
   const [editingContract, setEditingContract] = useState<Contract | null>(null)
   const [filters, setFilters] = useState({
     search: '',
-    status: '',
+    status: 'active',
     customerId: '',
     productId: '',
     signedBy: '',

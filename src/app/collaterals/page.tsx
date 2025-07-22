@@ -33,7 +33,7 @@ export default function CollateralsPage() {
   const [filters, setFilters] = useState({
     search: '',
     type: '',
-    status: '',
+    status: 'active',
     customerId: '',
     valueRange: '',
     dateRange: ''
