@@ -41,8 +41,7 @@ const customerTypeColors = {
 
 const statusColors = {
   active: 'bg-green-100 text-green-800',
-  inactive: 'bg-gray-100 text-gray-800',
-  suspended: 'bg-red-100 text-red-800'
+  inactive: 'bg-gray-100 text-gray-800'
 }
 
 const customerTypeIcons = {
@@ -76,7 +75,6 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[customer.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
               {customer.status === 'active' ? 'Đang Hoạt Động' : 
                customer.status === 'inactive' ? 'Không Hoạt Động' : 
-               customer.status === 'suspended' ? 'Tạm Dừng' : 
                customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
             </span>
           </div>
@@ -233,7 +231,6 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
           >
             <option value="active">Đang Hoạt Động</option>
             <option value="inactive">Không Hoạt Động</option>
-            <option value="suspended">Tạm Dừng</option>
           </select>
           
           <div className="flex gap-1">

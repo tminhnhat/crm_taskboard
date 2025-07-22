@@ -134,7 +134,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 >
                   <option value="active">Đang Hoạt Động</option>
                   <option value="inactive">Không Hoạt Động</option>
-                  <option value="suspended">Tạm Dừng</option>
                 </select>
               </div>
             </div>

@@ -15,7 +15,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
     product_name: product?.product_name || '',
     product_type: product?.product_type || '',
     description: product?.description || '',
-    status: product?.status || 'draft',
+    status: product?.status || 'active',
     metadata: product?.metadata || {}
   })
 
@@ -118,10 +118,8 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="draft">Bản Nháp</option>
                 <option value="active">Đang Hoạt Động</option>
                 <option value="inactive">Không Hoạt Động</option>
-                <option value="discontinued">Ngừng Sản Xuất</option>
               </select>
             </div>
 

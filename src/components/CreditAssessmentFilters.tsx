@@ -8,7 +8,6 @@ interface CreditAssessmentFiltersProps {
     result: string
     customerId: string
     staffId: string
-    scoreRange: string
     dateRange: string
   }) => void
   availableCustomers: Array<{ customer_id: number; full_name: string }>
@@ -25,7 +24,6 @@ export default function CreditAssessmentFilters({
     result: '',
     customerId: '',
     staffId: '',
-    scoreRange: '',
     dateRange: ''
   })
 
@@ -48,7 +46,6 @@ export default function CreditAssessmentFilters({
       result: '',
       customerId: '',
       staffId: '',
-      scoreRange: '',
       dateRange: ''
     })
   }
@@ -147,25 +144,6 @@ export default function CreditAssessmentFilters({
               </select>
             </div>
 
-            {/* Credit Score Range */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Khoảng điểm tín dụng
-              </label>
-              <select
-                value={filters.scoreRange}
-                onChange={(e) => handleFilterChange('scoreRange', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Tất cả điểm số</option>
-                <option value="excellent">Xuất sắc (750+)</option>
-                <option value="good">Tốt (700-749)</option>
-                <option value="fair">Khá (650-699)</option>
-                <option value="poor">Kém (600-649)</option>
-                <option value="bad">Rất kém (&lt;600)</option>
-              </select>
-            </div>
-
             {/* Date Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -215,16 +193,6 @@ export default function CreditAssessmentFilters({
             {filters.staffId && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                 Nhân viên: {availableStaff.find(s => s.staff_id.toString() === filters.staffId)?.full_name}
-              </span>
-            )}
-            {filters.scoreRange && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                Điểm số: {filters.scoreRange === 'excellent' ? 'Xuất sắc' :
-                         filters.scoreRange === 'good' ? 'Tốt' :
-                         filters.scoreRange === 'fair' ? 'Khá' :
-                         filters.scoreRange === 'poor' ? 'Kém' :
-                         filters.scoreRange === 'bad' ? 'Rất kém' :
-                         filters.scoreRange}
               </span>
             )}
             {filters.dateRange && (

@@ -51,13 +51,7 @@ export default function CollateralForm({
   // Predefined status options
   const statusOptions = [
     { value: 'active', label: 'Hoạt Động' },
-    { value: 'frozen', label: 'Bị Đóng Băng' },
-    { value: 'blocked', label: 'Bị Chặn' },
-    { value: 'available', label: 'Sẵn Sàng' },
-    { value: 'pending', label: 'Chờ Duyệt' },
-    { value: 'released', label: 'Đã Giải Tỏa' },
-    { value: 'evaluated', label: 'Đã Thẩm Định' },
-    { value: 'disputed', label: 'Tranh Chấp' }
+    { value: 'inactive', label: 'Không Hoạt Động' }
   ]
 
   // Load customers for dropdowns

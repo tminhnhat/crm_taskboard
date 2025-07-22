@@ -138,8 +138,6 @@ export default function StaffForm({ staff, onSave, onCancel, isLoading }: StaffF
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-                <option value="suspended">Suspended</option>
-                <option value="terminated">Terminated</option>
               </select>
             </div>
 

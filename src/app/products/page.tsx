@@ -56,10 +56,8 @@ export default function ProductsPage() {
     const total = products.length
     const active = products.filter(p => p.status === 'active').length
     const inactive = products.filter(p => p.status === 'inactive').length
-    const discontinued = products.filter(p => p.status === 'discontinued').length
-    const draft = products.filter(p => p.status === 'draft').length
 
-    return { total, active, inactive, discontinued, draft }
+    return { total, active, inactive }
   }, [products])
 
   const handleSaveProduct = async (productData: Partial<Product>) => {
@@ -72,7 +70,7 @@ export default function ProductsPage() {
           product_name: productData.product_name || '',
           product_type: productData.product_type || null,
           description: productData.description || null,
-          status: productData.status || 'draft',
+          status: productData.status || 'active',
           metadata: productData.metadata === undefined ? null : productData.metadata
         }
         await createProduct(createData)
@@ -168,7 +166,7 @@ export default function ProductsPage() {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <ChartBarIcon className="h-8 w-8 text-gray-600" />
@@ -199,30 +197,6 @@ export default function ProductsPage() {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500">Không Hoạt Động</p>
                 <p className="text-2xl font-semibold text-gray-600">{stats.inactive}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-red-600 rounded-full"></div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Ngừng Sản Xuất</p>
-                <p className="text-2xl font-semibold text-red-600">{stats.discontinued}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-yellow-600 rounded-full"></div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Bản Nháp</p>
-                <p className="text-2xl font-semibold text-yellow-600">{stats.draft}</p>
               </div>
             </div>
           </div>

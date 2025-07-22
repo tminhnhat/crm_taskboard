@@ -58,9 +58,9 @@ export default function CustomersPage() {
       
       // Handle status sorting
       if (sortBy === 'status') {
-        const statusOrder = { 'active': 1, 'inactive': 2, 'suspended': 3 }
-        const aStatus = statusOrder[a.status as keyof typeof statusOrder] || 4
-        const bStatus = statusOrder[b.status as keyof typeof statusOrder] || 4
+        const statusOrder = { 'active': 1, 'inactive': 2 }
+        const aStatus = statusOrder[a.status as keyof typeof statusOrder] || 3
+        const bStatus = statusOrder[b.status as keyof typeof statusOrder] || 3
         return aStatus - bStatus
       }
       
@@ -139,11 +139,10 @@ export default function CustomersPage() {
     const total = customers.length
     const active = customers.filter(c => c.status === 'active').length
     const inactive = customers.filter(c => c.status === 'inactive').length
-    const suspended = customers.filter(c => c.status === 'suspended').length
     const individual = customers.filter(c => c.customer_type === 'individual').length
     const corporate = customers.filter(c => c.customer_type === 'corporate').length
 
-    return { total, active, inactive, suspended, individual, corporate }
+    return { total, active, inactive, individual, corporate }
   }, [customers])
 
   if (error) {
@@ -181,7 +180,7 @@ export default function CustomersPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
             <div className="text-sm text-gray-600">Tổng Cộng</div>
@@ -193,10 +192,6 @@ export default function CustomersPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="text-2xl font-bold text-gray-600">{stats.inactive}</div>
             <div className="text-sm text-gray-600">Không Hoạt Động</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.suspended}</div>
-            <div className="text-sm text-gray-600">Tạm Dừng</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="text-2xl font-bold text-blue-600">{stats.individual}</div>

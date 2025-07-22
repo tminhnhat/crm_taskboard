@@ -14,9 +14,7 @@ interface ProductCardProps {
 
 const statusColors = {
   active: 'bg-green-100 text-green-800',
-  inactive: 'bg-gray-100 text-gray-800',
-  discontinued: 'bg-red-100 text-red-800',
-  draft: 'bg-yellow-100 text-yellow-800'
+  inactive: 'bg-gray-100 text-gray-800'
 }
 
 export default function ProductCard({ product, onEdit, onDelete, onStatusChange }: ProductCardProps) {
@@ -38,8 +36,6 @@ export default function ProductCard({ product, onEdit, onDelete, onStatusChange 
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[product.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
               {product.status === 'active' ? 'Đang Hoạt Động' :
                product.status === 'inactive' ? 'Không Hoạt Động' :
-               product.status === 'discontinued' ? 'Ngừng Sản Xuất' :
-               product.status === 'draft' ? 'Bản Nháp' :
                product.status.charAt(0).toUpperCase() + product.status.slice(1)}
             </span>
             {product.product_type && (
@@ -84,8 +80,6 @@ export default function ProductCard({ product, onEdit, onDelete, onStatusChange 
           >
             <option value="active">Đang Hoạt Động</option>
             <option value="inactive">Không Hoạt Động</option>
-            <option value="discontinued">Ngừng Sản Xuất</option>
-            <option value="draft">Bản Nháp</option>
           </select>
           
           <div className="flex gap-1">

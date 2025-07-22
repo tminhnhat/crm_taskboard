@@ -24,7 +24,6 @@ export default function CreditAssessmentForm({
     customer_id: assessment?.customer_id?.toString() || '',
     staff_id: assessment?.staff_id?.toString() || '',
     assessment_date: assessment?.assessment_date || new Date().toISOString().split('T')[0],
-    credit_score: assessment?.credit_score?.toString() || '',
     assessment_result: assessment?.assessment_result || 'pending',
     comments: assessment?.comments || '',
     documents: assessment?.documents || '',
@@ -81,7 +80,6 @@ export default function CreditAssessmentForm({
       customer_id: parseInt(formData.customer_id),
       staff_id: parseInt(formData.staff_id),
       assessment_date: formData.assessment_date,
-      credit_score: formData.credit_score ? parseInt(formData.credit_score) : null,
       assessment_result: formData.assessment_result || null,
       comments: formData.comments || null,
       documents: formData.documents || null,
@@ -96,14 +94,6 @@ export default function CreditAssessmentForm({
       ...prev,
       [field]: value
     }))
-  }
-
-  const getCreditScoreColor = (score: string) => {
-    const numScore = parseInt(score)
-    if (!numScore) return 'text-gray-500'
-    if (numScore >= 700) return 'text-green-600'
-    if (numScore >= 600) return 'text-yellow-600'
-    return 'text-red-600'
   }
 
   return (
@@ -170,29 +160,6 @@ export default function CreditAssessmentForm({
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-          </div>
-
-          {/* Credit Score */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Điểm tín dụng
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                min="300"
-                max="850"
-                value={formData.credit_score}
-                onChange={(e) => handleInputChange('credit_score', e.target.value)}
-                placeholder="vd: 750"
-                className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${getCreditScoreColor(formData.credit_score)}`}
-              />
-              {formData.credit_score && (
-                <div className="text-xs text-gray-500 mt-1">
-                  Thang điểm: 300-850 (Càng cao càng tốt)
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Assessment Result */}

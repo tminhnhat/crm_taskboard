@@ -95,8 +95,6 @@ export default function StaffFilters({
             <option value="">Tất Cả Trạng Thái</option>
             <option value="active">Đang Hoạt Động</option>
             <option value="inactive">Không Hoạt Động</option>
-            <option value="suspended">Tạm Đình Chỉ</option>
-            <option value="terminated">Nghỉ Việc</option>
           </select>
         </div>
 

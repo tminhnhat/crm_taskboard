@@ -170,17 +170,12 @@ export function useCreditAssessments() {
     const approved = assessments.filter(a => a.assessment_result?.toLowerCase() === 'approved').length
     const rejected = assessments.filter(a => a.assessment_result?.toLowerCase() === 'rejected').length
     const pending = assessments.filter(a => a.assessment_result?.toLowerCase() === 'pending' || !a.assessment_result).length
-    
-    const avgCreditScore = assessments.length > 0 
-      ? assessments.reduce((sum, a) => sum + (a.credit_score || 0), 0) / assessments.filter(a => a.credit_score).length
-      : 0
 
     return {
       total,
       approved,
       rejected,
-      pending,
-      avgCreditScore: Math.round(avgCreditScore)
+      pending
     }
   }
 

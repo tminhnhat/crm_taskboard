@@ -16,9 +16,7 @@ interface StaffCardProps {
 
 const statusColors = {
   active: 'bg-green-100 text-green-800',
-  inactive: 'bg-gray-100 text-gray-800',
-  suspended: 'bg-red-100 text-red-800',
-  terminated: 'bg-red-100 text-red-800'
+  inactive: 'bg-gray-100 text-gray-800'
 }
 
 export default function StaffCard({ staff, onEdit, onDelete, onStatusChange }: StaffCardProps) {
@@ -97,8 +95,6 @@ export default function StaffCard({ staff, onEdit, onDelete, onStatusChange }: S
           >
             <option value="active">Đang Hoạt Động</option>
             <option value="inactive">Không Hoạt Động</option>
-            <option value="suspended">Tạm Đình Chỉ</option>
-            <option value="terminated">Nghỉ Việc</option>
           </select>
           
           <div className="flex gap-1">

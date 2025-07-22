@@ -135,7 +135,6 @@ export interface CreditAssessment {
   customer_id: number
   staff_id: number
   assessment_date: string // DATE
-  credit_score: number | null
   assessment_result: string | null
   comments: string | null
   documents: string | null // link or file name

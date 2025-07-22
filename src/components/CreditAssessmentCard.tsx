@@ -4,8 +4,7 @@ import { CreditAssessment } from '@/lib/supabase'
 import { 
   PencilIcon, 
   TrashIcon,
-  DocumentArrowDownIcon,
-  StarIcon
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline'
 
 interface CreditAssessmentCardProps {
@@ -43,37 +42,12 @@ export default function CreditAssessmentCard({ assessment, onEdit, onDelete }: C
     }
   }
 
-  const getCreditScoreColor = (score: number | null) => {
-    if (!score) return 'text-gray-500'
-    if (score >= 700) return 'text-green-600'
-    if (score >= 600) return 'text-yellow-600'
-    return 'text-red-600'
-  }
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     })
-  }
-
-  const renderStars = (score: number | null) => {
-    if (!score) return null
-    const stars = Math.round(score / 200) // Convert to 1-5 star scale
-    return (
-      <div className="flex">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <StarIcon
-            key={star}
-            className={`h-4 w-4 ${
-              star <= stars ? 'text-yellow-400' : 'text-gray-300'
-            }`}
-            fill={star <= stars ? 'currentColor' : 'none'}
-          />
-        ))}
-      </div>
-    )
   }
 
   return (
@@ -119,21 +93,6 @@ export default function CreditAssessmentCard({ assessment, onEdit, onDelete }: C
             <p className="font-medium">{assessment.staff?.full_name || `Nhân viên #${assessment.staff_id}`}</p>
           </div>
         </div>
-
-        {/* Credit Score */}
-        {assessment.credit_score && (
-          <div className="flex justify-between items-center">
-            <div>
-              <span className="text-sm text-gray-500">Điểm tín dụng:</span>
-              <div className="flex items-center space-x-2">
-                <p className={`text-xl font-bold ${getCreditScoreColor(assessment.credit_score)}`}>
-                  {assessment.credit_score}
-                </p>
-                {renderStars(assessment.credit_score)}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Assessment Result */}
         <div className="flex justify-between items-center">

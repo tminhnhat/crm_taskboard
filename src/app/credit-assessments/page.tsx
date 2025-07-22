@@ -14,8 +14,7 @@ import {
   ChartBarIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ClockIcon,
-  StarIcon
+  ClockIcon
 } from '@heroicons/react/24/outline'
 
 export default function CreditAssessmentsPage() {
@@ -38,7 +37,6 @@ export default function CreditAssessmentsPage() {
     result: '',
     customerId: '',
     staffId: '',
-    scoreRange: '',
     dateRange: ''
   })
 
@@ -89,30 +87,6 @@ export default function CreditAssessmentsPage() {
       const matchesStaff = !filters.staffId || 
         assessment.staff_id.toString() === filters.staffId
 
-      let matchesScoreRange = true
-      if (filters.scoreRange && assessment.credit_score) {
-        const score = assessment.credit_score
-        switch (filters.scoreRange) {
-          case 'excellent':
-            matchesScoreRange = score >= 750
-            break
-          case 'good':
-            matchesScoreRange = score >= 700 && score < 750
-            break
-          case 'fair':
-            matchesScoreRange = score >= 650 && score < 700
-            break
-          case 'poor':
-            matchesScoreRange = score >= 600 && score < 650
-            break
-          case 'bad':
-            matchesScoreRange = score < 600
-            break
-        }
-      } else if (filters.scoreRange) {
-        matchesScoreRange = false
-      }
-
       let matchesDateRange = true
       if (filters.dateRange) {
         const assessmentDate = new Date(assessment.assessment_date)
@@ -141,7 +115,7 @@ export default function CreditAssessmentsPage() {
         }
       }
 
-      return matchesSearch && matchesResult && matchesCustomer && matchesStaff && matchesScoreRange && matchesDateRange
+      return matchesSearch && matchesResult && matchesCustomer && matchesStaff && matchesDateRange
     })
   }, [assessments, filters])
 
@@ -233,7 +207,7 @@ export default function CreditAssessmentsPage() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <DocumentChartBarIcon className="h-8 w-8 text-blue-600" />
@@ -273,16 +247,6 @@ export default function CreditAssessmentsPage() {
               </div>
             </div>
           </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <StarIcon className="h-8 w-8 text-purple-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Điểm TB</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.avgCreditScore || 0}</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Filters */}
@@ -314,7 +278,7 @@ export default function CreditAssessmentsPage() {
             <DocumentChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy đánh giá nào</h3>
             <p className="text-gray-500 mb-6">
-              {filters.search || filters.result || filters.customerId || filters.staffId || filters.scoreRange || filters.dateRange
+              {filters.search || filters.result || filters.customerId || filters.staffId || filters.dateRange
                 ? 'Hãy thử điều chỉnh bộ lọc để xem thêm kết quả.'
                 : 'Bắt đầu bằng cách tạo đánh giá tín dụng đầu tiên của bạn.'
               }

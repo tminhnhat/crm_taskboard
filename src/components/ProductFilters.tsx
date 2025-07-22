@@ -90,8 +90,6 @@ export default function ProductFilters({
             <option value="">Tất Cả Trạng Thái</option>
             <option value="active">Đang Hoạt Động</option>
             <option value="inactive">Không Hoạt Động</option>
-            <option value="discontinued">Ngừng Sản Xuất</option>
-            <option value="draft">Bản Nháp</option>
           </select>
         </div>
 
@@ -139,9 +137,7 @@ export default function ProductFilters({
               {filters.status && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   Trạng thái: {filters.status === 'active' ? 'Đang Hoạt Động' :
-                              filters.status === 'inactive' ? 'Không Hoạt Động' :
-                              filters.status === 'discontinued' ? 'Ngừng Sản Xuất' :
-                              filters.status === 'draft' ? 'Bản Nháp' : filters.status}
+                              filters.status === 'inactive' ? 'Không Hoạt Động' : filters.status}
                 </span>
               )}
               {filters.productType && (

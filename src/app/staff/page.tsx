@@ -69,10 +69,8 @@ export default function StaffPage() {
     const total = staff.length
     const active = staff.filter(s => s.status === 'active').length
     const inactive = staff.filter(s => s.status === 'inactive').length
-    const suspended = staff.filter(s => s.status === 'suspended').length
-    const terminated = staff.filter(s => s.status === 'terminated').length
 
-    return { total, active, inactive, suspended, terminated }
+    return { total, active, inactive }
   }, [staff])
 
   const handleSaveStaff = async (staffData: Partial<Staff>) => {
@@ -173,7 +171,7 @@ export default function StaffPage() {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <ChartBarIcon className="h-8 w-8 text-gray-600" />
@@ -204,30 +202,6 @@ export default function StaffPage() {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500">Không Hoạt Động</p>
                 <p className="text-2xl font-semibold text-gray-600">{stats.inactive}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-yellow-600 rounded-full"></div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Tạm Đình Chỉ</p>
-                <p className="text-2xl font-semibold text-yellow-600">{stats.suspended}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-red-600 rounded-full"></div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Nghỉ Việc</p>
-                <p className="text-2xl font-semibold text-red-600">{stats.terminated}</p>
               </div>
             </div>
           </div>

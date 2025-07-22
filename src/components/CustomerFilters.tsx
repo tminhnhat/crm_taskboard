@@ -60,7 +60,6 @@ export default function CustomerFilters({ filters, onFiltersChange }: CustomerFi
             <option value="">Tất Cả Trạng Thái</option>
             <option value="active">Đang Hoạt Động</option>
             <option value="inactive">Không Hoạt Động</option>
-            <option value="suspended">Tạm Dừng</option>
           </select>
         </div>
         
