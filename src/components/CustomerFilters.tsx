@@ -53,7 +53,7 @@ export default function CustomerFilters({ filters, onFiltersChange }: CustomerFi
           <label htmlFor="status-filter" className="text-sm text-gray-600">Trạng thái:</label>
           <select
             id="status-filter"
-            value={filters.status}
+            value={filters.status || 'active'}
             onChange={(e) => updateFilter('status', e.target.value)}
             className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >

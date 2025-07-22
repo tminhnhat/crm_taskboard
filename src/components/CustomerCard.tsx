@@ -46,7 +46,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               <h3 className="text-lg font-semibold text-gray-900">{customer.full_name}</h3>
               <p className="text-sm text-gray-600">Tài khoản: {customer.account_number}</p>
               {customer.cif_number && (
-                <p className="text-sm text-gray-600">CIF: {customer.cif_number}</p>
+          <p className="text-sm text-gray-600">CIF: {customer.cif_number}</p>
               )}
             </div>
           </div>
@@ -66,43 +66,38 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
           <div className="space-y-2 text-sm text-gray-600">
             {customer.phone && (
               <div className="flex items-center">
-                <PhoneIcon className="h-4 w-4 mr-2" />
-                {customer.phone}
+          <PhoneIcon className="h-4 w-4 mr-2" />
+          {customer.phone}
               </div>
             )}
             {customer.email && (
               <div className="flex items-center">
-                <EnvelopeIcon className="h-4 w-4 mr-2" />
-                {customer.email}
+          <EnvelopeIcon className="h-4 w-4 mr-2" />
+          {customer.email}
               </div>
             )}
             {customer.address && (
               <div className="flex items-center">
-                <MapPinIcon className="h-4 w-4 mr-2" />
-                {customer.address}
+          <MapPinIcon className="h-4 w-4 mr-2" />
+          {customer.address}
               </div>
             )}
             {customer.id_number && (
               <div className="flex items-center">
-                <IdentificationIcon className="h-4 w-4 mr-2" />
-                CMND/CCCD: {customer.id_number}
+          <IdentificationIcon className="h-4 w-4 mr-2" />
+          CMND/CCCD: {customer.id_number}
               </div>
             )}
             {customer.date_of_birth && (
               <div className="flex items-center">
-                <CalendarDaysIcon className="h-4 w-4 mr-2" />
-                Ngày sinh: {new Date(customer.date_of_birth).toLocaleDateString('vi-VN')}
+          <CalendarDaysIcon className="h-4 w-4 mr-2" />
+          Ngày sinh: {new Date(customer.date_of_birth).toLocaleDateString('vi-VN')}
               </div>
             )}
           </div>
 
           {customer.numerology_data && (
-            <div className="mt-3 p-2 bg-gray-50 rounded-md">
-              <p className="text-xs font-medium text-gray-700 mb-1">Dữ Liệu Thần Số Học:</p>
-              <pre className="text-xs text-gray-600 overflow-x-auto">
-                {JSON.stringify(customer.numerology_data, null, 2)}
-              </pre>
-            </div>
+            <NumerologyDataSection numerologyData={customer.numerology_data} />
           )}
         </div>
         

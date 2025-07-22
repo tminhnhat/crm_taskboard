@@ -191,16 +191,24 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
 
             <div>
               <label htmlFor="task_category" className="block text-sm font-medium text-gray-700 mb-1">
-                Danh mục
+              Danh mục
               </label>
-              <input
-                type="text"
-                id="task_category"
-                value={formData.task_category}
-                onChange={(e) => setFormData({ ...formData, task_category: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nhập danh mục công việc"
-              />
+              <select
+              id="task_category"
+              value={formData.task_category}
+              onChange={(e) => setFormData({ ...formData, task_category: e.target.value })}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+              <option value="">Chọn danh mục công việc</option>
+              <option value="disbursement">Giải ngân</option>
+              <option value="guarantee issuance">Phát hành bảo lãnh</option>
+              <option value="credit assessment">Thẩm định tín dụng</option>
+              <option value="asset appraisal">Thẩm định tài sản</option>
+              <option value="document preparation">Soạn hồ sơ</option>
+              <option value="customer development">Phát triển khách hàng</option>
+              <option value="customer care">Chăm sóc khách hàng</option>
+              <option value="other">Khác</option>
+              </select>
             </div>
 
             <div>
