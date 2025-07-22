@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import { Customer } from '@/lib/supabase'
 import { 
   UserIcon, 
@@ -6,7 +9,9 @@ import {
   EnvelopeIcon,
   MapPinIcon,
   IdentificationIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  ChevronDownIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline'
 
 interface CustomerCardProps {
@@ -35,6 +40,7 @@ const customerTypeIcons = {
 
 export default function CustomerCard({ customer, onEdit, onDelete, onStatusChange, onRecalculateNumerology }: CustomerCardProps) {
   const TypeIcon = customerTypeIcons[customer.customer_type]
+  const [showNumerology, setShowNumerology] = useState(false)
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -46,7 +52,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               <h3 className="text-lg font-semibold text-gray-900">{customer.full_name}</h3>
               <p className="text-sm text-gray-600">Tài khoản: {customer.account_number}</p>
               {customer.cif_number && (
-          <p className="text-sm text-gray-600">CIF: {customer.cif_number}</p>
+                <p className="text-sm text-gray-600">CIF: {customer.cif_number}</p>
               )}
             </div>
           </div>
@@ -66,38 +72,63 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
           <div className="space-y-2 text-sm text-gray-600">
             {customer.phone && (
               <div className="flex items-center">
-          <PhoneIcon className="h-4 w-4 mr-2" />
-          {customer.phone}
+                <PhoneIcon className="h-4 w-4 mr-2" />
+                {customer.phone}
               </div>
             )}
             {customer.email && (
               <div className="flex items-center">
-          <EnvelopeIcon className="h-4 w-4 mr-2" />
-          {customer.email}
+                <EnvelopeIcon className="h-4 w-4 mr-2" />
+                {customer.email}
               </div>
             )}
             {customer.address && (
               <div className="flex items-center">
-          <MapPinIcon className="h-4 w-4 mr-2" />
-          {customer.address}
+                <MapPinIcon className="h-4 w-4 mr-2" />
+                {customer.address}
               </div>
             )}
             {customer.id_number && (
               <div className="flex items-center">
-          <IdentificationIcon className="h-4 w-4 mr-2" />
-          CMND/CCCD: {customer.id_number}
+                <IdentificationIcon className="h-4 w-4 mr-2" />
+                CMND/CCCD: {customer.id_number}
               </div>
             )}
             {customer.date_of_birth && (
               <div className="flex items-center">
-          <CalendarDaysIcon className="h-4 w-4 mr-2" />
-          Ngày sinh: {new Date(customer.date_of_birth).toLocaleDateString('vi-VN')}
+                <CalendarDaysIcon className="h-4 w-4 mr-2" />
+                Ngày sinh: {new Date(customer.date_of_birth).toLocaleDateString('vi-VN')}
               </div>
             )}
           </div>
 
           {customer.numerology_data && (
-            <NumerologyDataSection numerologyData={customer.numerology_data} />
+            <div className="mt-3">
+              <button
+                onClick={() => setShowNumerology(!showNumerology)}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-1 -ml-1"
+              >
+                {showNumerology ? (
+                  <ChevronDownIcon className="h-4 w-4" />
+                ) : (
+                  <ChevronRightIcon className="h-4 w-4" />
+                )}
+                Dữ Liệu Thần Số Học
+                <span className="text-xs text-gray-500 ml-1">
+                  ({showNumerology ? 'Ẩn' : 'Hiện'})
+                </span>
+              </button>
+              
+              {showNumerology && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <div className="max-h-40 overflow-y-auto">
+                    <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                      {JSON.stringify(customer.numerology_data, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
         
