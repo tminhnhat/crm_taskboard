@@ -75,6 +75,22 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
   const StatusIcon = statusIcons[task.task_status]
   const isOverdue = task.task_due_date && new Date(task.task_due_date) < new Date() && task.task_status !== 'completed'
 
+  // Helper function to format date consistently, avoiding timezone issues
+  const formatDateDisplay = (dateString: string | null): string => {
+    if (!dateString) return ''
+    
+    // Parse date string as local date to avoid timezone shifts
+    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (dateMatch) {
+      const [, year, month, day] = dateMatch
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+      return date.toLocaleDateString('vi-VN')
+    }
+    
+    // Fallback for other formats
+    return new Date(dateString).toLocaleDateString('vi-VN')
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
@@ -116,20 +132,20 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
             {task.task_due_date && (
               <div className={`flex items-center ${isOverdue ? 'text-red-600' : 'text-gray-500'}`}>
                 <CalendarIcon className="h-4 w-4 mr-1" />
-                Hạn: {new Date(task.task_due_date).toLocaleDateString('vi-VN')}
+                Hạn: {formatDateDisplay(task.task_due_date)}
               </div>
             )}
             {task.task_date_start && (
               <div className="flex items-center">
                 <CalendarIcon className="h-4 w-4 mr-1" />
-                Bắt đầu: {new Date(task.task_date_start).toLocaleDateString('vi-VN')}
+                Bắt đầu: {formatDateDisplay(task.task_date_start)}
                 {task.task_start_time && ` lúc ${task.task_start_time}`}
               </div>
             )}
             {task.task_date_finish && (
               <div className="flex items-center text-green-600">
                 <CheckCircleIcon className="h-4 w-4 mr-1" />
-                Hoàn thành: {new Date(task.task_date_finish).toLocaleDateString('vi-VN')}
+                Hoàn thành: {formatDateDisplay(task.task_date_finish)}
                 {task.task_time_finish && ` lúc ${task.task_time_finish}`}
               </div>
             )}

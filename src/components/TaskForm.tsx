@@ -35,13 +35,11 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     if (dateString.includes('/')) return dateString
     
     // Convert from yyyy-mm-dd to dd/mm/yyyy
-    const date = new Date(dateString)
-    if (isNaN(date.getTime())) return ''
+    // Parse the date string directly as local date components to avoid timezone issues
+    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!dateMatch) return ''
     
-    const day = String(date.getDate()).padStart(2, '0')
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const year = date.getFullYear()
-    
+    const [, year, month, day] = dateMatch
     return `${day}/${month}/${year}`
   }
 
@@ -49,18 +47,28 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     if (!displayDate) return null
     
     // If already in yyyy-mm-dd format, return as is
-    if (displayDate.includes('-')) return displayDate
+    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
     
     // Convert from dd/mm/yyyy to yyyy-mm-dd
     const parts = displayDate.split('/')
     if (parts.length !== 3) return null
     
     const [day, month, year] = parts
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
     
-    if (isNaN(date.getTime())) return null
+    // Validate the parts before creating the date string
+    const dayNum = parseInt(day)
+    const monthNum = parseInt(month)
+    const yearNum = parseInt(year)
     
-    return date.toISOString().split('T')[0]
+    if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return null
+    if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12) return null
+    
+    // Ensure proper zero-padding for single digit days and months
+    const paddedDay = day.padStart(2, '0')
+    const paddedMonth = month.padStart(2, '0')
+    
+    // Return the date in yyyy-mm-dd format (ISO date string format)
+    return `${year}-${paddedMonth}-${paddedDay}`
   }
 
   const validateDateFormat = (dateString: string): boolean => {
@@ -80,9 +88,12 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     if (day < 1 || day > 31) return false
     if (year < 1900 || year > new Date().getFullYear() + 10) return false
     
-    // Check if date is valid
-    const date = new Date(year, month - 1, day)
-    return date.getDate() === day && date.getMonth() === month - 1 && date.getFullYear() === year
+    // More precise date validation - check if the date actually exists
+    // Create date using local timezone to avoid timezone shift issues
+    const testDate = new Date(year, month - 1, day)
+    return testDate.getDate() === day && 
+           testDate.getMonth() === month - 1 && 
+           testDate.getFullYear() === year
   }
 
   const handleDateChange = (field: 'task_date_start' | 'task_due_date', value: string) => {
