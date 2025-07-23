@@ -16,6 +16,14 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
     product_type: product?.product_type || '',
     description: product?.description || '',
     status: product?.status || 'active',
+    interest_rate: product?.interest_rate?.toString() || '',
+    minimum_amount: product?.minimum_amount?.toString() || '',
+    maximum_amount: product?.maximum_amount?.toString() || '',
+    currency: product?.currency || 'VND',
+    terms_months: product?.terms_months?.toString() || '',
+    fees: product?.fees?.toString() || '',
+    requirements: product?.requirements || '',
+    benefits: product?.benefits || '',
     metadata: product?.metadata || {}
   })
 
@@ -35,7 +43,18 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
     }
 
     onSave({
-      ...formData,
+      product_name: formData.product_name,
+      product_type: formData.product_type || null,
+      description: formData.description || null,
+      status: formData.status,
+      interest_rate: formData.interest_rate ? parseFloat(formData.interest_rate) : null,
+      minimum_amount: formData.minimum_amount ? parseFloat(formData.minimum_amount) : null,
+      maximum_amount: formData.maximum_amount ? parseFloat(formData.maximum_amount) : null,
+      currency: formData.currency || null,
+      terms_months: formData.terms_months ? parseInt(formData.terms_months) : null,
+      fees: formData.fees ? parseFloat(formData.fees) : null,
+      requirements: formData.requirements || null,
+      benefits: formData.benefits || null,
       metadata: Object.keys(parsedMetadata).length > 0 ? parsedMetadata : null
     })
   }
@@ -54,7 +73,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             {product ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
@@ -73,7 +92,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                 onChange={handleChange}
                 required
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nhập tên sản phẩm"
+                placeholder="VD: Gói Tiết Kiệm Sinh Lợi, Vay Thế Chấp Nhà Đất"
               />
             </div>
 
@@ -81,20 +100,133 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
               <label htmlFor="product_type" className="block text-sm font-medium text-gray-700 mb-1">
                 Loại Sản Phẩm
               </label>
-              <input
-                type="text"
+              <select
                 id="product_type"
                 name="product_type"
                 value={formData.product_type}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="ví dụ: Phần mềm, Phần cứng, Dịch vụ"
-              />
+              >
+                <option value="">Chọn loại sản phẩm</option>
+                <option value="Savings Account">Tài Khoản Tiết Kiệm</option>
+                <option value="Current Account">Tài Khoản Vãng Lai</option>
+                <option value="Term Deposit">Gửi Tiết Kiệm Có Kỳ Hạn</option>
+                <option value="Personal Loan">Vay Cá Nhân</option>
+                <option value="Home Loan">Vay Thế Chấp Nhà Đất</option>
+                <option value="Auto Loan">Vay Mua Xe</option>
+                <option value="Business Loan">Vay Kinh Doanh</option>
+                <option value="Credit Card">Thẻ Tín Dụng</option>
+                <option value="Debit Card">Thẻ Ghi Nợ</option>
+                <option value="Insurance">Bảo Hiểm</option>
+                <option value="Investment">Đầu Tư</option>
+                <option value="Foreign Exchange">Ngoại Hối</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="interest_rate" className="block text-sm font-medium text-gray-700 mb-1">
+                  Lãi Suất (%/năm)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="interest_rate"
+                  name="interest_rate"
+                  value={formData.interest_rate}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="VD: 6.5"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-1">
+                  Đơn Vị Tiền Tệ
+                </label>
+                <select
+                  id="currency"
+                  name="currency"
+                  value={formData.currency}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="VND">VND</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="JPY">JPY</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="minimum_amount" className="block text-sm font-medium text-gray-700 mb-1">
+                  Số Tiền Tối Thiểu
+                </label>
+                <input
+                  type="number"
+                  id="minimum_amount"
+                  name="minimum_amount"
+                  value={formData.minimum_amount}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="VD: 100000"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="maximum_amount" className="block text-sm font-medium text-gray-700 mb-1">
+                  Số Tiền Tối Đa
+                </label>
+                <input
+                  type="number"
+                  id="maximum_amount"
+                  name="maximum_amount"
+                  value={formData.maximum_amount}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="VD: 5000000000"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="terms_months" className="block text-sm font-medium text-gray-700 mb-1">
+                  Thời Hạn (tháng)
+                </label>
+                <input
+                  type="number"
+                  id="terms_months"
+                  name="terms_months"
+                  value={formData.terms_months}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="VD: 12"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="fees" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phí Dịch Vụ
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="fees"
+                  name="fees"
+                  value={formData.fees}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="VD: 50000"
+                />
+              </div>
             </div>
 
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Mô Tả
+                Mô Tả Sản Phẩm
               </label>
               <textarea
                 id="description"
@@ -103,7 +235,37 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                 onChange={handleChange}
                 rows={3}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Nhập mô tả sản phẩm"
+                placeholder="Mô tả chi tiết về sản phẩm, tính năng và ưu điểm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 mb-1">
+                Điều Kiện Áp Dụng
+              </label>
+              <textarea
+                id="requirements"
+                name="requirements"
+                value={formData.requirements}
+                onChange={handleChange}
+                rows={2}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                placeholder="VD: Tuổi từ 18-65, thu nhập tối thiểu 10 triệu/tháng"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="benefits" className="block text-sm font-medium text-gray-700 mb-1">
+                Quyền Lợi & Ưu Đãi
+              </label>
+              <textarea
+                id="benefits"
+                name="benefits"
+                value={formData.benefits}
+                onChange={handleChange}
+                rows={2}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                placeholder="VD: Miễn phí chuyển khoản, tặng thẻ quà tặng, bảo hiểm miễn phí"
               />
             </div>
 
@@ -119,13 +281,13 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="active">Đang Hoạt Động</option>
-                <option value="inactive">Không Hoạt Động</option>
+                <option value="inactive">Tạm Ngưng</option>
               </select>
             </div>
 
             <div>
               <label htmlFor="metadata" className="block text-sm font-medium text-gray-700 mb-1">
-                Metadata (định dạng JSON)
+                Thông Tin Bổ Sung (JSON)
               </label>
               <textarea
                 id="metadata"
@@ -133,10 +295,10 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                 onChange={(e) => setMetadataInput(e.target.value)}
                 rows={4}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm"
-                placeholder='{"key": "value", "price": 100, "category": "electronics"}'
+                placeholder='{"promotion_code": "SUMMER2024", "contact_center": "1800-1234"}'
               />
               <p className="text-xs text-gray-500 mt-1">
-                Tùy chọn: Nhập JSON hợp lệ cho metadata bổ sung của sản phẩm
+                Tùy chọn: Thêm thông tin bổ sung theo định dạng JSON
               </p>
             </div>
 

@@ -12,7 +12,9 @@ import {
   PlusIcon, 
   CubeIcon,
   ChartBarIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  BanknotesIcon,
+  DocumentChartBarIcon
 } from '@heroicons/react/24/outline'
 
 export default function ProductsPage() {
@@ -56,8 +58,22 @@ export default function ProductsPage() {
     const total = products.length
     const active = products.filter(p => p.status === 'active').length
     const inactive = products.filter(p => p.status === 'inactive').length
+    
+    // Banking-specific statistics
+    const loans = products.filter(p => p.product_type?.includes('Loan')).length
+    const deposits = products.filter(p => 
+      p.product_type === 'Savings Account' || 
+      p.product_type === 'Current Account' || 
+      p.product_type === 'Term Deposit'
+    ).length
+    const cards = products.filter(p => p.product_type?.includes('Card')).length
+    
+    const avgInterestRate = products
+      .filter(p => p.interest_rate && p.interest_rate > 0)
+      .reduce((sum, p) => sum + (p.interest_rate || 0), 0) / 
+      products.filter(p => p.interest_rate && p.interest_rate > 0).length || 0
 
-    return { total, active, inactive }
+    return { total, active, inactive, loans, deposits, cards, avgInterestRate }
   }, [products])
 
   const handleSaveProduct = async (productData: Partial<Product>) => {
@@ -71,6 +87,14 @@ export default function ProductsPage() {
           product_type: productData.product_type || null,
           description: productData.description || null,
           status: productData.status || 'active',
+          interest_rate: productData.interest_rate || null,
+          minimum_amount: productData.minimum_amount || null,
+          maximum_amount: productData.maximum_amount || null,
+          currency: productData.currency || null,
+          terms_months: productData.terms_months || null,
+          fees: productData.fees || null,
+          requirements: productData.requirements || null,
+          benefits: productData.benefits || null,
           metadata: productData.metadata === undefined ? null : productData.metadata
         }
         await createProduct(createData)
@@ -166,12 +190,12 @@ export default function ProductsPage() {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <ChartBarIcon className="h-8 w-8 text-gray-600" />
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Tổng Sản Phẩm</p>
+                <p className="text-sm font-medium text-gray-500">Tổng SP</p>
                 <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
               </div>
             </div>
@@ -183,7 +207,7 @@ export default function ProductsPage() {
                 <div className="h-4 w-4 bg-green-600 rounded-full"></div>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Đang Hoạt Động</p>
+                <p className="text-sm font-medium text-gray-500">Hoạt Động</p>
                 <p className="text-2xl font-semibold text-green-600">{stats.active}</p>
               </div>
             </div>
@@ -195,8 +219,44 @@ export default function ProductsPage() {
                 <div className="h-4 w-4 bg-gray-600 rounded-full"></div>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Không Hoạt Động</p>
+                <p className="text-sm font-medium text-gray-500">Tạm Ngưng</p>
                 <p className="text-2xl font-semibold text-gray-600">{stats.inactive}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <BanknotesIcon className="h-5 w-5 text-orange-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-500">Vay Vốn</p>
+                <p className="text-2xl font-semibold text-orange-600">{stats.loans}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <CubeIcon className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-500">Tiền Gửi</p>
+                <p className="text-2xl font-semibold text-blue-600">{stats.deposits}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <DocumentChartBarIcon className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-500">Thẻ</p>
+                <p className="text-2xl font-semibold text-purple-600">{stats.cards}</p>
               </div>
             </div>
           </div>

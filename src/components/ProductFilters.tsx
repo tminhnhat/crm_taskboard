@@ -88,8 +88,8 @@ export default function ProductFilters({
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Tất Cả Trạng Thái</option>
-            <option value="active">Đang Hoạt Động</option>
-            <option value="inactive">Không Hoạt Động</option>
+            <option value="active">Hoạt Động</option>
+            <option value="inactive">Tạm Ngưng</option>
           </select>
         </div>
 
@@ -136,8 +136,8 @@ export default function ProductFilters({
               )}
               {filters.status && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Trạng thái: {filters.status === 'active' ? 'Đang Hoạt Động' :
-                              filters.status === 'inactive' ? 'Không Hoạt Động' : filters.status}
+                  Trạng thái: {filters.status === 'active' ? 'Hoạt Động' :
+                              filters.status === 'inactive' ? 'Tạm Ngưng' : filters.status}
                 </span>
               )}
               {filters.productType && (

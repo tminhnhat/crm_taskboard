@@ -68,6 +68,14 @@ export interface Product {
   product_type: string | null
   description: string | null
   status: string
+  interest_rate: number | null // Interest rate for loans/deposits
+  minimum_amount: number | null // Minimum amount required
+  maximum_amount: number | null // Maximum amount allowed
+  currency: string | null // Currency code (VND, USD, etc.)
+  terms_months: number | null // Terms in months
+  fees: number | null // Associated fees
+  requirements: string | null // Eligibility requirements
+  benefits: string | null // Product benefits
   metadata: Record<string, unknown> | null // JSONB type
 }
 
