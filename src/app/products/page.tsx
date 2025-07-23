@@ -14,7 +14,9 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
   BanknotesIcon,
-  DocumentChartBarIcon
+  DocumentChartBarIcon,
+  ShieldCheckIcon,
+  CogIcon
 } from '@heroicons/react/24/outline'
 
 export default function ProductsPage() {
@@ -23,7 +25,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [filters, setFilters] = useState({
     search: '',
-    status: 'active',
+    status: '',
     productType: ''
   })
 
@@ -67,13 +69,22 @@ export default function ProductsPage() {
       p.product_type === 'Term Deposit'
     ).length
     const cards = products.filter(p => p.product_type?.includes('Card')).length
+    const insurance = products.filter(p => p.product_type?.includes('Insurance')).length
+    const feeBasedServices = products.filter(p => 
+      p.product_type === 'Money Transfer' ||
+      p.product_type === 'Cash Management' ||
+      p.product_type === 'Trade Finance' ||
+      p.product_type === 'Payment Services' ||
+      p.product_type === 'Safe Deposit Box' ||
+      p.product_type === 'Financial Advisory'
+    ).length
     
     const avgInterestRate = products
       .filter(p => p.interest_rate && p.interest_rate > 0)
       .reduce((sum, p) => sum + (p.interest_rate || 0), 0) / 
       products.filter(p => p.interest_rate && p.interest_rate > 0).length || 0
 
-    return { total, active, inactive, loans, deposits, cards, avgInterestRate }
+    return { total, active, inactive, loans, deposits, cards, insurance, feeBasedServices, avgInterestRate }
   }, [products])
 
   const handleSaveProduct = async (productData: Partial<Product>) => {
@@ -190,73 +201,97 @@ export default function ProductsPage() {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <ChartBarIcon className="h-8 w-8 text-gray-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Tổng SP</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
+              <ChartBarIcon className="h-6 w-6 text-gray-600" />
+              <div className="ml-2">
+                <p className="text-xs font-medium text-gray-500">Tổng SP</p>
+                <p className="text-lg font-semibold text-gray-900">{stats.total}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-green-600 rounded-full"></div>
+              <div className="h-6 w-6 bg-green-100 rounded-lg flex items-center justify-center">
+                <div className="h-3 w-3 bg-green-600 rounded-full"></div>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Hoạt Động</p>
-                <p className="text-2xl font-semibold text-green-600">{stats.active}</p>
+              <div className="ml-2">
+                <p className="text-xs font-medium text-gray-500">Hoạt Động</p>
+                <p className="text-lg font-semibold text-green-600">{stats.active}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-gray-600 rounded-full"></div>
+              <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="h-3 w-3 bg-gray-600 rounded-full"></div>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Tạm Ngưng</p>
-                <p className="text-2xl font-semibold text-gray-600">{stats.inactive}</p>
+              <div className="ml-2">
+                <p className="text-xs font-medium text-gray-500">Tạm Ngưng</p>
+                <p className="text-lg font-semibold text-gray-600">{stats.inactive}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <BanknotesIcon className="h-5 w-5 text-orange-600" />
+              <div className="h-6 w-6 bg-orange-100 rounded-lg flex items-center justify-center">
+                <BanknotesIcon className="h-4 w-4 text-orange-600" />
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Vay Vốn</p>
-                <p className="text-2xl font-semibold text-orange-600">{stats.loans}</p>
+              <div className="ml-2">
+                <p className="text-xs font-medium text-gray-500">Vay Vốn</p>
+                <p className="text-lg font-semibold text-orange-600">{stats.loans}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <CubeIcon className="h-5 w-5 text-blue-600" />
+              <div className="h-6 w-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                <CubeIcon className="h-4 w-4 text-blue-600" />
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Tiền Gửi</p>
-                <p className="text-2xl font-semibold text-blue-600">{stats.deposits}</p>
+              <div className="ml-2">
+                <p className="text-xs font-medium text-gray-500">Tiền Gửi</p>
+                <p className="text-lg font-semibold text-blue-600">{stats.deposits}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <DocumentChartBarIcon className="h-5 w-5 text-purple-600" />
+              <div className="h-6 w-6 bg-purple-100 rounded-lg flex items-center justify-center">
+                <DocumentChartBarIcon className="h-4 w-4 text-purple-600" />
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Thẻ</p>
-                <p className="text-2xl font-semibold text-purple-600">{stats.cards}</p>
+              <div className="ml-2">
+                <p className="text-xs font-medium text-gray-500">Thẻ</p>
+                <p className="text-lg font-semibold text-purple-600">{stats.cards}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="h-6 w-6 bg-teal-100 rounded-lg flex items-center justify-center">
+                <ShieldCheckIcon className="h-4 w-4 text-teal-600" />
+              </div>
+              <div className="ml-2">
+                <p className="text-xs font-medium text-gray-500">Bảo Hiểm</p>
+                <p className="text-lg font-semibold text-teal-600">{stats.insurance}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="h-6 w-6 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <CogIcon className="h-4 w-4 text-indigo-600" />
+              </div>
+              <div className="ml-2">
+                <p className="text-xs font-medium text-gray-500">Dịch Vụ</p>
+                <p className="text-lg font-semibold text-indigo-600">{stats.feeBasedServices}</p>
               </div>
             </div>
           </div>

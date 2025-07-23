@@ -167,7 +167,7 @@ export default function OpportunityForm({
 
             <div>
               <label htmlFor="expected_value" className="block text-sm font-medium text-gray-700 mb-1">
-                Giá Trị Dự Kiến (USD)
+                Giá Trị Dự Kiến (VND)
               </label>
               <input
                 type="number"

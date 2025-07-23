@@ -117,9 +117,18 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                 <option value="Business Loan">Vay Kinh Doanh</option>
                 <option value="Credit Card">Thẻ Tín Dụng</option>
                 <option value="Debit Card">Thẻ Ghi Nợ</option>
-                <option value="Insurance">Bảo Hiểm</option>
+                <option value="Life Insurance">Bảo Hiểm Nhân Thọ</option>
+                <option value="Health Insurance">Bảo Hiểm Sức Khỏe</option>
+                <option value="Property Insurance">Bảo Hiểm Tài Sản</option>
+                <option value="Auto Insurance">Bảo Hiểm Ô Tô</option>
                 <option value="Investment">Đầu Tư</option>
                 <option value="Foreign Exchange">Ngoại Hối</option>
+                <option value="Money Transfer">Chuyển Tiền</option>
+                <option value="Cash Management">Quản Lý Tiền Mặt</option>
+                <option value="Trade Finance">Tài Chính Thương Mại</option>
+                <option value="Payment Services">Dịch Vụ Thanh Toán</option>
+                <option value="Safe Deposit Box">Két An Toàn</option>
+                <option value="Financial Advisory">Tư Vấn Tài Chính</option>
               </select>
             </div>
 

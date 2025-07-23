@@ -98,6 +98,12 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                 {customer.address}
               </div>
             )}
+            {customer.hobby && (
+              <div className="flex items-center">
+                <UserIcon className="h-4 w-4 mr-2" />
+                Sở thích: {customer.hobby}
+              </div>
+            )}
             {customer.id_number && (
               <div className="flex items-center">
                 <IdentificationIcon className="h-4 w-4 mr-2" />

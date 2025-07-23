@@ -99,20 +99,14 @@ export default function OpportunitiesPage() {
       if (filters.valueRange && opportunity.expected_value !== null) {
         const value = opportunity.expected_value
         switch (filters.valueRange) {
-          case '0-1000':
-            matchesValueRange = value >= 0 && value <= 1000
+          case '0-2000000000':
+            matchesValueRange = value >= 0 && value <= 2000000000
             break
-          case '1000-5000':
-            matchesValueRange = value > 1000 && value <= 5000
+          case '2000000000-5000000000':
+            matchesValueRange = value > 2000000000 && value <= 5000000000
             break
-          case '5000-10000':
-            matchesValueRange = value > 5000 && value <= 10000
-            break
-          case '10000-50000':
-            matchesValueRange = value > 10000 && value <= 50000
-            break
-          case '50000+':
-            matchesValueRange = value > 50000
+          case '5000000000+':
+            matchesValueRange = value > 5000000000
             break
         }
       }
@@ -140,9 +134,9 @@ export default function OpportunitiesPage() {
   }, [opportunities])
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'VND',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value)

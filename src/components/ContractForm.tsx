@@ -231,7 +231,7 @@ export default function ContractForm({
 
               <div>
                 <label htmlFor="contract_credit_limit" className="block text-sm font-medium text-gray-700 mb-1">
-                  Hạn Mức Tín Dụng (USD)
+                  Hạn Mức Tín Dụng (VND)
                 </label>
                 <input
                   type="number"

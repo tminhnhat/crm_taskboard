@@ -32,9 +32,9 @@ const statusLabels = {
 export default function OpportunityCard({ opportunity, onEdit, onDelete, onStatusChange }: OpportunityCardProps) {
   const formatCurrency = (value: number | null) => {
     if (value === null) return 'N/A'
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'VND',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value)

@@ -20,23 +20,83 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     phone: '',
     email: '',
     address: '',
+    hobby: '',
     status: 'active',
     account_number: '',
     cif_number: '',
     numerology_data: ''
   })
 
+  // Helper functions for date format conversion
+  const formatDateForDisplay = (dateString: string | null): string => {
+    if (!dateString) return ''
+    
+    // If already in dd/mm/yyyy format, return as is
+    if (dateString.includes('/')) return dateString
+    
+    // Convert from yyyy-mm-dd to dd/mm/yyyy
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return ''
+    
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    
+    return `${day}/${month}/${year}`
+  }
+
+  const formatDateForSubmission = (displayDate: string): string | null => {
+    if (!displayDate) return null
+    
+    // If already in yyyy-mm-dd format, return as is
+    if (displayDate.includes('-')) return displayDate
+    
+    // Convert from dd/mm/yyyy to yyyy-mm-dd
+    const parts = displayDate.split('/')
+    if (parts.length !== 3) return null
+    
+    const [day, month, year] = parts
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+    
+    if (isNaN(date.getTime())) return null
+    
+    return date.toISOString().split('T')[0]
+  }
+
+  const validateDateFormat = (dateString: string): boolean => {
+    if (!dateString) return true // Empty is valid
+    
+    const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/
+    const match = dateString.match(ddmmyyyyPattern)
+    
+    if (!match) return false
+    
+    const day = parseInt(match[1])
+    const month = parseInt(match[2])
+    const year = parseInt(match[3])
+    
+    // Basic validation
+    if (month < 1 || month > 12) return false
+    if (day < 1 || day > 31) return false
+    if (year < 1900 || year > new Date().getFullYear()) return false
+    
+    // Check if date is valid
+    const date = new Date(year, month - 1, day)
+    return date.getDate() === day && date.getMonth() === month - 1 && date.getFullYear() === year
+  }
+
   useEffect(() => {
     if (customer) {
       setFormData({
         customer_type: customer.customer_type,
         full_name: customer.full_name,
-        date_of_birth: customer.date_of_birth || '',
+        date_of_birth: formatDateForDisplay(customer.date_of_birth),
         gender: customer.gender || '',
         id_number: customer.id_number || '',
         phone: customer.phone || '',
         email: customer.email || '',
         address: customer.address || '',
+        hobby: customer.hobby || '',
         status: customer.status,
         account_number: customer.account_number,
         cif_number: customer.cif_number || '',
@@ -52,6 +112,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         phone: '',
         email: '',
         address: '',
+        hobby: '',
         status: 'active',
         account_number: '',
         cif_number: '',
@@ -60,8 +121,28 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     }
   }, [customer, isOpen])
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, '') // Remove all non-digits
+    
+    // Format as user types: dd/mm/yyyy
+    if (value.length >= 2) {
+      value = value.substring(0, 2) + '/' + value.substring(2)
+    }
+    if (value.length >= 5) {
+      value = value.substring(0, 5) + '/' + value.substring(5, 9)
+    }
+    
+    setFormData({ ...formData, date_of_birth: value })
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate date format
+    if (formData.date_of_birth && !validateDateFormat(formData.date_of_birth)) {
+      alert('Định dạng ngày sinh không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
     
     let numerologyData = null
     if (formData.numerology_data.trim()) {
@@ -75,12 +156,13 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
 
     onSubmit({
       ...formData,
-      date_of_birth: formData.date_of_birth || null,
+      date_of_birth: formatDateForSubmission(formData.date_of_birth),
       gender: formData.gender || null,
       id_number: formData.id_number || null,
       phone: formData.phone || null,
       email: formData.email || null,
       address: formData.address || null,
+      hobby: formData.hobby || null,
       cif_number: formData.cif_number || null,
       numerology_data: numerologyData
     })
@@ -218,12 +300,20 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   Ngày Sinh
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   id="date_of_birth"
                   value={formData.date_of_birth}
-                  onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                  onChange={handleDateChange}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="dd/mm/yyyy"
+                  maxLength={10}
+                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
                 />
+                {formData.date_of_birth && !validateDateFormat(formData.date_of_birth) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
               </div>
 
               <div>
@@ -269,6 +359,20 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Nhập địa chỉ"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="hobby" className="block text-sm font-medium text-gray-700 mb-1">
+                Sở Thích
+              </label>
+              <textarea
+                id="hobby"
+                rows={2}
+                value={formData.hobby}
+                onChange={(e) => setFormData({ ...formData, hobby: e.target.value })}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="VD: Đọc sách, du lịch, thể thao, âm nhạc..."
               />
             </div>
 

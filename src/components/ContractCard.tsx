@@ -28,7 +28,7 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'VND',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value)

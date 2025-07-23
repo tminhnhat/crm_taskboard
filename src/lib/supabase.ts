@@ -53,6 +53,7 @@ export interface Customer {
   phone: string | null
   email: string | null
   address: string | null
+  hobby: string | null
   status: string
   created_at: string
   updated_at: string

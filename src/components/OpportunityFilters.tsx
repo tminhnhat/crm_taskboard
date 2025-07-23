@@ -121,11 +121,9 @@ export default function OpportunityFilters({
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Tất Cả Giá Trị</option>
-            <option value="0-1000">$0 - $1,000</option>
-            <option value="1000-5000">$1,000 - $5,000</option>
-            <option value="5000-10000">$5,000 - $10,000</option>
-            <option value="10000-50000">$10,000 - $50,000</option>
-            <option value="50000+">$50,000+</option>
+            <option value="0-2000000000">0 - 2,000,000,000</option>
+            <option value="2000000000-5000000000">2,000,000,000 - 5,000,000,000</option>
+            <option value="5000000000+">5,000,000,000+</option>
           </select>
         </div>
 
@@ -217,7 +215,7 @@ export default function OpportunityFilters({
               )}
               {filters.valueRange && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  Giá trị: ${filters.valueRange}
+                  Giá trị: {filters.valueRange} triệu VND
                 </span>
               )}
               {filters.customerId && (

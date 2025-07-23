@@ -27,6 +27,78 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     timezone: 'Asia/Ho_Chi_Minh'
   })
 
+  // Helper functions for date format conversion
+  const formatDateForDisplay = (dateString: string | null): string => {
+    if (!dateString) return ''
+    
+    // If already in dd/mm/yyyy format, return as is
+    if (dateString.includes('/')) return dateString
+    
+    // Convert from yyyy-mm-dd to dd/mm/yyyy
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return ''
+    
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    
+    return `${day}/${month}/${year}`
+  }
+
+  const formatDateForSubmission = (displayDate: string): string | null => {
+    if (!displayDate) return null
+    
+    // If already in yyyy-mm-dd format, return as is
+    if (displayDate.includes('-')) return displayDate
+    
+    // Convert from dd/mm/yyyy to yyyy-mm-dd
+    const parts = displayDate.split('/')
+    if (parts.length !== 3) return null
+    
+    const [day, month, year] = parts
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+    
+    if (isNaN(date.getTime())) return null
+    
+    return date.toISOString().split('T')[0]
+  }
+
+  const validateDateFormat = (dateString: string): boolean => {
+    if (!dateString) return true // Empty is valid
+    
+    const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/
+    const match = dateString.match(ddmmyyyyPattern)
+    
+    if (!match) return false
+    
+    const day = parseInt(match[1])
+    const month = parseInt(match[2])
+    const year = parseInt(match[3])
+    
+    // Basic validation
+    if (month < 1 || month > 12) return false
+    if (day < 1 || day > 31) return false
+    if (year < 1900 || year > new Date().getFullYear() + 10) return false
+    
+    // Check if date is valid
+    const date = new Date(year, month - 1, day)
+    return date.getDate() === day && date.getMonth() === month - 1 && date.getFullYear() === year
+  }
+
+  const handleDateChange = (field: 'task_date_start' | 'task_due_date', value: string) => {
+    let formattedValue = value.replace(/\D/g, '') // Remove all non-digits
+    
+    // Format as user types: dd/mm/yyyy
+    if (formattedValue.length >= 2) {
+      formattedValue = formattedValue.substring(0, 2) + '/' + formattedValue.substring(2)
+    }
+    if (formattedValue.length >= 5) {
+      formattedValue = formattedValue.substring(0, 5) + '/' + formattedValue.substring(5, 9)
+    }
+    
+    setFormData({ ...formData, [field]: formattedValue })
+  }
+
   useEffect(() => {
     if (task) {
       setFormData({
@@ -37,8 +109,8 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
         task_priority: task.task_priority || '',
         task_category: task.task_category || '',
         task_time_process: task.task_time_process || '',
-        task_due_date: task.task_due_date || '',
-        task_date_start: task.task_date_start || '',
+        task_due_date: formatDateForDisplay(task.task_due_date),
+        task_date_start: formatDateForDisplay(task.task_date_start),
         task_start_time: task.task_start_time || '',
         sync_status: task.sync_status,
         timezone_offset: task.timezone_offset,
@@ -65,6 +137,18 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate date formats
+    if (formData.task_date_start && !validateDateFormat(formData.task_date_start)) {
+      alert('Định dạng ngày bắt đầu không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
+    
+    if (formData.task_due_date && !validateDateFormat(formData.task_due_date)) {
+      alert('Định dạng ngày hết hạn không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
+    
     onSubmit({
       ...formData,
       task_type: formData.task_type || null,
@@ -72,8 +156,8 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       task_category: formData.task_category || null,
       task_note: formData.task_note || null,
       task_time_process: formData.task_time_process || null,
-      task_due_date: formData.task_due_date || null,
-      task_date_start: formData.task_date_start || null,
+      task_due_date: formatDateForSubmission(formData.task_due_date),
+      task_date_start: formatDateForSubmission(formData.task_date_start),
       task_start_time: formData.task_start_time || null
     })
     onClose()
@@ -234,12 +318,20 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                   Ngày bắt đầu
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   id="task_date_start"
                   value={formData.task_date_start}
-                  onChange={(e) => setFormData({ ...formData, task_date_start: e.target.value })}
+                  onChange={(e) => handleDateChange('task_date_start', e.target.value)}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="dd/mm/yyyy"
+                  maxLength={10}
+                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
                 />
+                {formData.task_date_start && !validateDateFormat(formData.task_date_start) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
               </div>
 
               <div>
@@ -261,12 +353,20 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                 Ngày hết hạn
               </label>
               <input
-                type="date"
+                type="text"
                 id="task_due_date"
                 value={formData.task_due_date}
-                onChange={(e) => setFormData({ ...formData, task_due_date: e.target.value })}
+                onChange={(e) => handleDateChange('task_due_date', e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="dd/mm/yyyy"
+                maxLength={10}
+                title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
               />
+              {formData.task_due_date && !validateDateFormat(formData.task_due_date) && (
+                <p className="text-red-500 text-xs mt-1">
+                  Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
