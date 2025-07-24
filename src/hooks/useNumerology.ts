@@ -67,7 +67,7 @@ export function useNumerology(): NumerologyHookResult {
         // Meta data
         calculatedAt: new Date().toISOString(),
         calculatedFor: fullName,
-        birthDate: birthDate,
+        inputBirthDate: birthDate,
         note: `Tính toán thần số học cho ${fullName} sinh ngày ${birthDate}`,
         
         // Keep original data for reference
