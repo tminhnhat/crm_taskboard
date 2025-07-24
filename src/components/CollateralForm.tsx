@@ -19,7 +19,7 @@ export default function CollateralForm({
   fetchCustomers
 }: CollateralFormProps) {
   // Helper functions for date format conversion
-  const formatDateForDisplay = (dateString: string | null): string => {
+  const formatDateForDisplay = (dateString: string | null | undefined): string => {
     if (!dateString) return ''
     
     // If already in dd/mm/yyyy format, return as is
