@@ -79,16 +79,12 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
   const formatDateDisplay = (dateString: string | null): string => {
     if (!dateString) return ''
     
-    // Parse date string as local date to avoid timezone shifts
+    // Parse the date string directly as local date components to avoid timezone issues
     const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
-    if (dateMatch) {
-      const [, year, month, day] = dateMatch
-      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-      return date.toLocaleDateString('vi-VN')
-    }
+    if (!dateMatch) return ''
     
-    // Fallback for other formats
-    return new Date(dateString).toLocaleDateString('vi-VN')
+    const [, year, month, day] = dateMatch
+    return `${day}/${month}/${year}`
   }
 
   return (

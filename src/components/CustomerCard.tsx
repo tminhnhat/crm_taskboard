@@ -53,6 +53,18 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
   const TypeIcon = customerTypeIcons[customer.customer_type]
   const [showNumerology, setShowNumerology] = useState(false)
 
+  // Helper function to format dates safely, avoiding timezone issues
+  const formatDateDisplay = (dateString: string | null): string => {
+    if (!dateString) return ''
+    
+    // Parse the date string directly as local date components to avoid timezone issues
+    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!dateMatch) return ''
+    
+    const [, year, month, day] = dateMatch
+    return `${day}/${month}/${year}`
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
@@ -107,13 +119,25 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
             {customer.id_number && (
               <div className="flex items-center">
                 <IdentificationIcon className="h-4 w-4 mr-2" />
-                CMND/CCCD: {customer.id_number}
+                <div>
+                  <span>CMND/CCCD: {customer.id_number}</span>
+                  {customer.id_issue_date && (
+                    <span className="text-gray-500 ml-2">
+                      (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
+                    </span>
+                  )}
+                  {customer.id_issue_authority && (
+                    <div className="text-gray-500 text-xs ml-4">
+                      Nơi cấp: {customer.id_issue_authority}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             {customer.date_of_birth && (
               <div className="flex items-center">
                 <CalendarDaysIcon className="h-4 w-4 mr-2" />
-                Ngày sinh: {new Date(customer.date_of_birth).toLocaleDateString('vi-VN')}
+                Ngày sinh: {formatDateDisplay(customer.date_of_birth)}
               </div>
             )}
           </div>

@@ -24,13 +24,81 @@ export default function ContractForm({
   fetchProducts,
   fetchStaff
 }: ContractFormProps) {
+  // Helper functions for date format conversion
+  const formatDateForDisplay = (dateString: string | null): string => {
+    if (!dateString) return ''
+    
+    // If already in dd/mm/yyyy format, return as is
+    if (dateString.includes('/')) return dateString
+    
+    // Convert from yyyy-mm-dd to dd/mm/yyyy
+    // Parse the date string directly as local date components to avoid timezone issues
+    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!dateMatch) return ''
+    
+    const [, year, month, day] = dateMatch
+    return `${day}/${month}/${year}`
+  }
+
+  const formatDateForSubmission = (displayDate: string): string | null => {
+    if (!displayDate) return null
+    
+    // If already in yyyy-mm-dd format, return as is
+    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
+    
+    // Convert from dd/mm/yyyy to yyyy-mm-dd
+    const parts = displayDate.split('/')
+    if (parts.length !== 3) return null
+    
+    const [day, month, year] = parts
+    
+    // Validate the parts before creating the date string
+    const dayNum = parseInt(day)
+    const monthNum = parseInt(month)
+    const yearNum = parseInt(year)
+    
+    if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return null
+    if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12) return null
+    
+    // Ensure proper zero-padding for single digit days and months
+    const paddedDay = day.padStart(2, '0')
+    const paddedMonth = month.padStart(2, '0')
+    
+    // Return the date in yyyy-mm-dd format (ISO date string format)
+    return `${year}-${paddedMonth}-${paddedDay}`
+  }
+
+  const validateDateFormat = (dateString: string): boolean => {
+    if (!dateString) return true // Empty is valid
+    
+    const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/
+    const match = dateString.match(ddmmyyyyPattern)
+    
+    if (!match) return false
+    
+    const day = parseInt(match[1])
+    const month = parseInt(match[2])
+    const year = parseInt(match[3])
+    
+    // Basic validation
+    if (month < 1 || month > 12) return false
+    if (day < 1 || day > 31) return false
+    if (year < 1900 || year > new Date().getFullYear() + 10) return false
+    
+    // More precise date validation - check if the date actually exists
+    // Create date using local timezone to avoid timezone shift issues
+    const testDate = new Date(year, month - 1, day)
+    return testDate.getDate() === day && 
+           testDate.getMonth() === month - 1 && 
+           testDate.getFullYear() === year
+  }
   const [formData, setFormData] = useState({
     customer_id: contract?.customer_id?.toString() || '',
     product_id: contract?.product_id?.toString() || '',
     contract_number: contract?.contract_number || '',
     contract_credit_limit: contract?.contract_credit_limit?.toString() || '0',
-    start_date: contract?.start_date || '',
-    end_date: contract?.end_date || '',
+    start_date: formatDateForDisplay(contract?.start_date || null),
+    end_date: formatDateForDisplay(contract?.end_date || null),
     status: contract?.status || 'draft',
     signed_by: contract?.signed_by?.toString() || '',
     metadata: contract?.metadata || {}
@@ -99,6 +167,17 @@ export default function ContractForm({
       return
     }
 
+    // Validate date formats
+    if (formData.start_date && !validateDateFormat(formData.start_date)) {
+      alert('Định dạng ngày bắt đầu không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
+    
+    if (formData.end_date && !validateDateFormat(formData.end_date)) {
+      alert('Định dạng ngày kết thúc không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
+
     let parsedMetadata = {}
     if (metadataInput.trim()) {
       try {
@@ -115,8 +194,8 @@ export default function ContractForm({
       product_id: parseInt(formData.product_id),
       contract_number: formData.contract_number.trim(),
       contract_credit_limit: parseFloat(formData.contract_credit_limit) || 0,
-      start_date: formData.start_date || null,
-      end_date: formData.end_date || null,
+      start_date: formatDateForSubmission(formData.start_date),
+      end_date: formatDateForSubmission(formData.end_date),
       status: formData.status,
       signed_by: parseInt(formData.signed_by),
       metadata: Object.keys(parsedMetadata).length > 0 ? parsedMetadata : null
@@ -133,6 +212,20 @@ export default function ContractForm({
     if (name === 'contract_number') {
       setContractNumberError('')
     }
+  }
+
+  const handleDateChange = (field: 'start_date' | 'end_date', e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, '') // Remove all non-digits
+    
+    // Format as user types: dd/mm/yyyy
+    if (value.length >= 2) {
+      value = value.substring(0, 2) + '/' + value.substring(2)
+    }
+    if (value.length >= 5) {
+      value = value.substring(0, 5) + '/' + value.substring(5, 9)
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleContractNumberBlur = async () => {
@@ -253,13 +346,20 @@ export default function ContractForm({
                   Ngày Bắt Đầu
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   id="start_date"
-                  name="start_date"
                   value={formData.start_date}
-                  onChange={handleChange}
+                  onChange={(e) => handleDateChange('start_date', e)}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="dd/mm/yyyy"
+                  maxLength={10}
+                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
                 />
+                {formData.start_date && !validateDateFormat(formData.start_date) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
               </div>
 
               <div>
@@ -267,14 +367,20 @@ export default function ContractForm({
                   Ngày Kết Thúc
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   id="end_date"
-                  name="end_date"
                   value={formData.end_date}
-                  onChange={handleChange}
-                  min={formData.start_date}
+                  onChange={(e) => handleDateChange('end_date', e)}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="dd/mm/yyyy"
+                  maxLength={10}
+                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
                 />
+                {formData.end_date && !validateDateFormat(formData.end_date) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
               </div>
             </div>
 

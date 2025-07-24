@@ -36,20 +36,48 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
+    
+    // Parse the date string directly as local date components to avoid timezone issues
+    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!dateMatch) return 'N/A'
+    
+    const [, year, month, day] = dateMatch
+    return `${day}/${month}/${year}`
   }
 
   const isExpired = () => {
     if (!contract.end_date) return false
+    
+    // Parse end date safely
+    const dateMatch = contract.end_date.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (dateMatch) {
+      const [, year, month, day] = dateMatch
+      const endDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset time to start of day for fair comparison
+      return endDate < today
+    }
+    
     return new Date(contract.end_date) < new Date()
   }
 
   const getDaysRemaining = () => {
     if (!contract.end_date) return null
+    
+    // Parse end date safely
+    const dateMatch = contract.end_date.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (dateMatch) {
+      const [, year, month, day] = dateMatch
+      const endDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset time to start of day for consistent calculation
+      endDate.setHours(0, 0, 0, 0)
+      const diffTime = endDate.getTime() - today.getTime()
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      return diffDays
+    }
+    
+    // Fallback for other date formats
     const endDate = new Date(contract.end_date)
     const today = new Date()
     const diffTime = endDate.getTime() - today.getTime()

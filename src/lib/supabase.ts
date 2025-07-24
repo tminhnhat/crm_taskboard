@@ -50,6 +50,8 @@ export interface Customer {
   date_of_birth: string | null
   gender: string | null
   id_number: string | null
+  id_issue_date: string | null
+  id_issue_authority: string | null
   phone: string | null
   email: string | null
   address: string | null

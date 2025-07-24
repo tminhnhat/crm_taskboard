@@ -17,6 +17,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     date_of_birth: '',
     gender: '',
     id_number: '',
+    id_issue_date: '',
+    id_issue_authority: '',
     phone: '',
     email: '',
     address: '',
@@ -104,6 +106,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         date_of_birth: formatDateForDisplay(customer.date_of_birth),
         gender: customer.gender || '',
         id_number: customer.id_number || '',
+        id_issue_date: formatDateForDisplay(customer.id_issue_date),
+        id_issue_authority: customer.id_issue_authority || '',
         phone: customer.phone || '',
         email: customer.email || '',
         address: customer.address || '',
@@ -120,6 +124,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         date_of_birth: '',
         gender: '',
         id_number: '',
+        id_issue_date: '',
+        id_issue_authority: '',
         phone: '',
         email: '',
         address: '',
@@ -132,7 +138,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     }
   }, [customer, isOpen])
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDateChange = (field: 'date_of_birth' | 'id_issue_date', e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, '') // Remove all non-digits
     
     // Format as user types: dd/mm/yyyy
@@ -143,15 +149,20 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       value = value.substring(0, 5) + '/' + value.substring(5, 9)
     }
     
-    setFormData({ ...formData, date_of_birth: value })
+    setFormData({ ...formData, [field]: value })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate date format
+    // Validate date formats
     if (formData.date_of_birth && !validateDateFormat(formData.date_of_birth)) {
       alert('Định dạng ngày sinh không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
+    
+    if (formData.id_issue_date && !validateDateFormat(formData.id_issue_date)) {
+      alert('Định dạng ngày cấp CMND/CCCD không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
     }
     
@@ -168,8 +179,10 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     onSubmit({
       ...formData,
       date_of_birth: formatDateForSubmission(formData.date_of_birth),
+      id_issue_date: formatDateForSubmission(formData.id_issue_date),
       gender: formData.gender || null,
       id_number: formData.id_number || null,
+      id_issue_authority: formData.id_issue_authority || null,
       phone: formData.phone || null,
       email: formData.email || null,
       address: formData.address || null,
@@ -314,7 +327,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   type="text"
                   id="date_of_birth"
                   value={formData.date_of_birth}
-                  onChange={handleDateChange}
+                  onChange={(e) => handleDateChange('date_of_birth', e)}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="dd/mm/yyyy"
                   maxLength={10}
@@ -355,6 +368,43 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Nhập số CMND/CCCD"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="id_issue_date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Ngày Cấp CMND/CCCD
+                </label>
+                <input
+                  type="text"
+                  id="id_issue_date"
+                  value={formData.id_issue_date}
+                  onChange={(e) => handleDateChange('id_issue_date', e)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="dd/mm/yyyy"
+                  maxLength={10}
+                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
+                />
+                {formData.id_issue_date && !validateDateFormat(formData.id_issue_date) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="id_issue_authority" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nơi Cấp CMND/CCCD
+                </label>
+                <input
+                  type="text"
+                  id="id_issue_authority"
+                  value={formData.id_issue_authority}
+                  onChange={(e) => setFormData({ ...formData, id_issue_authority: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="VD: Công an TP. Hồ Chí Minh"
                 />
               </div>
             </div>

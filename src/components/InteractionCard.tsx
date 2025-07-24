@@ -38,9 +38,19 @@ export default function InteractionCard({ interaction, onEdit, onDelete }: Inter
   const colorClass = typeColors[interaction.interaction_type as keyof typeof typeColors] || typeColors.default
   
   const formatDate = (dateString: string) => {
+    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!dateMatch) {
+      const date = new Date(dateString)
+      return {
+        date: date.toLocaleDateString(),
+        time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    }
+    
+    const [, year, month, day] = dateMatch
     const date = new Date(dateString)
     return {
-      date: date.toLocaleDateString(),
+      date: `${day}/${month}/${year}`,
       time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   }

@@ -18,12 +18,80 @@ export default function CollateralForm({
   isLoading,
   fetchCustomers
 }: CollateralFormProps) {
+  // Helper functions for date format conversion
+  const formatDateForDisplay = (dateString: string | null): string => {
+    if (!dateString) return ''
+    
+    // If already in dd/mm/yyyy format, return as is
+    if (dateString.includes('/')) return dateString
+    
+    // Convert from yyyy-mm-dd to dd/mm/yyyy
+    // Parse the date string directly as local date components to avoid timezone issues
+    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!dateMatch) return ''
+    
+    const [, year, month, day] = dateMatch
+    return `${day}/${month}/${year}`
+  }
+
+  const formatDateForSubmission = (displayDate: string): string | null => {
+    if (!displayDate) return null
+    
+    // If already in yyyy-mm-dd format, return as is
+    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
+    
+    // Convert from dd/mm/yyyy to yyyy-mm-dd
+    const parts = displayDate.split('/')
+    if (parts.length !== 3) return null
+    
+    const [day, month, year] = parts
+    
+    // Validate the parts before creating the date string
+    const dayNum = parseInt(day)
+    const monthNum = parseInt(month)
+    const yearNum = parseInt(year)
+    
+    if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return null
+    if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12) return null
+    
+    // Ensure proper zero-padding for single digit days and months
+    const paddedDay = day.padStart(2, '0')
+    const paddedMonth = month.padStart(2, '0')
+    
+    // Return the date in yyyy-mm-dd format (ISO date string format)
+    return `${year}-${paddedMonth}-${paddedDay}`
+  }
+
+  const validateDateFormat = (dateString: string): boolean => {
+    if (!dateString) return true // Empty is valid
+    
+    const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/
+    const match = dateString.match(ddmmyyyyPattern)
+    
+    if (!match) return false
+    
+    const day = parseInt(match[1])
+    const month = parseInt(match[2])
+    const year = parseInt(match[3])
+    
+    // Basic validation
+    if (month < 1 || month > 12) return false
+    if (day < 1 || day > 31) return false
+    if (year < 1900 || year > new Date().getFullYear() + 10) return false
+    
+    // More precise date validation - check if the date actually exists
+    // Create date using local timezone to avoid timezone shift issues
+    const testDate = new Date(year, month - 1, day)
+    return testDate.getDate() === day && 
+           testDate.getMonth() === month - 1 && 
+           testDate.getFullYear() === year
+  }
   const [formData, setFormData] = useState({
     customer_id: collateral?.customer_id?.toString() || '',
     collateral_type: collateral?.collateral_type || '',
     description: collateral?.description || '',
     value: collateral?.value?.toString() || '',
-    valuation_date: collateral?.valuation_date || '',
+    valuation_date: formatDateForDisplay(collateral?.valuation_date || ''),
     legal_status: collateral?.legal_status || '',
     location: collateral?.location || '',
     owner_info: collateral?.owner_info || '',
@@ -81,6 +149,12 @@ export default function CollateralForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Validate date format if provided
+    if (formData.valuation_date && !validateDateFormat(formData.valuation_date)) {
+      alert('Ngày thẩm định không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
+    
     let parsedMetadata = {}
     if (metadataInput.trim()) {
       try {
@@ -96,7 +170,7 @@ export default function CollateralForm({
       collateral_type: formData.collateral_type || null,
       description: formData.description || null,
       value: formData.value ? parseFloat(formData.value) : null,
-      valuation_date: formData.valuation_date || null,
+      valuation_date: formatDateForSubmission(formData.valuation_date),
       legal_status: formData.legal_status || null,
       location: formData.location || null,
       owner_info: formData.owner_info || null,
@@ -195,11 +269,38 @@ export default function CollateralForm({
               Ngày Thẩm Định
             </label>
             <input
-              type="date"
+              type="text"
               value={formData.valuation_date}
-              onChange={(e) => handleInputChange('valuation_date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onChange={(e) => {
+                let value = e.target.value
+                // Auto-format as user types (add slashes)
+                value = value.replace(/\D/g, '') // Remove non-digits
+                if (value.length >= 3) {
+                  value = value.slice(0, 2) + '/' + value.slice(2)
+                }
+                if (value.length >= 6) {
+                  value = value.slice(0, 5) + '/' + value.slice(5, 9)
+                }
+                handleInputChange('valuation_date', value)
+              }}
+              placeholder="dd/mm/yyyy"
+              maxLength={10}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                formData.valuation_date && !validateDateFormat(formData.valuation_date) 
+                  ? 'border-red-300 bg-red-50' 
+                  : 'border-gray-300'
+              }`}
             />
+            {formData.valuation_date && !validateDateFormat(formData.valuation_date) && (
+              <div className="text-sm text-red-600 mt-1">
+                Định dạng ngày không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+              </div>
+            )}
+            {formData.valuation_date && validateDateFormat(formData.valuation_date) && (
+              <div className="text-sm text-green-600 mt-1">
+                ✓ Định dạng ngày hợp lệ
+              </div>
+            )}
           </div>
 
           {/* Status */}

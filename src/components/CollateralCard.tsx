@@ -74,11 +74,13 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Không có'
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
+    
+    // Parse the date string directly as local date components to avoid timezone issues
+    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!dateMatch) return 'Không có'
+    
+    const [, year, month, day] = dateMatch
+    return `${day}/${month}/${year}`
   }
 
   const TypeIcon = getTypeIcon(collateral.collateral_type)
