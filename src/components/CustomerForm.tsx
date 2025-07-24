@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Customer, CustomerType } from '@/lib/supabase'
+import { calculateNumerologyData } from '@/lib/numerology'
 
 interface CustomerFormProps {
   isOpen: boolean
@@ -28,6 +29,88 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     cif_number: '',
     numerology_data: ''
   })
+
+  const [showNumerologyInfo, setShowNumerologyInfo] = useState(false)
+  const [isCalculatingNumerology, setIsCalculatingNumerology] = useState(false)
+
+  // Quick preview calculation helper (simplified)
+  const getQuickPreview = (): { walksOfLife: string, mission: string, soul: string, birthDate: string } | null => {
+    if (!formData.full_name || !formData.date_of_birth) return null
+    
+    try {
+      const [day, month, year] = formData.date_of_birth.split('/')
+      if (!day || !month || !year) return null
+      
+      const birthDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      const numerologyData = calculateNumerologyData(formData.full_name, birthDate)
+      
+      return {
+        walksOfLife: String(numerologyData.walksOfLife || numerologyData.duongdoi || 'N/A'),
+        mission: String(numerologyData.mission || numerologyData.sumeng || 'N/A'),
+        soul: String(numerologyData.soul || numerologyData.linhhon || 'N/A'),
+        birthDate: String(numerologyData.birthDate || numerologyData.ngaysinh || 'N/A')
+      }
+    } catch {
+      return null
+    }
+  }
+
+  const autoCalculateNumerology = async () => {
+    if (!formData.full_name || !formData.date_of_birth) {
+      alert('Vui lòng nhập đầy đủ Họ Tên và Ngày Sinh để tính toán thần số học')
+      return
+    }
+
+    setIsCalculatingNumerology(true)
+    
+    try {
+      // Convert dd/mm/yyyy to ISO date format for the numerology function
+      const [day, month, year] = formData.date_of_birth.split('/')
+      if (!day || !month || !year) {
+        throw new Error('Invalid date format')
+      }
+      
+      const birthDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      
+      // Simulate calculation time
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Use the real numerology calculation function
+      const numerologyData = calculateNumerologyData(formData.full_name, birthDate)
+      
+      // Transform the data to a more user-friendly format
+      const simplifiedData = {
+        walksOfLife: numerologyData.walksOfLife || numerologyData.duongdoi,
+        mission: numerologyData.mission || numerologyData.sumeng,
+        soul: numerologyData.soul || numerologyData.linhhon,
+        personality: numerologyData.personality || numerologyData.nhancach,
+        passion: numerologyData.passion || numerologyData.damme,
+        connect: numerologyData.connect || numerologyData.cauno,
+        balance: numerologyData.balance || numerologyData.canbangtrongkhokhan,
+        birthDate: numerologyData.birthDate || numerologyData.ngaysinh,
+        attitude: numerologyData.attitude || numerologyData.thaido,
+        maturity: numerologyData.maturity || numerologyData.truongthanh,
+        missingNumbers: numerologyData.missingNumbers || numerologyData.sothieu || [],
+        yearIndividual: numerologyData.yearIndividual || numerologyData.namcanhan,
+        monthIndividual: numerologyData.monthIndividual || numerologyData.thangcanhan,
+        calculatedAt: new Date().toISOString(),
+        note: `Tính toán tự động cho ${formData.full_name} sinh ngày ${formData.date_of_birth}`,
+        _fullData: numerologyData // Keep original data for reference
+      }
+      
+      setFormData({ 
+        ...formData, 
+        numerology_data: JSON.stringify(simplifiedData, null, 2) 
+      })
+      
+      alert('✅ Đã tính toán thành công dữ liệu thần số học!')
+    } catch (error) {
+      console.error('Error calculating numerology:', error)
+      alert('❌ Có lỗi xảy ra khi tính toán thần số học. Vui lòng kiểm tra lại định dạng ngày sinh.')
+    } finally {
+      setIsCalculatingNumerology(false)
+    }
+  }
 
   // Helper functions for date format conversion
   const formatDateForDisplay = (dateString: string | null): string => {
@@ -438,14 +521,146 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
             </div>
 
             <div>
-              <label htmlFor="numerology_data" className="block text-sm font-medium text-gray-700 mb-1">
-                Dữ Liệu Thần Số Học (JSON)
-              </label>
-              <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-sm text-blue-700">
-                  💡 <strong>Tự động tính toán:</strong> Khi bạn cung cấp đầy đủ <strong>Họ Tên</strong> và <strong>Ngày Sinh</strong>, 
-                  hệ thống sẽ tự động tính toán và cập nhật dữ liệu thần số học. Bạn cũng có thể nhập thủ công nếu muốn.
-                </p>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="numerology_data" className="block text-sm font-medium text-gray-700">
+                  Dữ Liệu Thần Số Học (JSON)
+                  <button
+                    type="button"
+                    onClick={() => setShowNumerologyInfo(!showNumerologyInfo)}
+                    className="ml-2 text-blue-600 hover:text-blue-800 text-xs"
+                  >
+                    📚 Tìm hiểu về Thần Số Học
+                  </button>
+                </label>
+                
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={autoCalculateNumerology}
+                    disabled={isCalculatingNumerology || !formData.full_name || !formData.date_of_birth}
+                    className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center gap-1"
+                  >
+                    {isCalculatingNumerology ? (
+                      <>
+                        <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                        Đang tính...
+                      </>
+                    ) : (
+                      <>
+                        🔮 Tự động tính toán
+                      </>
+                    )}
+                  </button>
+                  
+                  {formData.numerology_data && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, numerology_data: '' })}
+                      className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                    >
+                      🗑️ Xóa
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {showNumerologyInfo && (
+                <div className="mb-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-3">📖 22 Định Nghĩa Cơ Bản Trong Thần Số Học</h4>
+                  
+                  <div className="space-y-3 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <h5 className="font-medium text-blue-700">🧭 A. HIỂU VỀ CHÍNH MÌNH</h5>
+                        <div className="space-y-1 text-xs pl-2">
+                          <div><strong>1. Số Lặp:</strong> Những số xuất hiện lặp lại trong 6 số lõi, tạo ra tần số năng lượng cao</div>
+                          <div><strong>2. Số Ngày Sinh:</strong> Tiết lộ tài năng bạn đang sở hữu một cách rõ ràng nhất</div>
+                          <div><strong>3. Số Tính Cách:</strong> Cách người khác nhìn thấy bạn qua lời nói, cử chỉ, hành động</div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h5 className="font-medium text-green-700">❤️ B. KHAO KHÁT VỀ HẠNH PHÚC</h5>
+                        <div className="space-y-1 text-xs pl-2">
+                          <div><strong>1. Số Nội Tâm:</strong> Khát vọng tiềm ẩn, mong muốn của trái tim</div>
+                          <div><strong>2. Số Đam Mê Tiềm Ẩn:</strong> Tài năng đặc biệt cần rèn luyện và trải nghiệm</div>
+                          <div><strong>3. Nguyên Âm Đầu:</strong> Cửa sổ nhỏ để người khác nhìn thấy sâu hơn về bạn</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <h5 className="font-medium text-purple-700">🧠 C. TƯ DUY & GIẢI QUYẾT VẤN ĐỀ</h5>
+                        <div className="space-y-1 text-xs pl-2">
+                          <div><strong>1. Số Thái Độ:</strong> Ấn tượng đầu tiên qua cử chỉ, lời nói</div>
+                          <div><strong>2. Số Bản Thể Tiềm Thức:</strong> Khả năng giải quyết tình huống bất ngờ</div>
+                          <div><strong>3. Phương Tiện Nhận Thức:</strong> 4 cấp độ trải nghiệm cuộc sống</div>
+                          <div><strong>4. Số Cân Bằng:</strong> Cách lấy lại cân bằng khi khó khăn</div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h5 className="font-medium text-orange-700">🌟 D. RÈN LUYỆN & PHÁT TRIỂN</h5>
+                        <div className="space-y-1 text-xs pl-2">
+                          <div><strong>1. Số Bổ Sung:</strong> Lĩnh vực cần nỗ lực để hoàn thiện</div>
+                          <div><strong>2. Số Cầu Nối:</strong> Kết nối các số lõi với nhau</div>
+                          <div><strong>3. Số Trưởng Thành:</strong> Mục tiêu cuối cùng của cuộc đời</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 p-3 bg-white rounded border border-blue-200">
+                      <h5 className="font-medium text-indigo-700 mb-2">🌅 HÀNH TRÌNH CUỘC ĐỜI & DỰ BÁO TƯƠNG LAI</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        <div><strong>Số Sứ Mệnh:</strong> Mục đích cả đời, nhiệm vụ cần hoàn thành</div>
+                        <div><strong>Số Đường Đời:</strong> Số quan trọng nhất, con đường đúng cần chọn</div>
+                        <div><strong>Số Chu Kỳ Giai Đoạn:</strong> 3 giai đoạn lớn của cuộc đời</div>
+                        <div><strong>Số Đỉnh Cao:</strong> 4 đỉnh cao với năng lượng mạnh nhất</div>
+                        <div><strong>Số Thử Thách:</strong> 4 thử thách để phát triển bản thân</div>
+                        <div><strong>Năm Cá Nhân:</strong> Xu hướng và tình huống sẽ trải qua</div>
+                        <div><strong>Ký Tự Chuyển Đổi:</strong> Dự đoán những năm sắp tới</div>
+                        <div><strong>Số Bản Chất:</strong> Thế giới bên trong: tư duy, nhu cầu, mong muốn</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-center">
+                      <p className="text-xs text-yellow-800">
+                        💡 <strong>Mẹo:</strong> Các số này giúp hiểu rõ bản thân, tìm ra tài năng và hướng phát triển phù hợp. 
+                        Hệ thống sẽ tự động tính toán dựa trên tên và ngày sinh của khách hàng.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mb-2 p-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-md">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <p className="text-sm text-purple-700">
+                      💡 <strong>Tự động tính toán:</strong> Khi bạn cung cấp đầy đủ <strong>Họ Tên</strong> và <strong>Ngày Sinh</strong>, 
+                      nhấn nút &quot;🔮 Tự động tính toán&quot; để hệ thống tạo dữ liệu thần số học hoàn chỉnh.
+                    </p>
+                    
+                    {formData.full_name && formData.date_of_birth && (() => {
+                      const preview = getQuickPreview()
+                      return preview ? (
+                        <div className="mt-2 p-2 bg-white rounded border border-purple-200">
+                          <p className="text-xs text-purple-600 font-medium mb-1">🔍 Xem trước tính toán:</p>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>🛤️ Số Đường Đời: <strong>{preview.walksOfLife}</strong></div>
+                            <div>🎯 Số Sứ Mệnh: <strong>{preview.mission}</strong></div>
+                            <div>💜 Số Nội Tâm: <strong>{preview.soul}</strong></div>
+                            <div>🎂 Số Ngày Sinh: <strong>{preview.birthDate}</strong></div>
+                          </div>
+                          <p className="text-xs text-purple-500 mt-1 italic">
+                            ↑ Đây là bản xem trước. Nhấn &quot;Tự động tính toán&quot; để có dữ liệu đầy đủ.
+                          </p>
+                        </div>
+                      ) : null
+                    })()}
+                  </div>
+                </div>
               </div>
               <textarea
                 id="numerology_data"
