@@ -1,5 +1,4 @@
-import { useState, useEffect, ChangeEvent, FormEvent } from 'react'
-import type { JSX } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Customer, CustomerType } from '@/lib/supabase'
@@ -13,10 +12,6 @@ interface CustomerFormProps {
 }
 
 export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: CustomerFormProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
   const [formData, setFormData] = useState<Partial<Customer>>({
     customer_type: 'individual' as CustomerType,
     full_name: '',
