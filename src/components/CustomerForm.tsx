@@ -64,6 +64,13 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         soul: String(numerologyData.soul || numerologyData.linhhon || 'N/A'),
         birthDate: String(numerologyData.birthDate || numerologyData.ngaysinh || 'N/A')
       }
+      
+      return {
+        walksOfLife: String(numerologyData.walksOfLife || numerologyData.duongdoi || 'N/A'),
+        mission: String(numerologyData.mission || numerologyData.sumeng || 'N/A'),
+        soul: String(numerologyData.soul || numerologyData.linhhon || 'N/A'),
+        birthDate: String(numerologyData.birthDate || numerologyData.ngaysinh || 'N/A')
+      }
     } catch {
       return null
     }
@@ -826,7 +833,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   </div>
                 </div>
               </div>
-              <textarea
+                            <textarea
                 id="numerology_data"
                 rows={4}
                 value={JSON.stringify(formData.numerology_data, null, 2)}
