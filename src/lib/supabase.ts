@@ -57,11 +57,20 @@ export interface Customer {
   address: string | null
   hobby: string | null
   status: string
-  created_at: string
-  updated_at: string
   account_number: string
   cif_number: string | null
   numerology_data: Record<string, unknown> | null // JSONB type
+  created_at: string
+  updated_at: string
+  // Corporate specific fields
+  company_name: string | null
+  business_registration_number: string | null
+  tax_number: string | null
+  registration_date: string | null
+  legal_representative: string | null
+  business_sector: string | null
+  company_size: 'micro' | 'small' | 'medium' | 'large' | null
+  annual_revenue: string | null
 }
 
 // Product types

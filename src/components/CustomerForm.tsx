@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react'
+import type { JSX } from 'react'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Customer, CustomerType } from '@/lib/supabase'
@@ -12,7 +13,11 @@ interface CustomerFormProps {
 }
 
 export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: CustomerFormProps) {
-  const [formData, setFormData] = useState({
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+  const [formData, setFormData] = useState<Partial<Customer>>({
     customer_type: 'individual' as CustomerType,
     full_name: '',
     date_of_birth: '',
@@ -27,7 +32,16 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     status: 'active',
     account_number: '',
     cif_number: '',
-    numerology_data: ''
+    numerology_data: '',
+    // Corporate specific fields
+    company_name: '',
+    business_registration_number: '',
+    tax_number: '',
+    registration_date: '',
+    legal_representative: '',
+    business_sector: '',
+    company_size: '',
+    annual_revenue: ''
   })
 
   const [showNumerologyInfo, setShowNumerologyInfo] = useState(false)
@@ -198,7 +212,16 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         status: customer.status,
         account_number: customer.account_number,
         cif_number: customer.cif_number || '',
-        numerology_data: customer.numerology_data ? JSON.stringify(customer.numerology_data, null, 2) : ''
+        numerology_data: customer.numerology_data ? JSON.stringify(customer.numerology_data, null, 2) : '',
+        // Corporate fields
+        company_name: customer.company_name || '',
+        business_registration_number: customer.business_registration_number || '',
+        tax_number: customer.tax_number || '',
+        registration_date: formatDateForDisplay(customer.registration_date),
+        legal_representative: customer.legal_representative || '',
+        business_sector: customer.business_sector || '',
+        company_size: customer.company_size || '',
+        annual_revenue: customer.annual_revenue || ''
       })
     } else {
       setFormData({
@@ -221,7 +244,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     }
   }, [customer, isOpen])
 
-  const handleDateChange = (field: 'date_of_birth' | 'id_issue_date', e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDateChange = (field: 'date_of_birth' | 'id_issue_date' | 'registration_date', e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, '') // Remove all non-digits
     
     // Format as user types: dd/mm/yyyy
@@ -263,6 +286,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       ...formData,
       date_of_birth: formatDateForSubmission(formData.date_of_birth),
       id_issue_date: formatDateForSubmission(formData.id_issue_date),
+      registration_date: formatDateForSubmission(formData.registration_date),
       gender: formData.gender || null,
       id_number: formData.id_number || null,
       id_issue_authority: formData.id_issue_authority || null,
@@ -271,7 +295,15 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       address: formData.address || null,
       hobby: formData.hobby || null,
       cif_number: formData.cif_number || null,
-      numerology_data: numerologyData
+      numerology_data: numerologyData,
+      // Corporate fields
+      company_name: formData.company_name || null,
+      business_registration_number: formData.business_registration_number || null,
+      tax_number: formData.tax_number || null,
+      legal_representative: formData.legal_representative || null,
+      business_sector: formData.business_sector || null,
+      company_size: formData.company_size || null,
+      annual_revenue: formData.annual_revenue || null
     })
     onClose()
   }
@@ -303,7 +335,24 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   id="customer_type"
                   required
                   value={formData.customer_type}
-                  onChange={(e) => setFormData({ ...formData, customer_type: e.target.value as CustomerType })}
+                  onChange={(e) => {
+                    const newType = e.target.value as CustomerType;
+                    setFormData(prev => ({
+                      ...prev,
+                      customer_type: newType,
+                      // Clear corporate fields when switching to individual
+                      ...(newType === 'individual' && {
+                        company_name: null,
+                        business_registration_number: null,
+                        tax_number: null,
+                        registration_date: null,
+                        legal_representative: null,
+                        business_sector: null,
+                        company_size: null,
+                        annual_revenue: null
+                      })
+                    }))
+                  }}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="individual">Cá Nhân</option>
@@ -327,20 +376,285 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               </div>
             </div>
 
-            <div>
-              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
-                Họ Và Tên *
-              </label>
-              <input
-                type="text"
-                id="full_name"
-                required
-                value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nhập họ và tên"
-              />
-            </div>
+                        {/* Customer Type Specific Fields */}
+            {formData.customer_type === 'individual' ? (
+                <div>
+                  <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Họ Và Tên *
+                  </label>
+                  <input
+                    type="text"
+                    id="full_name"
+                    name="full_name"
+                    required
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập họ và tên"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Tên Doanh Nghiệp *
+                    </label>
+                    <input
+                      type="text"
+                      id="company_name"
+                      name="company_name"
+                      required
+                      value={formData.company_name || ''}
+                      onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Nhập tên doanh nghiệp"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 mt-4">
+                    <div>
+                      <label htmlFor="business_registration_number" className="block text-sm font-medium text-gray-700 mb-1">
+                        Số Đăng Ký Kinh Doanh *
+                      </label>
+                      <input
+                        type="text"
+                        id="business_registration_number"
+                        name="business_registration_number"
+                        required
+                        value={formData.business_registration_number || ''}
+                        onChange={(e) => setFormData({ ...formData, business_registration_number: e.target.value })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Nhập số đăng ký kinh doanh"
+                      />
+                    </div>
+                  
+                    <div>
+                      <label htmlFor="tax_number" className="block text-sm font-medium text-gray-700 mb-1">
+                        Mã Số Thuế *
+                      </label>
+                      <input
+                        type="text"
+                        id="tax_number"
+                        name="tax_number"
+                        required
+                        value={formData.tax_number || ''}
+                        onChange={(e) => setFormData({ ...formData, tax_number: e.target.value })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Nhập mã số thuế"
+                      />
+                    </div>
+                  
+                    <div>
+                      <label htmlFor="legal_representative" className="block text-sm font-medium text-gray-700 mb-1">
+                        Người Đại Diện Pháp Luật *
+                      </label>
+                      <input
+                        type="text"
+                        id="legal_representative"
+                        name="legal_representative"
+                        required
+                        value={formData.legal_representative || ''}
+                        onChange={(e) => setFormData({ ...formData, legal_representative: e.target.value })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Nhập tên người đại diện"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
+                        Ngày Đăng Ký
+                      </label>
+                      <input
+                        type="text"
+                        id="registration_date"
+                        name="registration_date"
+                        value={formData.registration_date || ''}
+                        onChange={(e) => handleDateChange('registration_date', e)}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="dd/mm/yyyy"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="company_size" className="block text-sm font-medium text-gray-700 mb-1">
+                        Quy Mô Doanh Nghiệp
+                      </label>
+                      <select
+                        id="company_size"
+                        name="company_size"
+                        value={formData.company_size || ''}
+                        onChange={(e) => setFormData({ ...formData, company_size: e.target.value as 'micro' | 'small' | 'medium' | 'large' | null })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Chọn quy mô</option>
+                        <option value="micro">Siêu nhỏ</option>
+                        <option value="small">Nhỏ</option>
+                        <option value="medium">Vừa</option>
+                        <option value="large">Lớn</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="business_sector" className="block text-sm font-medium text-gray-700 mb-1">
+                        Ngành Nghề Kinh Doanh
+                      </label>
+                      <input
+                        type="text"
+                        id="business_sector"
+                        name="business_sector"
+                        value={formData.business_sector || ''}
+                        onChange={(e) => setFormData({ ...formData, business_sector: e.target.value })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Nhập ngành nghề kinh doanh"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="annual_revenue" className="block text-sm font-medium text-gray-700 mb-1">
+                        Doanh Thu Hàng Năm
+                      </label>
+                      <input
+                        type="text"
+                        id="annual_revenue"
+                        name="annual_revenue"
+                        value={formData.annual_revenue || ''}
+                        onChange={(e) => setFormData({ ...formData, annual_revenue: e.target.value })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Nhập doanh thu hàng năm (VND)"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            ) : (
+              <>
+                <div>
+                  <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Tên Doanh Nghiệp *
+                  </label>
+                  <input
+                    type="text"
+                    id="company_name"
+                    required
+                    value={formData.company_name}
+                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập tên doanh nghiệp"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label htmlFor="business_registration_number" className="block text-sm font-medium text-gray-700 mb-1">
+                      Số Đăng Ký Kinh Doanh *
+                    </label>
+                    <input
+                      type="text"
+                      id="business_registration_number"
+                      required
+                      value={formData.business_registration_number}
+                      onChange={(e) => setFormData({ ...formData, business_registration_number: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Nhập số đăng ký kinh doanh"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="tax_number" className="block text-sm font-medium text-gray-700 mb-1">
+                      Mã Số Thuế *
+                    </label>
+                    <input
+                      type="text"
+                      id="tax_number"
+                      required
+                      value={formData.tax_number}
+                      onChange={(e) => setFormData({ ...formData, tax_number: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Nhập mã số thuế"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
+                      Ngày Đăng Ký
+                    </label>
+                    <input
+                      type="text"
+                      id="registration_date"
+                      value={formData.registration_date}
+                      onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="dd/mm/yyyy"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="legal_representative" className="block text-sm font-medium text-gray-700 mb-1">
+                      Người Đại Diện Pháp Luật *
+                    </label>
+                    <input
+                      type="text"
+                      id="legal_representative"
+                      required
+                      value={formData.legal_representative}
+                      onChange={(e) => setFormData({ ...formData, legal_representative: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Nhập tên người đại diện"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label htmlFor="business_sector" className="block text-sm font-medium text-gray-700 mb-1">
+                      Ngành Nghề Kinh Doanh
+                    </label>
+                    <input
+                      type="text"
+                      id="business_sector"
+                      value={formData.business_sector}
+                      onChange={(e) => setFormData({ ...formData, business_sector: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Nhập ngành nghề kinh doanh"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="company_size" className="block text-sm font-medium text-gray-700 mb-1">
+                      Quy Mô Doanh Nghiệp
+                    </label>
+                    <select
+                      id="company_size"
+                      value={formData.company_size}
+                      onChange={(e) => setFormData({ ...formData, company_size: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Chọn quy mô</option>
+                      <option value="micro">Siêu nhỏ</option>
+                      <option value="small">Nhỏ</option>
+                      <option value="medium">Vừa</option>
+                      <option value="large">Lớn</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label htmlFor="annual_revenue" className="block text-sm font-medium text-gray-700 mb-1">
+                    Doanh Thu Hàng Năm
+                  </label>
+                  <input
+                    type="text"
+                    id="annual_revenue"
+                    value={formData.annual_revenue}
+                    onChange={(e) => setFormData({ ...formData, annual_revenue: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập doanh thu hàng năm (VND)"
+                  />
+                </div>
+              </>
+            )}
 
             <div>
               <label htmlFor="account_number" className="block text-sm font-medium text-gray-700 mb-1">
