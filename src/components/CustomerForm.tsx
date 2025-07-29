@@ -36,7 +36,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     // Corporate specific fields
     company_name: '',
     business_registration_number: '',
-    tax_number: '',
+
     registration_date: '',
     legal_representative: '',
     business_sector: '',
@@ -216,7 +216,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         // Corporate fields
         company_name: customer.company_name || '',
         business_registration_number: customer.business_registration_number || '',
-        tax_number: customer.tax_number || '',
+
         registration_date: formatDateForDisplay(customer.registration_date),
         legal_representative: customer.legal_representative || '',
         business_sector: customer.business_sector || '',
@@ -299,7 +299,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       // Corporate fields
       company_name: formData.company_name || null,
       business_registration_number: formData.business_registration_number || null,
-      tax_number: formData.tax_number || null,
+
       legal_representative: formData.legal_representative || null,
       business_sector: formData.business_sector || null,
       company_size: formData.company_size || null,
@@ -344,7 +344,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                       ...(newType === 'individual' && {
                         company_name: null,
                         business_registration_number: null,
-                        tax_number: null,
+
                         registration_date: null,
                         legal_representative: null,
                         business_sector: null,
@@ -428,21 +428,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                       />
                     </div>
                   
-                    <div>
-                      <label htmlFor="tax_number" className="block text-sm font-medium text-gray-700 mb-1">
-                        Mã Số Thuế *
-                      </label>
-                      <input
-                        type="text"
-                        id="tax_number"
-                        name="tax_number"
-                        required
-                        value={formData.tax_number || ''}
-                        onChange={(e) => setFormData({ ...formData, tax_number: e.target.value })}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Nhập mã số thuế"
-                      />
-                    </div>
+
                   
                     <div>
                       <label htmlFor="legal_representative" className="block text-sm font-medium text-gray-700 mb-1">
@@ -559,19 +545,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="tax_number" className="block text-sm font-medium text-gray-700 mb-1">
-                      Mã Số Thuế *
-                    </label>
-                    <input
-                      type="text"
-                      id="tax_number"
-                      required
-                      value={formData.tax_number}
-                      onChange={(e) => setFormData({ ...formData, tax_number: e.target.value })}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Nhập mã số thuế"
-                    />
+
                   </div>
                 </div>
 
