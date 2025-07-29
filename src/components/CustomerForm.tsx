@@ -1,6 +1,6 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import type { JSX } from 'react'
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Customer, CustomerType } from '@/lib/supabase'
 import { calculateNumerologyData } from '@/lib/numerology'
@@ -32,7 +32,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     status: 'active',
     account_number: '',
     cif_number: '',
-    numerology_data: '',
+    numerology_data: {} as Record<string, unknown>,
     // Corporate specific fields
     company_name: '',
     business_registration_number: '',
@@ -40,7 +40,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     registration_date: '',
     legal_representative: '',
     business_sector: '',
-    company_size: '',
+    company_size: null as 'micro' | 'small' | 'medium' | 'large' | null,
     annual_revenue: ''
   })
 
@@ -114,7 +114,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       
       setFormData({ 
         ...formData, 
-        numerology_data: JSON.stringify(simplifiedData, null, 2) 
+        numerology_data: simplifiedData as Record<string, unknown>
       })
       
       alert('✅ Đã tính toán thành công dữ liệu thần số học!')
@@ -212,7 +212,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         status: customer.status,
         account_number: customer.account_number,
         cif_number: customer.cif_number || '',
-        numerology_data: customer.numerology_data ? JSON.stringify(customer.numerology_data, null, 2) : '',
+        numerology_data: customer.numerology_data || {} as Record<string, unknown>,
         // Corporate fields
         company_name: customer.company_name || '',
         business_registration_number: customer.business_registration_number || '',
@@ -220,7 +220,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         registration_date: formatDateForDisplay(customer.registration_date),
         legal_representative: customer.legal_representative || '',
         business_sector: customer.business_sector || '',
-        company_size: customer.company_size || '',
+        company_size: customer.company_size || null,
         annual_revenue: customer.annual_revenue || ''
       })
     } else {
@@ -239,7 +239,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         status: 'active',
         account_number: '',
         cif_number: '',
-        numerology_data: ''
+        numerology_data: {} as Record<string, unknown>
       })
     }
   }, [customer, isOpen])
@@ -273,20 +273,15 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     }
     
     let numerologyData = null
-    if (formData.numerology_data.trim()) {
-      try {
-        numerologyData = JSON.parse(formData.numerology_data)
-      } catch {
-        alert('Định dạng JSON không hợp lệ trong dữ liệu thần số học')
-        return
-      }
+    if (formData.numerology_data && Object.keys(formData.numerology_data).length > 0) {
+      numerologyData = formData.numerology_data
     }
 
     onSubmit({
       ...formData,
-      date_of_birth: formatDateForSubmission(formData.date_of_birth),
-      id_issue_date: formatDateForSubmission(formData.id_issue_date),
-      registration_date: formatDateForSubmission(formData.registration_date),
+      date_of_birth: formData.date_of_birth ? formatDateForSubmission(formData.date_of_birth) : null,
+      id_issue_date: formData.id_issue_date ? formatDateForSubmission(formData.id_issue_date) : null,
+      registration_date: formData.registration_date ? formatDateForSubmission(formData.registration_date) : null,
       gender: formData.gender || null,
       id_number: formData.id_number || null,
       id_issue_authority: formData.id_issue_authority || null,
@@ -312,11 +307,11 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <Dialog.Panel className="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
-            <DialogTitle className="text-lg font-semibold text-gray-900">
+            <Dialog.Title className="text-lg font-semibold text-gray-900">
               {customer ? 'Sửa Khách Hàng' : 'Tạo Khách Hàng Mới'}
-            </DialogTitle>
+            </Dialog.Title>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
@@ -427,9 +422,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                         placeholder="Nhập số đăng ký kinh doanh"
                       />
                     </div>
-                  
-
-                  
+                    
                     <div>
                       <label htmlFor="legal_representative" className="block text-sm font-medium text-gray-700 mb-1">
                         Người Đại Diện Pháp Luật *
@@ -469,7 +462,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                         id="company_size"
                         name="company_size"
                         value={formData.company_size || ''}
-                        onChange={(e) => setFormData({ ...formData, company_size: e.target.value as 'micro' | 'small' | 'medium' | 'large' | null })}
+                        onChange={(e) => setFormData({ ...formData, company_size: e.target.value ? e.target.value as 'micro' | 'small' | 'medium' | 'large' : null })}
                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Chọn quy mô</option>
@@ -512,123 +505,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   </div>
                 </>
               )}
-            ) : (
-              <>
-                <div>
-                  <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Tên Doanh Nghiệp *
-                  </label>
-                  <input
-                    type="text"
-                    id="company_name"
-                    required
-                    value={formData.company_name}
-                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập tên doanh nghiệp"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label htmlFor="business_registration_number" className="block text-sm font-medium text-gray-700 mb-1">
-                      Số Đăng Ký Kinh Doanh *
-                    </label>
-                    <input
-                      type="text"
-                      id="business_registration_number"
-                      required
-                      value={formData.business_registration_number}
-                      onChange={(e) => setFormData({ ...formData, business_registration_number: e.target.value })}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Nhập số đăng ký kinh doanh"
-                    />
-                  </div>
-
-
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
-                      Ngày Đăng Ký
-                    </label>
-                    <input
-                      type="text"
-                      id="registration_date"
-                      value={formData.registration_date}
-                      onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="dd/mm/yyyy"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="legal_representative" className="block text-sm font-medium text-gray-700 mb-1">
-                      Người Đại Diện Pháp Luật *
-                    </label>
-                    <input
-                      type="text"
-                      id="legal_representative"
-                      required
-                      value={formData.legal_representative}
-                      onChange={(e) => setFormData({ ...formData, legal_representative: e.target.value })}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Nhập tên người đại diện"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label htmlFor="business_sector" className="block text-sm font-medium text-gray-700 mb-1">
-                      Ngành Nghề Kinh Doanh
-                    </label>
-                    <input
-                      type="text"
-                      id="business_sector"
-                      value={formData.business_sector}
-                      onChange={(e) => setFormData({ ...formData, business_sector: e.target.value })}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Nhập ngành nghề kinh doanh"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="company_size" className="block text-sm font-medium text-gray-700 mb-1">
-                      Quy Mô Doanh Nghiệp
-                    </label>
-                    <select
-                      id="company_size"
-                      value={formData.company_size}
-                      onChange={(e) => setFormData({ ...formData, company_size: e.target.value })}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Chọn quy mô</option>
-                      <option value="micro">Siêu nhỏ</option>
-                      <option value="small">Nhỏ</option>
-                      <option value="medium">Vừa</option>
-                      <option value="large">Lớn</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <label htmlFor="annual_revenue" className="block text-sm font-medium text-gray-700 mb-1">
-                    Doanh Thu Hàng Năm
-                  </label>
-                  <input
-                    type="text"
-                    id="annual_revenue"
-                    value={formData.annual_revenue}
-                    onChange={(e) => setFormData({ ...formData, annual_revenue: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập doanh thu hàng năm (VND)"
-                  />
-                </div>
-              </>
-            )}
 
             <div>
               <label htmlFor="account_number" className="block text-sm font-medium text-gray-700 mb-1">
@@ -652,7 +528,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               <input
                 type="text"
                 id="cif_number"
-                value={formData.cif_number}
+                value={formData.cif_number || ''}
                 onChange={(e) => setFormData({ ...formData, cif_number: e.target.value })}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Nhập số CIF (Customer Information File)"
@@ -667,7 +543,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 <input
                   type="tel"
                   id="phone"
-                  value={formData.phone}
+                  value={formData.phone || ''}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Nhập số điện thoại"
@@ -681,7 +557,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 <input
                   type="email"
                   id="email"
-                  value={formData.email}
+                  value={formData.email || ''}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Nhập địa chỉ email"
@@ -697,7 +573,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 <input
                   type="text"
                   id="date_of_birth"
-                  value={formData.date_of_birth}
+                  value={formData.date_of_birth || ''}
                   onChange={(e) => handleDateChange('date_of_birth', e)}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="dd/mm/yyyy"
@@ -717,7 +593,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 </label>
                 <select
                   id="gender"
-                  value={formData.gender}
+                  value={formData.gender || ''}
                   onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
@@ -735,7 +611,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 <input
                   type="text"
                   id="id_number"
-                  value={formData.id_number}
+                  value={formData.id_number || ''}
                   onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Nhập số CMND/CCCD"
@@ -751,7 +627,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 <input
                   type="text"
                   id="id_issue_date"
-                  value={formData.id_issue_date}
+                  value={formData.id_issue_date || ''}
                   onChange={(e) => handleDateChange('id_issue_date', e)}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="dd/mm/yyyy"
@@ -772,7 +648,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 <input
                   type="text"
                   id="id_issue_authority"
-                  value={formData.id_issue_authority}
+                  value={formData.id_issue_authority || ''}
                   onChange={(e) => setFormData({ ...formData, id_issue_authority: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="VD: Công an TP. Hồ Chí Minh"
@@ -787,7 +663,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               <textarea
                 id="address"
                 rows={2}
-                value={formData.address}
+                value={formData.address || ''}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Nhập địa chỉ"
@@ -801,7 +677,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               <textarea
                 id="hobby"
                 rows={2}
-                value={formData.hobby}
+                value={formData.hobby || ''}
                 onChange={(e) => setFormData({ ...formData, hobby: e.target.value })}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="VD: Đọc sách, du lịch, thể thao, âm nhạc..."
@@ -843,7 +719,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   {formData.numerology_data && (
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, numerology_data: '' })}
+                      onClick={() => setFormData({ ...formData, numerology_data: {} as Record<string, unknown> })}
                       className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                     >
                       🗑️ Xóa
@@ -953,9 +829,17 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               <textarea
                 id="numerology_data"
                 rows={4}
-                value={formData.numerology_data}
-                onChange={(e) => setFormData({ ...formData, numerology_data: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={JSON.stringify(formData.numerology_data, null, 2)}
+                onChange={(e) => {
+                  try {
+                    const parsed = JSON.parse(e.target.value);
+                    setFormData({ ...formData, numerology_data: parsed });
+                  } catch {
+                    // If invalid JSON, just store as empty object
+                    setFormData({ ...formData, numerology_data: {} as Record<string, unknown> });
+                  }
+                }}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                 placeholder='Dữ liệu thần số học sẽ được tự động tạo hoặc nhập thủ công dạng JSON'
               />
             </div>
@@ -976,7 +860,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               </button>
             </div>
           </form>
-        </DialogPanel>
+        </Dialog.Panel>
       </div>
     </Dialog>
   )
