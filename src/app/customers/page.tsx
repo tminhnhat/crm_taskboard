@@ -30,7 +30,7 @@ export default function CustomersPage() {
         customer.full_name.toLowerCase().includes(filters.search.toLowerCase()) ||
         customer.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
         customer.phone?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        customer.account_number.toLowerCase().includes(filters.search.toLowerCase()) ||
+        customer.account_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
         customer.cif_number?.toLowerCase().includes(filters.search.toLowerCase())
       
       return matchesType && matchesStatus && matchesSearch
