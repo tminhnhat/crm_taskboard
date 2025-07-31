@@ -31,9 +31,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     // Corporate specific fields
     company_name: '',
     business_registration_number: '',
-
     registration_date: '',
     legal_representative: '',
+    legal_representative_cif_number: '',
     business_sector: '',
     company_size: null as 'micro' | 'small' | 'medium' | 'large' | null,
     annual_revenue: ''
@@ -438,6 +438,21 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                         onChange={(e) => setFormData({ ...formData, legal_representative: e.target.value })}
                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Nhập tên người đại diện"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="legal_representative_cif_number" className="block text-sm font-medium text-gray-700 mb-1">
+                        Số CIF Người Đại Diện
+                      </label>
+                      <input
+                        type="text"
+                        id="legal_representative_cif_number"
+                        name="legal_representative_cif_number"
+                        value={formData.legal_representative_cif_number || ''}
+                        onChange={(e) => setFormData({ ...formData, legal_representative_cif_number: e.target.value })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Nhập số CIF của người đại diện"
                       />
                     </div>
 
