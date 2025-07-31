@@ -57,7 +57,7 @@ export interface Customer {
   address: string | null
   hobby: string | null
   status: string
-  account_number: string
+  account_number: string | null
   cif_number: string | null
   numerology_data: Record<string, unknown> | null // JSONB type
   created_at: string
