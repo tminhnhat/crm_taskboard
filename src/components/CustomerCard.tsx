@@ -9,7 +9,28 @@ import {
   EnvelopeIcon,
   MapPinIcon,
   IdentificationIcon,
-  CalendarDaysIcon,
+  Cal                  {customer.customer_type === 'corporate' ? (
+                    <>
+                      {customer.registration_date && (
+                        <span className="text-gray-500 text-sm">
+                          (Ngày đăng ký: {formatDateDisplay(customer.registration_date)})
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {customer.id_issue_date && (
+                        <span className="text-gray-500 text-sm">
+                          (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
+                        </span>
+                      )}
+                      {customer.id_issue_authority && (
+                        <span className="text-gray-500 text-sm">
+                          Nơi cấp: {customer.id_issue_authority}
+                        </span>
+                      )}
+                    </>
+                  )}con,
   ChevronDownIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline'
@@ -193,28 +214,39 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                 Sở thích: {customer.hobby}
               </div>
             )}
-            {customer.id_number && (
-              <div className="flex items-center">
+            <div className="flex items-center">
                 <IdentificationIcon className="h-4 w-4 mr-2" />
                 <div>
-                  <span>
-                    {customer.customer_type === 'corporate' 
-                      ? `Mã số doanh nghiệp: ${customer.business_registration_number || 'Chưa cập nhật'}`
-                      : `CMND/CCCD: ${customer.id_number || 'Chưa cập nhật'}`}
-                  </span>
-                  {customer.id_issue_date && (
-                    <span className="text-gray-500 ml-2">
-                      (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
-                    </span>
-                  )}
-                  {customer.id_issue_authority && (
-                    <div className="text-gray-500 text-xs ml-4">
-                      Nơi cấp: {customer.id_issue_authority}
-                    </div>
+                  {customer.customer_type === 'corporate' ? (
+                    <>
+                      <span>
+                        Mã số doanh nghiệp: {customer.business_registration_number || 'Chưa cập nhật'}
+                      </span>
+                      {customer.registration_date && (
+                        <span className="text-gray-500 ml-2">
+                          (Ngày đăng ký: {formatDateDisplay(customer.registration_date)})
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span>
+                        CMND/CCCD: {customer.id_number || 'Chưa cập nhật'}
+                      </span>
+                      {customer.id_issue_date && (
+                        <span className="text-gray-500 ml-2">
+                          (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
+                        </span>
+                      )}
+                      {customer.id_issue_authority && (
+                        <div className="text-gray-500 text-xs ml-4">
+                          Nơi cấp: {customer.id_issue_authority}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
-            )}
             {customer.date_of_birth && (
               <div className="flex items-center">
                 <CalendarDaysIcon className="h-4 w-4 mr-2" />

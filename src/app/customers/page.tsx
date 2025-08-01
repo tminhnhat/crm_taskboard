@@ -32,8 +32,15 @@ export default function CustomersPage() {
         customer.phone?.toLowerCase().includes(filters.search.toLowerCase()) ||
         customer.account_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
         customer.cif_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        (customer.customer_type === 'corporate' && customer.business_registration_number?.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (customer.customer_type === 'individual' && customer.id_number?.toLowerCase().includes(filters.search.toLowerCase()))
+        (customer.customer_type === 'corporate' && (
+          customer.business_registration_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          customer.registration_date?.toLowerCase().includes(filters.search.toLowerCase())
+        )) ||
+        (customer.customer_type === 'individual' && (
+          customer.id_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          customer.id_issue_authority?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          customer.id_issue_date?.toLowerCase().includes(filters.search.toLowerCase())
+        ))
       
       return matchesType && matchesStatus && matchesSearch
     })
