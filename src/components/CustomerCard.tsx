@@ -9,17 +9,10 @@ import {
   EnvelopeIcon,
   MapPinIcon,
   IdentificationIcon,
-  Cal                  {customer.customer_type === 'corporate' ? (
-                    <>
-                      {customer.registration_date && (
-                        <span className="text-gray-500 text-sm">
-                          (Ngày đăng ký: {formatDateDisplay(customer.registration_date)})
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      {customer.id_issue_date && (
+  CalendarDaysIcon,
+  ChevronDownIcon,
+  ChevronRightIcon
+} from '@heroicons/react/24/outline'
                         <span className="text-gray-500 text-sm">
                           (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
                         </span>
