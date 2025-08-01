@@ -31,7 +31,9 @@ export default function CustomersPage() {
         customer.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
         customer.phone?.toLowerCase().includes(filters.search.toLowerCase()) ||
         customer.account_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        customer.cif_number?.toLowerCase().includes(filters.search.toLowerCase())
+        customer.cif_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        (customer.customer_type === 'corporate' && customer.business_registration_number?.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (customer.customer_type === 'individual' && customer.id_number?.toLowerCase().includes(filters.search.toLowerCase()))
       
       return matchesType && matchesStatus && matchesSearch
     })

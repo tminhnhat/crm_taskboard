@@ -197,7 +197,11 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               <div className="flex items-center">
                 <IdentificationIcon className="h-4 w-4 mr-2" />
                 <div>
-                  <span>CMND/CCCD: {customer.id_number}</span>
+                  <span>
+                    {customer.customer_type === 'corporate' 
+                      ? `Mã số doanh nghiệp: ${customer.business_registration_number || 'Chưa cập nhật'}`
+                      : `CMND/CCCD: ${customer.id_number || 'Chưa cập nhật'}`}
+                  </span>
                   {customer.id_issue_date && (
                     <span className="text-gray-500 ml-2">
                       (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
