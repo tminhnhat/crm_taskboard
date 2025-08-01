@@ -141,10 +141,18 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
           <div className="flex items-center gap-3 mb-3">
             <TypeIcon className="h-6 w-6 text-gray-600" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{customer.full_name}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {customer.customer_type === 'corporate' ? customer.company_name : customer.full_name}
+              </h3>
+              {customer.customer_type === 'corporate' && (
+                <p className="text-sm text-gray-600">Người đại diện: {customer.legal_representative || 'Chưa cập nhật'}</p>
+              )}
               <p className="text-sm text-gray-600">Tài khoản: {customer.account_number}</p>
               {customer.cif_number && (
                 <p className="text-sm text-gray-600">CIF: {customer.cif_number}</p>
+              )}
+              {customer.customer_type === 'corporate' && customer.legal_representative_cif_number && (
+                <p className="text-sm text-gray-600">CIF người đại diện: {customer.legal_representative_cif_number}</p>
               )}
             </div>
           </div>
