@@ -83,7 +83,7 @@ export default function ContractForm({
     // Basic validation
     if (month < 1 || month > 12) return false
     if (day < 1 || day > 31) return false
-    if (year < 1900 || year > new Date().getFullYear() + 10) return false
+    if (year < 1900 || year > new Date().getFullYear() + 50) return false
     
     // More precise date validation - check if the date actually exists
     // Create date using local timezone to avoid timezone shift issues
