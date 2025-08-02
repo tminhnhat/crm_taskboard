@@ -13,20 +13,6 @@ import {
   ChevronDownIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline'
-                        <span className="text-gray-500 text-sm">
-                          (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
-                        </span>
-                      )}
-                      {customer.id_issue_authority && (
-                        <span className="text-gray-500 text-sm">
-                          Nơi cấp: {customer.id_issue_authority}
-                        </span>
-                      )}
-                    </>
-                  )}con,
-  ChevronDownIcon,
-  ChevronRightIcon
-} from '@heroicons/react/24/outline'
 
 // Interface for numerology data structure
 interface NumerologyData {
