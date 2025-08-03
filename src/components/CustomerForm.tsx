@@ -4,23 +4,6 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Customer, CustomerType } from '@/lib/supabase'
 import { calculateNumerologyData } from '@/lib/numerology'
 
-const handleDateChange = (field: 'date_of_birth' | 'id_issue_date' | 'registration_date', e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value
-    
-    // Only format date_of_birth and id_issue_date as dd/mm/yyyy
-    if (field !== 'registration_date') {
-      value = value.replace(/\D/g, '') // Remove all non-digits
-      if (value.length >= 2) {
-        value = value.substring(0, 2) + '/' + value.substring(2)
-      }
-      if (value.length >= 5) {
-        value = value.substring(0, 5) + '/' + value.substring(5, 9)
-      }
-    }
-    
-    setFormData({ ...formData, [field]: value })
-}
-
 interface CustomerFormProps {
   isOpen: boolean;
   onClose: () => void;

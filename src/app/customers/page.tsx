@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import Navigation from '@/components/Navigation'
 import CustomerCard from '@/components/CustomerCard'
@@ -20,6 +20,8 @@ export default function CustomersPage() {
     search: '',
     sortBy: 'created_at'
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const customersPerPage = 10
 
   // Filter and sort customers based on current filters
   const filteredCustomers = useMemo(() => {
@@ -143,6 +145,16 @@ export default function CustomersPage() {
     }
   }
 
+  // Calculate total pages
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredCustomers.length / customersPerPage)), [filteredCustomers.length, customersPerPage])
+
+  // Reset current page when filters change or if current page is beyond total pages
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1)
+    }
+  }, [totalPages, currentPage])
+
   // Customer statistics
   const stats = useMemo(() => {
     const total = customers.length
@@ -225,18 +237,70 @@ export default function CustomersPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {filteredCustomers.map((customer) => (
-              <CustomerCard
-                key={customer.customer_id}
-                customer={customer}
-                onEdit={handleEditCustomer}
-                onDelete={handleDeleteCustomer}
-                onStatusChange={handleStatusChange}
-                onRecalculateNumerology={handleRecalculateNumerology}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 mb-4">
+              {filteredCustomers
+                .slice((currentPage - 1) * customersPerPage, currentPage * customersPerPage)
+                .map((customer) => (
+                  <CustomerCard
+                    key={customer.customer_id}
+                    customer={customer}
+                    onEdit={handleEditCustomer}
+                    onDelete={handleDeleteCustomer}
+                    onStatusChange={handleStatusChange}
+                    onRecalculateNumerology={handleRecalculateNumerology}
+                  />
+                ))}
+            </div>
+            
+            {/* Pagination */}
+            <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+              <div className="flex flex-1 justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                >
+                  Trang trước
+                </button>
+                <button
+                  onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                >
+                  Trang sau
+                </button>
+              </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Hiển thị <span className="font-medium">{((currentPage - 1) * customersPerPage) + 1}</span> đến{' '}
+                    <span className="font-medium">
+                      {Math.min(currentPage * customersPerPage, filteredCustomers.length)}
+                    </span>{' '}
+                    trong tổng số <span className="font-medium">{filteredCustomers.length}</span> khách hàng
+                  </p>
+                </div>
+                <div>
+                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                          currentPage === page
+                            ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </main>
 
