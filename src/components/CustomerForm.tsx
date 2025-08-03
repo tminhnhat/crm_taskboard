@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Customer, CustomerType } from '@/lib/supabase'
-import { calculateNumerologyData } from '@/lib/nu    const handleDateChange = (field: 'date_of_birth' | 'id_issue_date' | 'registration_date', e: React.ChangeEvent<HTMLInputElement>) => {
+import { calculateNumerologyData } from '@/lib/numerology'
+
+const handleDateChange = (field: 'date_of_birth' | 'id_issue_date' | 'registration_date', e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value
     
     // Only format date_of_birth and id_issue_date as dd/mm/yyyy
@@ -16,11 +18,14 @@ import { calculateNumerologyData } from '@/lib/nu    const handleDateChange = (f
       }
     }
     
-    setFormData({ ...formData, [field]: value })nterface CustomerFormProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: (customer: Partial<Customer>) => void
-  customer?: Customer | null
+    setFormData({ ...formData, [field]: value })
+}
+
+interface CustomerFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (customer: Partial<Customer>) => void;
+  customer?: Customer | null;
 }
 
 export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: CustomerFormProps) {
