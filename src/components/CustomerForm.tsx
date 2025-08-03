@@ -2,9 +2,21 @@ import { useState, useEffect } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Customer, CustomerType } from '@/lib/supabase'
-import { calculateNumerologyData } from '@/lib/numerology'
-
-interface CustomerFormProps {
+import { calculateNumerologyData } from '@/lib/nu    const handleDateChange = (field: 'date_of_birth' | 'id_issue_date' | 'registration_date', e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value
+    
+    // Only format date_of_birth and id_issue_date as dd/mm/yyyy
+    if (field !== 'registration_date') {
+      value = value.replace(/\D/g, '') // Remove all non-digits
+      if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2)
+      }
+      if (value.length >= 5) {
+        value = value.substring(0, 5) + '/' + value.substring(5, 9)
+      }
+    }
+    
+    setFormData({ ...formData, [field]: value })nterface CustomerFormProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (customer: Partial<Customer>) => void
@@ -283,7 +295,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       ...formData,
       date_of_birth: formData.date_of_birth ? formatDateForSubmission(formData.date_of_birth) : null,
       id_issue_date: formData.id_issue_date ? formatDateForSubmission(formData.id_issue_date) : null,
-      registration_date: formData.registration_date ? formatDateForSubmission(formData.registration_date) : null,
+      registration_date: formData.registration_date || null,
       gender: formData.gender || null,
       id_number: formData.id_number || null,
       id_issue_authority: formData.id_issue_authority || null,
@@ -465,9 +477,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                         id="registration_date"
                         name="registration_date"
                         value={formData.registration_date || ''}
-                        onChange={(e) => handleDateChange('registration_date', e)}
+                        onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="dd/mm/yyyy"
+                        placeholder="Nhập ngày đăng ký"
                       />
                     </div>
 
