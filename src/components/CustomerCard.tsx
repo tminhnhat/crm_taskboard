@@ -203,7 +203,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                       </span>
                       {customer.registration_date && (
                         <span className="text-gray-500 ml-2">
-                          (Ngày đăng ký: {formatDateDisplay(customer.registration_date)})
+                          (Ngày đăng ký: {customer.registration_date})
                         </span>
                       )}
                     </>
