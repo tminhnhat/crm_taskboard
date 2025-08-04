@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useContracts } from '@/hooks/useContracts'
 import { Contract } from '@/lib/supabase'
 import Navigation from '@/components/Navigation'
@@ -40,6 +40,8 @@ export default function ContractsPage() {
     dateRange: '',
     creditRange: ''
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const contractsPerPage = 10
 
   // Get available options for filter dropdowns
   const availableCustomers = useMemo(() => {
@@ -154,6 +156,16 @@ export default function ContractsPage() {
       return matchesSearch && matchesStatus && matchesCustomer && matchesProduct && matchesSigner && matchesDateRange && matchesCreditRange
     })
   }, [contracts, filters])
+
+  // Calculate total pages
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredContracts.length / contractsPerPage)), [filteredContracts.length, contractsPerPage])
+
+  // Reset current page when filters change or if current page is beyond total pages
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1)
+    }
+  }, [totalPages, currentPage])
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -364,17 +376,41 @@ export default function ContractsPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredContracts.map((contract) => (
-              <ContractCard
-                key={contract.contract_id}
-                contract={contract}
-                onEdit={handleEditContract}
-                onDelete={handleDeleteContract}
-                onStatusChange={handleStatusChange}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredContracts
+                .slice((currentPage - 1) * contractsPerPage, currentPage * contractsPerPage)
+                .map((contract) => (
+                  <ContractCard
+                    key={contract.contract_id}
+                    contract={contract}
+                    onEdit={handleEditContract}
+                    onDelete={handleDeleteContract}
+                    onStatusChange={handleStatusChange}
+                  />
+                ))}
+            </div>
+            
+            <div className="mt-6 flex justify-center items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border rounded-md disabled:opacity-50"
+              >
+                Trang Trước
+              </button>
+              <span className="text-sm text-gray-600">
+                Trang {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border rounded-md disabled:opacity-50"
+              >
+                Trang Sau
+              </button>
+            </div>
+          </>
         )}
 
         {/* Contract Form Modal */}
