@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useCreditAssessments } from '@/hooks/useCreditAssessments'
 import { CreditAssessment } from '@/lib/supabase'
 import Navigation from '@/components/Navigation'
@@ -39,6 +39,8 @@ export default function CreditAssessmentsPage() {
     staffId: '',
     dateRange: ''
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const assessmentsPerPage = 9 // 3x3 grid layout
 
   const stats = getAssessmentStats()
 
@@ -118,6 +120,17 @@ export default function CreditAssessmentsPage() {
       return matchesSearch && matchesResult && matchesCustomer && matchesStaff && matchesDateRange
     })
   }, [assessments, filters])
+
+  // Calculate total pages
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredAssessments.length / assessmentsPerPage)), 
+    [filteredAssessments.length, assessmentsPerPage])
+
+  // Reset current page when filters change or if current page is beyond total pages
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1)
+    }
+  }, [totalPages, currentPage])
 
   const handleNewAssessment = () => {
     setEditingAssessment(null)
@@ -259,7 +272,9 @@ export default function CreditAssessmentsPage() {
         {/* Results Summary */}
         <div className="flex justify-between items-center mb-6">
           <p className="text-gray-600">
-            Hiển thị {filteredAssessments.length} trong tổng số {assessments.length} đánh giá
+            Hiển thị {Math.min(assessmentsPerPage, filteredAssessments.length - (currentPage - 1) * assessmentsPerPage)} kết quả
+            {' '}({(currentPage - 1) * assessmentsPerPage + 1}-{Math.min(currentPage * assessmentsPerPage, filteredAssessments.length)})
+            {' '}trong tổng số {filteredAssessments.length} đánh giá
           </p>
           <div className="flex items-center space-x-4">
             <ChartBarIcon className="h-5 w-5 text-gray-400" />
@@ -292,16 +307,44 @@ export default function CreditAssessmentsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredAssessments.map((assessment) => (
-              <CreditAssessmentCard
-                key={assessment.assessment_id}
-                assessment={assessment}
-                onEdit={handleEditAssessment}
-                onDelete={handleDeleteAssessment}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredAssessments
+                .slice((currentPage - 1) * assessmentsPerPage, currentPage * assessmentsPerPage)
+                .map((assessment) => (
+                  <CreditAssessmentCard
+                    key={assessment.assessment_id}
+                    assessment={assessment}
+                    onEdit={handleEditAssessment}
+                    onDelete={handleDeleteAssessment}
+                  />
+                ))}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="mt-8 flex justify-center items-center gap-4">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white"
+              >
+                Trang Trước
+              </button>
+              <div className="flex items-center gap-1 text-sm text-gray-600">
+                <span>Trang</span>
+                <span className="font-medium text-gray-900">{currentPage}</span>
+                <span>trên</span>
+                <span className="font-medium text-gray-900">{totalPages}</span>
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white"
+              >
+                Trang Sau
+              </button>
+            </div>
+          </>
         )}
 
         {/* Assessment Form Modal */}

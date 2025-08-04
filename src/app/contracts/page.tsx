@@ -41,7 +41,7 @@ export default function ContractsPage() {
     creditRange: ''
   })
   const [currentPage, setCurrentPage] = useState(1)
-  const contractsPerPage = 10
+  const contractsPerPage = 9 // 3x3 grid layout
 
   // Get available options for filter dropdowns
   const availableCustomers = useMemo(() => {
@@ -351,6 +351,24 @@ export default function ContractsPage() {
           filteredCount={filteredContracts.length}
         />
 
+        {/* Results Summary */}
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-gray-600">
+            Hiển thị {Math.min(contractsPerPage, filteredContracts.length - (currentPage - 1) * contractsPerPage)} kết quả
+            {' '}({(currentPage - 1) * contractsPerPage + 1}-{Math.min(currentPage * contractsPerPage, filteredContracts.length)})
+            {' '}trong tổng số {filteredContracts.length} hợp đồng
+          </p>
+          <div className="flex items-center space-x-4">
+            <ChartBarIcon className="h-5 w-5 text-gray-400" />
+            <span className="text-sm text-gray-600">
+              {filteredContracts.length > 0 
+                ? `${Math.round((filteredContracts.filter(c => c.status === 'active').length / filteredContracts.length) * 100)}% đang hoạt động`
+                : 'Không có dữ liệu'
+              }
+            </span>
+          </div>
+        </div>
+
         {/* Contracts List */}
         {filteredContracts.length === 0 ? (
           <div className="text-center py-12">
@@ -391,21 +409,24 @@ export default function ContractsPage() {
                 ))}
             </div>
             
-            <div className="mt-6 flex justify-center items-center gap-2">
+            <div className="mt-8 flex justify-center items-center gap-4">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border rounded-md disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white"
               >
                 Trang Trước
               </button>
-              <span className="text-sm text-gray-600">
-                Trang {currentPage} / {totalPages}
-              </span>
+              <div className="flex items-center gap-1 text-sm text-gray-600">
+                <span>Trang</span>
+                <span className="font-medium text-gray-900">{currentPage}</span>
+                <span>trên</span>
+                <span className="font-medium text-gray-900">{totalPages}</span>
+              </div>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 border rounded-md disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white"
               >
                 Trang Sau
               </button>
