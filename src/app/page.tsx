@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import Navigation from '@/components/Navigation'
 import TaskCard from '@/components/TaskCard'
@@ -21,6 +21,8 @@ export default function TaskDashboard() {
     sortBy: 'task_date_start',
     taskType: ''
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const tasksPerPage = 10
 
   // Filter and sort tasks based on current filters
   const filteredTasks = useMemo(() => {
@@ -143,6 +145,16 @@ export default function TaskDashboard() {
     setEditingTask(null)
   }
 
+  // Calculate total pages
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredTasks.length / tasksPerPage)), [filteredTasks.length, tasksPerPage])
+
+  // Reset current page when filters change or if current page is beyond total pages
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1)
+    }
+  }, [totalPages, currentPage])
+
   // Task statistics
   const stats = useMemo(() => {
     const total = tasks.length
@@ -233,17 +245,42 @@ export default function TaskDashboard() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {filteredTasks.map((task) => (
-              <TaskCard
-                key={task.task_id}
-                task={task}
-                onEdit={handleEditTask}
-                onDelete={handleDeleteTask}
-                onStatusChange={handleStatusChange}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4">
+              {filteredTasks
+                .slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage)
+                .map((task) => (
+                  <TaskCard
+                    key={task.task_id}
+                    task={task}
+                    onEdit={handleEditTask}
+                    onDelete={handleDeleteTask}
+                    onStatusChange={handleStatusChange}
+                  />
+                ))}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="mt-6 flex justify-center items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border rounded-md disabled:opacity-50"
+              >
+                Trang Trước
+              </button>
+              <span className="text-sm text-gray-600">
+                Trang {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border rounded-md disabled:opacity-50"
+              >
+                Trang Sau
+              </button>
+            </div>
+          </>
         )}
       </main>
 
