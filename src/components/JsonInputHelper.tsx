@@ -57,7 +57,7 @@ export default function JsonInputHelper({ value, onChange }: JsonInputHelperProp
   }
 
   const updateJsonOutput = (currentFields: JsonField[]) => {
-    const obj = currentFields.reduce((acc, field) => {
+    const obj = currentFields.reduce<Record<string, string | number | boolean>>((acc, field) => {
       if (field.key && field.value !== undefined) {
         let value: string | number | boolean = field.value
         switch (field.type) {
@@ -71,7 +71,7 @@ export default function JsonInputHelper({ value, onChange }: JsonInputHelperProp
         acc[field.key] = value
       }
       return acc
-    }, {} as Record<string, any>)
+    }, {})
 
     onChange(JSON.stringify(obj, null, 2))
   }
