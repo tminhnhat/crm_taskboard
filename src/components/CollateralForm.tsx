@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Collateral, Customer } from '@/lib/supabase'
+import JsonInputHelper from './JsonInputHelper'
 
 interface CollateralFormProps {
   collateral?: Collateral | null
@@ -380,17 +381,64 @@ export default function CollateralForm({
           {/* Metadata */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Thông Tin Bổ Sung (JSON)
+              Thông Tin Bổ Sung
             </label>
-            <textarea
+            <JsonInputHelper
               value={metadataInput}
-              onChange={(e) => setMetadataInput(e.target.value)}
-              placeholder='{"so_giay_to": "123456", "bao_hiem": "ABC789", "tinh_trang": "tot"}'
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+              onChange={setMetadataInput}
             />
             <div className="text-xs text-gray-500 mt-1">
-              Tùy chọn: Thêm các trường tùy chỉnh theo định dạng JSON (số giấy tờ, thông tin bảo hiểm, v.v.)
+              Thông tin bổ sung về tài sản thế chấp
+            </div>
+            <div className="mt-2 grid grid-cols-1 md:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => setMetadataInput(JSON.stringify({
+                  so_giay_to: "",
+                  so_dang_ky: "",
+                  ngay_cap: "",
+                  noi_cap: ""
+                }, null, 2))}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              >
+                Thông tin giấy tờ
+              </button>
+              <button
+                type="button"
+                onClick={() => setMetadataInput(JSON.stringify({
+                  bao_hiem: "",
+                  so_hop_dong_bh: "",
+                  ngay_hieu_luc: "",
+                  ngay_ket_thuc: ""
+                }, null, 2))}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              >
+                Thông tin bảo hiểm
+              </button>
+              <button
+                type="button"
+                onClick={() => setMetadataInput(JSON.stringify({
+                  tinh_trang: "tot",
+                  lan_kiem_tra_cuoi: "",
+                  nguoi_kiem_tra: "",
+                  ghi_chu_kiem_tra: ""
+                }, null, 2))}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              >
+                Tình trạng tài sản
+              </button>
+              <button
+                type="button"
+                onClick={() => setMetadataInput(JSON.stringify({
+                  dinh_gia_vien: "",
+                  phuong_phap_dinh_gia: "",
+                  ngay_dinh_gia: "",
+                  ket_qua_dinh_gia: ""
+                }, null, 2))}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              >
+                Thông tin định giá
+              </button>
             </div>
           </div>
 

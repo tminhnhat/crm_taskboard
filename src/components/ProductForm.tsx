@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Product } from '@/lib/supabase'
+import JsonInputHelper from './JsonInputHelper'
 
 interface ProductFormProps {
   product?: Product | null
@@ -295,19 +296,15 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
             </div>
 
             <div>
-              <label htmlFor="metadata" className="block text-sm font-medium text-gray-700 mb-1">
-                Thông Tin Bổ Sung (JSON)
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Thông Tin Bổ Sung
               </label>
-              <textarea
-                id="metadata"
+              <JsonInputHelper
                 value={metadataInput}
-                onChange={(e) => setMetadataInput(e.target.value)}
-                rows={4}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm"
-                placeholder='{"promotion_code": "SUMMER2024", "contact_center": "1800-1234"}'
+                onChange={setMetadataInput}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Tùy chọn: Thêm thông tin bổ sung theo định dạng JSON
+                Thêm thông tin bổ sung với giao diện thân thiện
               </p>
             </div>
 

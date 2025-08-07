@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { CreditAssessment, Customer, Staff } from '@/lib/supabase'
+import JsonInputHelper from './JsonInputHelper'
 
 interface CreditAssessmentFormProps {
   assessment?: CreditAssessment | null
@@ -325,17 +326,49 @@ export default function CreditAssessmentForm({
           {/* Metadata */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Thông tin bổ sung (JSON)
+              Thông tin bổ sung
             </label>
-            <textarea
+            <JsonInputHelper
               value={metadataInput}
-              onChange={(e) => setMetadataInput(e.target.value)}
-              placeholder='{"phuong_phap_danh_gia": "tu_dong", "nguon_du_lieu": "trung_tam_tin_dung", "phan_loai_rui_ro": "thap"}'
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+              onChange={setMetadataInput}
             />
             <div className="text-xs text-gray-500 mt-1">
-              Tùy chọn: Thêm các trường tùy chỉnh ở định dạng JSON
+              Thêm các trường tùy chỉnh cho đánh giá tín dụng (phương pháp đánh giá, nguồn dữ liệu, phân loại rủi ro, v.v.)
+            </div>
+            <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setMetadataInput(JSON.stringify({
+                  phuong_phap_danh_gia: "tu_dong",
+                  nguon_du_lieu: "trung_tam_tin_dung",
+                  phan_loai_rui_ro: "thap"
+                }, null, 2))}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              >
+                Đánh giá tự động
+              </button>
+              <button
+                type="button"
+                onClick={() => setMetadataInput(JSON.stringify({
+                  phuong_phap_danh_gia: "thu_cong",
+                  nguon_du_lieu: "bao_cao_tai_chinh",
+                  phan_loai_rui_ro: "trung_binh"
+                }, null, 2))}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              >
+                Đánh giá thủ công
+              </button>
+              <button
+                type="button"
+                onClick={() => setMetadataInput(JSON.stringify({
+                  phuong_phap_danh_gia: "ket_hop",
+                  nguon_du_lieu: "da_nguon",
+                  phan_loai_rui_ro: "can_xem_xet"
+                }, null, 2))}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              >
+                Đánh giá kết hợp
+              </button>
             </div>
           </div>
 
