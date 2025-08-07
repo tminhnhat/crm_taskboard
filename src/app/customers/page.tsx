@@ -21,7 +21,7 @@ export default function CustomersPage() {
     sortBy: 'created_at'
   })
   const [currentPage, setCurrentPage] = useState(1)
-  const customersPerPage = 10
+  const customersPerPage = 8 // Show 4 rows in 2 columns
 
   // Filter and sort customers based on current filters
   const filteredCustomers = useMemo(() => {
@@ -238,7 +238,7 @@ export default function CustomersPage() {
           </div>
         ) : (
           <>
-            <div className="grid gap-4 mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
               {filteredCustomers
                 .slice((currentPage - 1) * customersPerPage, currentPage * customersPerPage)
                 .map((customer) => (
