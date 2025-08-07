@@ -421,8 +421,6 @@ export default function ContractForm({
                   <option value="draft">Bản Nháp</option>
                   <option value="active">Đang Hoạt Động</option>
                   <option value="expired">Hết Hạn</option>
-                  <option value="terminated">Đã Chấm Dứt</option>
-                  <option value="suspended">Tạm Ngưng</option>
                 </select>
               </div>
             </div>

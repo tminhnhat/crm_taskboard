@@ -19,9 +19,7 @@ interface ContractCardProps {
 const statusColors = {
   draft: 'bg-gray-100 text-gray-800',
   active: 'bg-green-100 text-green-800',
-  expired: 'bg-red-100 text-red-800',
-  terminated: 'bg-red-100 text-red-800',
-  suspended: 'bg-yellow-100 text-yellow-800'
+  expired: 'bg-red-100 text-red-800'
 }
 
 export default function ContractCard({ contract, onEdit, onDelete, onStatusChange }: ContractCardProps) {
@@ -187,8 +185,6 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
             <option value="draft">Draft</option>
             <option value="active">Active</option>
             <option value="expired">Expired</option>
-            <option value="terminated">Terminated</option>
-            <option value="suspended">Suspended</option>
           </select>
           
           <div className="flex gap-1">

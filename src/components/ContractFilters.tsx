@@ -106,7 +106,6 @@ export default function ContractFilters({
           >
             <option value="">Tất cả trạng thái</option>
             <option value="draft">Bản nháp</option>
-            <option value="pending">Chờ duyệt</option>
             <option value="active">Đang hiệu lực</option>
             <option value="expired">Đã hết hạn</option>
           </select>
