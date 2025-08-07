@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Contract, Customer, Product, Staff } from '@/lib/supabase'
+import JsonInputHelper from './JsonInputHelper'
 
 interface ContractFormProps {
   contract?: Contract | null
@@ -426,17 +427,25 @@ export default function ContractForm({
             </div>
 
             <div>
-              <label htmlFor="metadata" className="block text-sm font-medium text-gray-700 mb-1">
-                Siêu Dữ Liệu Hợp Đồng (Định dạng JSON)
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Siêu Dữ Liệu Hợp Đồng
               </label>
-              <textarea
-                id="metadata"
-                value={metadataInput}
-                onChange={(e) => setMetadataInput(e.target.value)}
-                rows={4}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm"
-                placeholder='{"terms": "Net 30", "renewal": "Auto", "commission": 5}'
-              />
+              <div className="space-y-4">
+                <JsonInputHelper value={metadataInput} onChange={setMetadataInput} />
+                <details className="text-sm">
+                  <summary className="text-blue-600 hover:text-blue-800 cursor-pointer">Xem/Chỉnh sửa JSON trực tiếp</summary>
+                  <div className="mt-2">
+                    <textarea
+                      id="metadata"
+                      value={metadataInput}
+                      onChange={(e) => setMetadataInput(e.target.value)}
+                      rows={4}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm"
+                      placeholder='{"terms": "Net 30", "renewal": "Auto", "commission": 5}'
+                    />
+                  </div>
+                </details>
+              </div>
               <p className="text-xs text-gray-500 mt-1">
                 Tùy chọn: Nhập JSON hợp lệ cho siêu dữ liệu hợp đồng bổ sung
               </p>
