@@ -104,8 +104,12 @@ export default function CollateralForm({
   const [loadingOptions, setLoadingOptions] = useState(true)
   const [metadataInput, setMetadataInput] = useState('')
 
+  interface MetadataTemplate {
+    [key: string]: string | number | boolean | null;
+  }
+
   // Helper function to safely update metadata
-  const safelyUpdateMetadata = (templateData: Record<string, any>) => {
+  const safelyUpdateMetadata = (templateData: MetadataTemplate) => {
     try {
       const currentData = metadataInput ? JSON.parse(metadataInput) : {};
       setMetadataInput(JSON.stringify({
@@ -409,64 +413,48 @@ export default function CollateralForm({
               {/* Template Buttons with Error Handling */}
               <button
                 type="button"
-                onClick={() => {
-                  const currentData = metadataInput ? JSON.parse(metadataInput) : {};
-                  setMetadataInput(JSON.stringify({
-                    ...currentData,
-                    so_giay_to: currentData.so_giay_to || "",
-                    so_dang_ky: currentData.so_dang_ky || "",
-                    ngay_cap: currentData.ngay_cap || "",
-                    noi_cap: currentData.noi_cap || ""
-                  }, null, 2));
-                }}
+                onClick={() => safelyUpdateMetadata({
+                  so_giay_to: "",
+                  so_dang_ky: "",
+                  ngay_cap: "",
+                  noi_cap: ""
+                })}
                 className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
               >
                 Thông tin giấy tờ
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const currentData = metadataInput ? JSON.parse(metadataInput) : {};
-                  setMetadataInput(JSON.stringify({
-                    ...currentData,
-                    bao_hiem: currentData.bao_hiem || "",
-                    so_hop_dong_bh: currentData.so_hop_dong_bh || "",
-                    ngay_hieu_luc: currentData.ngay_hieu_luc || "",
-                    ngay_ket_thuc: currentData.ngay_ket_thuc || ""
-                  }, null, 2));
-                }}
+                onClick={() => safelyUpdateMetadata({
+                  bao_hiem: "",
+                  so_hop_dong_bh: "",
+                  ngay_hieu_luc: "",
+                  ngay_ket_thuc: ""
+                })}
                 className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
               >
                 Thông tin bảo hiểm
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const currentData = metadataInput ? JSON.parse(metadataInput) : {};
-                  setMetadataInput(JSON.stringify({
-                    ...currentData,
-                    tinh_trang: currentData.tinh_trang || "tot",
-                    lan_kiem_tra_cuoi: currentData.lan_kiem_tra_cuoi || "",
-                    nguoi_kiem_tra: currentData.nguoi_kiem_tra || "",
-                    ghi_chu_kiem_tra: currentData.ghi_chu_kiem_tra || ""
-                  }, null, 2));
-                }}
+                onClick={() => safelyUpdateMetadata({
+                  tinh_trang: "tot",
+                  lan_kiem_tra_cuoi: "",
+                  nguoi_kiem_tra: "",
+                  ghi_chu_kiem_tra: ""
+                })}
                 className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
               >
                 Tình trạng tài sản
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const currentData = metadataInput ? JSON.parse(metadataInput) : {};
-                  setMetadataInput(JSON.stringify({
-                    ...currentData,
-                    dinh_gia_vien: currentData.dinh_gia_vien || "",
-                    phuong_phap_dinh_gia: currentData.phuong_phap_dinh_gia || "",
-                    ngay_dinh_gia: currentData.ngay_dinh_gia || "",
-                    ket_qua_dinh_gia: currentData.ket_qua_dinh_gia || ""
-                  }, null, 2));
-                }}
+                onClick={() => safelyUpdateMetadata({
+                  dinh_gia_vien: "",
+                  phuong_phap_dinh_gia: "",
+                  ngay_dinh_gia: "",
+                  ket_qua_dinh_gia: ""
+                })}
                 className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
               >
                 Thông tin định giá
