@@ -104,8 +104,12 @@ export default function CollateralForm({
   const [loadingOptions, setLoadingOptions] = useState(true)
   const [metadataInput, setMetadataInput] = useState('')
 
-  interface MetadataTemplate {
+  interface MetadataValue {
     [key: string]: string | number | boolean | null;
+  }
+
+  interface MetadataTemplate {
+    [key: string]: string | number | boolean | null | MetadataValue;
   }
 
   // Helper function to safely update metadata
@@ -399,66 +403,122 @@ export default function CollateralForm({
 
           {/* Metadata */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Thông Tin Bổ Sung
-            </label>
-            <JsonInputHelper
-              value={metadataInput}
-              onChange={setMetadataInput}
-            />
-            <div className="text-xs text-gray-500 mt-1">
-              Thông tin bổ sung về tài sản thế chấp
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Thông Tin Bổ Sung
+              </label>
+              <JsonInputHelper
+                value={metadataInput}
+                onChange={setMetadataInput}
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                Thông tin bổ sung về tài sản thế chấp (chọn mẫu hoặc thêm thông tin tùy chỉnh)
+              </div>
             </div>
-            <div className="mt-2 grid grid-cols-1 md:grid-cols-4 gap-2">
-              {/* Template Buttons with Error Handling */}
-              <button
-                type="button"
-                onClick={() => safelyUpdateMetadata({
-                  so_giay_to: "",
-                  so_dang_ky: "",
-                  ngay_cap: "",
-                  noi_cap: ""
-                })}
-                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-              >
-                Thông tin giấy tờ
-              </button>
-              <button
-                type="button"
-                onClick={() => safelyUpdateMetadata({
-                  bao_hiem: "",
-                  so_hop_dong_bh: "",
-                  ngay_hieu_luc: "",
-                  ngay_ket_thuc: ""
-                })}
-                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-              >
-                Thông tin bảo hiểm
-              </button>
-              <button
-                type="button"
-                onClick={() => safelyUpdateMetadata({
-                  tinh_trang: "tot",
-                  lan_kiem_tra_cuoi: "",
-                  nguoi_kiem_tra: "",
-                  ghi_chu_kiem_tra: ""
-                })}
-                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-              >
-                Tình trạng tài sản
-              </button>
-              <button
-                type="button"
-                onClick={() => safelyUpdateMetadata({
-                  dinh_gia_vien: "",
-                  phuong_phap_dinh_gia: "",
-                  ngay_dinh_gia: "",
-                  ket_qua_dinh_gia: ""
-                })}
-                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-              >
-                Thông tin định giá
-              </button>
+
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Mẫu thông tin bổ sung</h4>
+              {/* Legal Documents Template */}
+              <div className="mb-3">
+                <button
+                  type="button"
+                  onClick={() => safelyUpdateMetadata({
+                    thong_tin_giay_to: {
+                      so_giay_to: "",
+                      loai_giay_to: "",
+                      so_dang_ky: "",
+                      ngay_cap: "",
+                      noi_cap: "",
+                      ngay_het_han: "",
+                      ghi_chu: ""
+                    }
+                  })}
+                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
+                >
+                  <span className="text-sm text-blue-600">+ Thêm thông tin giấy tờ pháp lý</span>
+                </button>
+              </div>
+
+              {/* Insurance Template */}
+              <div className="mb-3">
+                <button
+                  type="button"
+                  onClick={() => safelyUpdateMetadata({
+                    thong_tin_bao_hiem: {
+                      cong_ty_bao_hiem: "",
+                      so_hop_dong_bh: "",
+                      loai_bao_hiem: "",
+                      ngay_hieu_luc: "",
+                      ngay_ket_thuc: "",
+                      phi_bao_hiem: "",
+                      gia_tri_bao_hiem: ""
+                    }
+                  })}
+                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
+                >
+                  <span className="text-sm text-blue-600">+ Thêm thông tin bảo hiểm</span>
+                </button>
+              </div>
+
+              {/* Asset Condition Template */}
+              <div className="mb-3">
+                <button
+                  type="button"
+                  onClick={() => safelyUpdateMetadata({
+                    tinh_trang_tai_san: {
+                      trang_thai: "tot",
+                      chi_tiet_trang_thai: "",
+                      lan_kiem_tra_cuoi: "",
+                      nguoi_kiem_tra: "",
+                      ghi_chu_kiem_tra: "",
+                      danh_gia_rui_ro: "",
+                      de_xuat_bao_tri: ""
+                    }
+                  })}
+                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
+                >
+                  <span className="text-sm text-blue-600">+ Thêm đánh giá tình trạng tài sản</span>
+                </button>
+              </div>
+
+              {/* Valuation Template */}
+              <div className="mb-3">
+                <button
+                  type="button"
+                  onClick={() => safelyUpdateMetadata({
+                    thong_tin_dinh_gia: {
+                      don_vi_dinh_gia: "",
+                      dinh_gia_vien: "",
+                      phuong_phap_dinh_gia: "",
+                      ngay_dinh_gia: "",
+                      gia_tri_uoc_tinh: "",
+                      do_tin_cay: "",
+                      ghi_chu_dinh_gia: ""
+                    }
+                  })}
+                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
+                >
+                  <span className="text-sm text-blue-600">+ Thêm thông tin định giá chi tiết</span>
+                </button>
+              </div>
+
+              {/* Additional Notes */}
+              <div className="mb-3">
+                <button
+                  type="button"
+                  onClick={() => safelyUpdateMetadata({
+                    ghi_chu_bo_sung: {
+                      dac_diem_noi_bat: "",
+                      han_che: "",
+                      lich_su_su_dung: "",
+                      ghi_chu_khac: ""
+                    }
+                  })}
+                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
+                >
+                  <span className="text-sm text-blue-600">+ Thêm ghi chú bổ sung</span>
+                </button>
+              </div>
             </div>
           </div>
 
