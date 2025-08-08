@@ -116,14 +116,28 @@ export default function CollateralForm({
   const safelyUpdateMetadata = (templateData: MetadataTemplate) => {
     try {
       const currentData = metadataInput ? JSON.parse(metadataInput) : {};
-      setMetadataInput(JSON.stringify({
+      const newData = {
         ...currentData,
         ...templateData
-      }, null, 2));
+      };
+      console.log('Updating metadata with:', newData); // Debug log
+      setMetadataInput(JSON.stringify(newData, null, 2));
+      // Add visual feedback
+      const btn = document.activeElement as HTMLButtonElement;
+      if (btn) {
+        const originalText = btn.innerText;
+        btn.innerText = '✓ Đã thêm';
+        btn.style.backgroundColor = '#f0fdf4'; // Light green background
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.style.backgroundColor = '';
+        }, 1000);
+      }
     } catch (error) {
       console.error('Error updating metadata:', error);
       // Start fresh with the template if current data is invalid
       setMetadataInput(JSON.stringify(templateData, null, 2));
+      alert('Có lỗi khi cập nhật. Đã khôi phục về mẫu mới.');
     }
   };
 
@@ -422,18 +436,25 @@ export default function CollateralForm({
               <div className="mb-3">
                 <button
                   type="button"
-                  onClick={() => safelyUpdateMetadata({
-                    thong_tin_giay_to: {
-                      so_giay_to: "",
-                      loai_giay_to: "",
-                      so_dang_ky: "",
-                      ngay_cap: "",
-                      noi_cap: "",
-                      ngay_het_han: "",
-                      ghi_chu: ""
+                  onClick={(e) => {
+                    e.preventDefault();
+                    try {
+                      safelyUpdateMetadata({
+                        thong_tin_giay_to: {
+                          so_giay_to: "",
+                          loai_giay_to: "",
+                          so_dang_ky: "",
+                          ngay_cap: "",
+                          noi_cap: "",
+                          ngay_het_han: "",
+                          ghi_chu: ""
+                        }
+                      });
+                    } catch (error) {
+                      console.error('Error clicking button:', error);
                     }
-                  })}
-                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
+                  }}
+                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2 transition-all duration-200"
                 >
                   <span className="text-sm text-blue-600">+ Thêm thông tin giấy tờ pháp lý</span>
                 </button>
