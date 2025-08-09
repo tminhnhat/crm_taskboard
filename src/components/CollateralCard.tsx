@@ -11,7 +11,6 @@ import {
   MapPinIcon,
   CalendarIcon,
   DocumentDuplicateIcon,
-  ClipboardDocumentCheckIcon,
   ShieldCheckIcon,
   DocumentChartBarIcon,
   ChatBubbleLeftRightIcon,
@@ -82,7 +81,7 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-xl font-semibold text-gray-900">{collateral.name}</h3>
+          <h3 className="text-xl font-semibold text-gray-900">{collateral.collateral_type || 'Tài sản thế chấp'}</h3>
           <p className="text-sm text-gray-500 mt-1">ID: {collateral.collateral_id}</p>
         </div>
         <div className="flex space-x-2">
@@ -108,10 +107,10 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
           <BanknotesIcon className="h-5 w-5 text-gray-400 mr-2" />
           <span className="text-sm text-gray-500">Giá trị:</span>
           <span className="ml-2 text-lg font-semibold text-gray-900">
-            {new Intl.NumberFormat('vi-VN', {
+            {collateral.value !== null ? new Intl.NumberFormat('vi-VN', {
               style: 'currency',
               currency: 'VND'
-            }).format(collateral.value)}
+            }).format(collateral.value) : 'Chưa có giá trị'}
           </span>
         </div>
 
