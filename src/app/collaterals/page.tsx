@@ -137,10 +137,10 @@ export default function CollateralsPage() {
     setShowForm(true)
   }
 
-  const handleDeleteCollateral = async (collateralId: number) => {
+  const handleDeleteCollateral = async (collateral: Collateral) => {
     if (confirm('Bạn có chắc chắn muốn xóa tài sản đảm bảo này không?')) {
       try {
-        await deleteCollateral(collateralId)
+        await deleteCollateral(collateral.collateral_id)
       } catch (error) {
         console.error('Error deleting collateral:', error)
       }
