@@ -103,7 +103,7 @@ export default function CollateralForm({
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loadingOptions, setLoadingOptions] = useState(true)
   const [metadataInput, setMetadataInput] = useState('')
-  const [parsedMetadata, setParsedMetadata] = useState<any>(null)
+  const [parsedMetadata, setParsedMetadata] = useState<MetadataTemplate | null>(null)
   const [metadataError, setMetadataError] = useState<string | null>(null)
 
   interface MetadataValue {
@@ -126,8 +126,9 @@ export default function CollateralForm({
       setParsedMetadata(parsed);
       setMetadataError(null);
       return true;
-    } catch (error) {
-      setMetadataError('Định dạng JSON không hợp lệ');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Định dạng JSON không hợp lệ';
+      setMetadataError(errorMessage);
       return false;
     }
   };
