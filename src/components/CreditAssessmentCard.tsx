@@ -4,9 +4,7 @@ import { CreditAssessment } from '@/lib/supabase'
 import { 
   PencilIcon, 
   TrashIcon,
-                 assessment.assessment_result === 'approved' ? 'Đã phê duyệt' :
-               assessment.assessment_result === 'pending' ? 'Đang chờ' :
-               assessment.assessment_result || 'Chưa có'mentArrowDownIcon
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline'
 
 interface CreditAssessmentCardProps {
