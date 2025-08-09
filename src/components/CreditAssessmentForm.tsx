@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { CreditAssessment, Customer, Staff } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
+import JsonInputHelper from './JsonInputHelper'
 
 interface CreditAssessmentFormProps {
   assessment?: CreditAssessment | null
@@ -314,6 +315,33 @@ export default function CreditAssessmentForm({
                 : ['assessment', 'pending']
           }
         />
+      </div>
+
+      {/* Custom JSON Input */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Thông tin tùy chỉnh
+        </h3>
+        <div className="space-y-2">
+          <JsonInputHelper
+            value={JSON.stringify(formData.metadata.custom || {}, null, 2)}
+            onChange={(jsonString) => {
+              try {
+                const customData = JSON.parse(jsonString);
+                handleInputChange('metadata', {
+                  ...formData.metadata,
+                  custom: customData
+                });
+              } catch (error) {
+                // If JSON is invalid, don't update the state
+                console.error('Invalid JSON:', error);
+              }
+            }}
+          />
+          <p className="text-sm text-gray-500">
+            Thêm các trường thông tin tùy chỉnh theo nhu cầu
+          </p>
+        </div>
       </div>
 
       {/* Form Actions */}
