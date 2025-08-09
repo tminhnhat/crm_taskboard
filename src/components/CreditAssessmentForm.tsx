@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { CreditAssessment, Customer, Staff } from '@/lib/supabase'
-import JsonInputHelper from './JsonInputHelper'
+import MetadataForm from './MetadataForm'
 
 interface CreditAssessmentFormProps {
   assessment?: CreditAssessment | null
@@ -106,7 +106,7 @@ export default function CreditAssessmentForm({
     assessment_result: assessment?.assessment_result || 'pending',
     comments: assessment?.comments || '',
     documents: assessment?.documents || '',
-    metadata: assessment?.metadata || {}
+    metadata: (assessment?.metadata as Record<string, Record<string, unknown>>) || {}
   })
 
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -303,55 +303,17 @@ export default function CreditAssessmentForm({
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Thông tin chi tiết
         </h3>
-        <JsonInputHelper
-          value={JSON.stringify(formData.metadata || {}, null, 2)}
-          onChange={(jsonString) => {
-            try {
-              const customData = JSON.parse(jsonString);
-              handleInputChange('metadata', customData);
-            } catch (error) {
-              console.error('Invalid JSON:', error);
-            }
-          }}
+        <MetadataForm
+          initialData={formData.metadata}
+          onChange={(metadata) => handleInputChange('metadata', metadata)}
+          suggestedTemplates={
+            formData.assessment_result === 'approved' 
+              ? ['assessment', 'financial', 'risk', 'documents'] 
+              : formData.documents
+                ? ['assessment', 'documents']
+                : ['assessment', 'pending']
+          }
         />
-        <div className="text-xs text-gray-500 mt-1">
-          Thêm các trường thông tin tùy chỉnh theo nhu cầu
-        </div>
-        <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => handleInputChange('metadata', {
-              phuong_phap_danh_gia: "tu_dong",
-              nguon_du_lieu: "trung_tam_tin_dung",
-              phan_loai_rui_ro: "thap"
-            })}
-            className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-          >
-            Đánh giá tự động
-          </button>
-          <button
-            type="button"
-            onClick={() => handleInputChange('metadata', {
-              phuong_phap_danh_gia: "thu_cong",
-              nguon_du_lieu: "bao_cao_tai_chinh",
-              phan_loai_rui_ro: "trung_binh"
-            })}
-            className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-          >
-            Đánh giá thủ công
-          </button>
-          <button
-            type="button"
-            onClick={() => handleInputChange('metadata', {
-              phuong_phap_danh_gia: "ket_hop",
-              nguon_du_lieu: "da_nguon",
-              phan_loai_rui_ro: "can_xem_xet"
-            })}
-            className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-          >
-            Đánh giá kết hợp
-          </button>
-        </div>
       </div>
 
       {/* Form Actions */}
