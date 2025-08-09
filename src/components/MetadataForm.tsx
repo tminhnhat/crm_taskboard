@@ -30,6 +30,7 @@ interface TemplateConfig {
 interface MetadataFormProps {
   initialData?: Record<string, Record<string, unknown>>
   onChange: (metadata: Record<string, Record<string, unknown>>) => void
+  suggestedTemplates?: string[]
 }
 
 type MetadataTemplates = {
@@ -114,7 +115,11 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   }
 }
 
-export default function MetadataForm({ initialData = {}, onChange }: MetadataFormProps) {
+export default function MetadataForm({ 
+  initialData = {}, 
+  onChange,
+  suggestedTemplates 
+}: MetadataFormProps) {
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<Record<string, Record<string, unknown>>>(initialData)
 
@@ -134,7 +139,9 @@ export default function MetadataForm({ initialData = {}, onChange }: MetadataFor
     <div className="space-y-6">
       {/* Template Selection */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {Object.entries(METADATA_TEMPLATES).map(([key, template]) => {
+        {Object.entries(METADATA_TEMPLATES)
+          .filter(([key]) => !suggestedTemplates || suggestedTemplates.includes(key))
+          .map(([key, template]) => {
           const Icon = template.icon
           const isActive = activeTemplate === key
           const hasData = !!metadata[key]

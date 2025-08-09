@@ -263,10 +263,24 @@ export default function CollateralFormEnhanced({
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Thông tin chi tiết
         </h3>
-        <MetadataForm
-          initialData={formState.metadata}
-          onChange={handleMetadataChange}
-        />
+        {formState.collateral_type && (
+          <MetadataForm
+            initialData={formState.metadata}
+            onChange={handleMetadataChange}
+            suggestedTemplates={
+              formState.collateral_type === 'real_estate' 
+                ? ['property', 'legal', 'assessment', 'documents'] 
+              : formState.collateral_type === 'vehicle'
+                ? ['vehicle', 'legal', 'assessment', 'documents']
+              : formState.collateral_type === 'savings'
+                ? ['financial', 'legal', 'documents']
+              : formState.collateral_type === 'stocks' || formState.collateral_type === 'bonds'
+                ? ['financial', 'legal', 'documents']
+              : formState.collateral_type === 'machinery'
+                ? ['assessment', 'legal', 'documents']
+              : ['documents', 'communication']
+            }
+          />
       </div>
 
       {/* Form Actions */}
