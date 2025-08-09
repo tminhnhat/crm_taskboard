@@ -103,6 +103,8 @@ export default function CollateralForm({
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loadingOptions, setLoadingOptions] = useState(true)
   const [metadataInput, setMetadataInput] = useState('')
+  const [parsedMetadata, setParsedMetadata] = useState<any>(null)
+  const [metadataError, setMetadataError] = useState<string | null>(null)
 
   interface MetadataValue {
     [key: string]: string | number | boolean | null;
@@ -112,6 +114,24 @@ export default function CollateralForm({
     [key: string]: string | number | boolean | null | MetadataValue;
   }
 
+  // Helper function to validate and parse JSON
+  const validateAndParseJSON = (input: string) => {
+    try {
+      if (!input.trim()) {
+        setParsedMetadata(null);
+        setMetadataError(null);
+        return true;
+      }
+      const parsed = JSON.parse(input);
+      setParsedMetadata(parsed);
+      setMetadataError(null);
+      return true;
+    } catch (error) {
+      setMetadataError('Định dạng JSON không hợp lệ');
+      return false;
+    }
+  };
+
   // Helper function to safely update metadata
   const safelyUpdateMetadata = (templateData: MetadataTemplate) => {
     try {
@@ -120,14 +140,18 @@ export default function CollateralForm({
         ...currentData,
         ...templateData
       };
-      console.log('Updating metadata with:', newData); // Debug log
-      setMetadataInput(JSON.stringify(newData, null, 2));
+      console.log('Updating metadata with:', newData);
+      const formattedJson = JSON.stringify(newData, null, 2);
+      setMetadataInput(formattedJson);
+      setParsedMetadata(newData);
+      setMetadataError(null);
+
       // Add visual feedback
       const btn = document.activeElement as HTMLButtonElement;
       if (btn) {
         const originalText = btn.innerText;
         btn.innerText = '✓ Đã thêm';
-        btn.style.backgroundColor = '#f0fdf4'; // Light green background
+        btn.style.backgroundColor = '#f0fdf4';
         setTimeout(() => {
           btn.innerText = originalText;
           btn.style.backgroundColor = '';
@@ -135,9 +159,10 @@ export default function CollateralForm({
       }
     } catch (error) {
       console.error('Error updating metadata:', error);
-      // Start fresh with the template if current data is invalid
-      setMetadataInput(JSON.stringify(templateData, null, 2));
-      alert('Có lỗi khi cập nhật. Đã khôi phục về mẫu mới.');
+      const formattedJson = JSON.stringify(templateData, null, 2);
+      setMetadataInput(formattedJson);
+      setParsedMetadata(templateData);
+      setMetadataError('Có lỗi khi cập nhật. Đã khôi phục về mẫu mới.');
     }
   };
 
@@ -421,12 +446,36 @@ export default function CollateralForm({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Thông Tin Bổ Sung
               </label>
-              <JsonInputHelper
-                value={metadataInput}
-                onChange={setMetadataInput}
-              />
-              <div className="text-xs text-gray-500 mt-1">
-                Thông tin bổ sung về tài sản thế chấp (chọn mẫu hoặc thêm thông tin tùy chỉnh)
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <JsonInputHelper
+                    value={metadataInput}
+                    onChange={(value) => {
+                      setMetadataInput(value);
+                      validateAndParseJSON(value);
+                    }}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    Thông tin bổ sung về tài sản thế chấp (chọn mẫu hoặc thêm thông tin tùy chỉnh)
+                  </div>
+                  {metadataError && (
+                    <div className="text-sm text-red-600 mt-1">
+                      {metadataError}
+                    </div>
+                  )}
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                  <h5 className="text-sm font-medium text-gray-900 mb-2">Kết Quả JSON</h5>
+                  {parsedMetadata ? (
+                    <pre className="text-xs bg-white p-2 rounded border border-gray-200 overflow-auto max-h-[200px]">
+                      {JSON.stringify(parsedMetadata, null, 2)}
+                    </pre>
+                  ) : (
+                    <div className="text-sm text-gray-500 italic">
+                      Chưa có dữ liệu JSON
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
