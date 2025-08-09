@@ -239,10 +239,10 @@ export default function CollateralForm({
           error: null,
           isValid: true
         };
-      } catch (err) {
+      } catch (error) {
         return {
           ...update,
-          error: "Lỗi cấu trúc JSON",
+          error: `Lỗi cấu trúc JSON: ${error instanceof Error ? error.message : 'Invalid format'}`,
           isValid: false
         };
       }
