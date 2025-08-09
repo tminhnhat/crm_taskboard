@@ -106,12 +106,53 @@ export default function CollateralForm({
   const [parsedMetadata, setParsedMetadata] = useState<MetadataTemplate | null>(null)
   const [metadataError, setMetadataError] = useState<string | null>(null)
 
-  interface MetadataValue {
-    [key: string]: string | number | boolean | null;
-  }
+  type MetadataTemplateType = {
+    thong_tin_giay_to: {
+      so_giay_to: string;
+      loai_giay_to: string;
+      so_dang_ky: string;
+      ngay_cap: string;
+      noi_cap: string;
+      ngay_het_han: string;
+      ghi_chu: string;
+    };
+    thong_tin_bao_hiem: {
+      cong_ty_bao_hiem: string;
+      so_hop_dong_bh: string;
+      loai_bao_hiem: string;
+      ngay_hieu_luc: string;
+      ngay_ket_thuc: string;
+      phi_bao_hiem: string;
+      gia_tri_bao_hiem: string;
+    };
+    tinh_trang_tai_san: {
+      trang_thai: string;
+      chi_tiet_trang_thai: string;
+      lan_kiem_tra_cuoi: string;
+      nguoi_kiem_tra: string;
+      ghi_chu_kiem_tra: string;
+      danh_gia_rui_ro: string;
+      de_xuat_bao_tri: string;
+    };
+    thong_tin_dinh_gia: {
+      don_vi_dinh_gia: string;
+      dinh_gia_vien: string;
+      phuong_phap_dinh_gia: string;
+      ngay_dinh_gia: string;
+      gia_tri_uoc_tinh: string;
+      do_tin_cay: string;
+      ghi_chu_dinh_gia: string;
+    };
+    ghi_chu_bo_sung: {
+      dac_diem_noi_bat: string;
+      han_che: string;
+      lich_su_su_dung: string;
+      ghi_chu_khac: string;
+    };
+  };
 
   interface MetadataTemplate {
-    [key: string]: string | number | boolean | null | MetadataValue;
+    [K in keyof MetadataTemplateType]?: MetadataTemplateType[K];
   }
 
   // Helper function to validate and parse JSON
@@ -447,167 +488,110 @@ export default function CollateralForm({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Thông Tin Bổ Sung
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <JsonInputHelper
-                    value={metadataInput}
-                    onChange={(value) => {
-                      setMetadataInput(value);
-                      validateAndParseJSON(value);
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <select
+                    onChange={(e) => {
+                      const template = e.target.value;
+                      if (template) {
+                        const templateData = {
+                          thong_tin_giay_to: {
+                            so_giay_to: "",
+                            loai_giay_to: "",
+                            so_dang_ky: "",
+                            ngay_cap: "",
+                            noi_cap: "",
+                            ngay_het_han: "",
+                            ghi_chu: ""
+                          },
+                          thong_tin_bao_hiem: {
+                            cong_ty_bao_hiem: "",
+                            so_hop_dong_bh: "",
+                            loai_bao_hiem: "",
+                            ngay_hieu_luc: "",
+                            ngay_ket_thuc: "",
+                            phi_bao_hiem: "",
+                            gia_tri_bao_hiem: ""
+                          },
+                          tinh_trang_tai_san: {
+                            trang_thai: "tot",
+                            chi_tiet_trang_thai: "",
+                            lan_kiem_tra_cuoi: "",
+                            nguoi_kiem_tra: "",
+                            ghi_chu_kiem_tra: "",
+                            danh_gia_rui_ro: "",
+                            de_xuat_bao_tri: ""
+                          },
+                          thong_tin_dinh_gia: {
+                            don_vi_dinh_gia: "",
+                            dinh_gia_vien: "",
+                            phuong_phap_dinh_gia: "",
+                            ngay_dinh_gia: "",
+                            gia_tri_uoc_tinh: "",
+                            do_tin_cay: "",
+                            ghi_chu_dinh_gia: ""
+                          },
+                          ghi_chu_bo_sung: {
+                            dac_diem_noi_bat: "",
+                            han_che: "",
+                            lich_su_su_dung: "",
+                            ghi_chu_khac: ""
+                          }
+                        }[template] || {};
+                        
+                        safelyUpdateMetadata({ [template]: templateData });
+                      }
                     }}
-                  />
-                  <div className="text-xs text-gray-500 mt-1">
-                    Thông tin bổ sung về tài sản thế chấp (chọn mẫu để thêm, sau đó có thể chỉnh sửa các trường trong khung bên phải)
+                    value=""
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Chọn loại thông tin bổ sung...</option>
+                    <option value="thong_tin_giay_to">Thông tin giấy tờ pháp lý</option>
+                    <option value="thong_tin_bao_hiem">Thông tin bảo hiểm</option>
+                    <option value="tinh_trang_tai_san">Đánh giá tình trạng tài sản</option>
+                    <option value="thong_tin_dinh_gia">Thông tin định giá chi tiết</option>
+                    <option value="ghi_chu_bo_sung">Ghi chú bổ sung</option>
+                  </select>
+                  
+                  <div className="text-sm text-gray-500 flex items-center">
+                    <span className="mr-2">ℹ️</span>
+                    Chọn mẫu từ danh sách để thêm thông tin
                   </div>
-                  <div className="text-xs text-blue-600 mt-1">
-                    ℹ️ Sau khi thêm mẫu, bạn có thể chỉnh sửa nội dung trong khung JSON bên phải
-                  </div>
-                  {metadataError && (
-                    <div className="text-sm text-red-600 mt-1">
-                      {metadataError}
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <h5 className="text-sm font-medium text-gray-900 mb-2">Thông Tin Chi Tiết</h5>
+                    <div className="relative">
+                      <textarea
+                        value={metadataInput}
+                        onChange={(e) => {
+                          setMetadataInput(e.target.value);
+                          validateAndParseJSON(e.target.value);
+                        }}
+                        placeholder="Chọn mẫu thông tin từ danh sách trên để bắt đầu..."
+                        className="w-full h-[200px] text-xs font-mono bg-white p-2 rounded border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        style={{ resize: 'vertical', minHeight: '100px' }}
+                      />
+                      {metadataError && (
+                        <div className="absolute bottom-2 right-2 text-xs text-red-500 bg-white px-2 py-1 rounded-md border border-red-200">
+                          ⚠️ Lỗi định dạng dữ liệu
+                        </div>
+                      )}
+                      {!metadataError && parsedMetadata && (
+                        <div className="absolute bottom-2 right-2 text-xs text-green-500 bg-white px-2 py-1 rounded-md border border-green-200">
+                          ✓ Dữ liệu hợp lệ
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                  <h5 className="text-sm font-medium text-gray-900 mb-2">Kết Quả JSON (Chỉnh sửa trực tiếp)</h5>
-                  <div className="relative">
-                    <textarea
-                      value={parsedMetadata ? JSON.stringify(parsedMetadata, null, 2) : ''}
-                      onChange={(e) => {
-                        setMetadataInput(e.target.value);
-                        validateAndParseJSON(e.target.value);
-                      }}
-                      placeholder="Chưa có dữ liệu JSON"
-                      className="w-full h-[200px] text-xs font-mono bg-white p-2 rounded border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      style={{ resize: 'vertical', minHeight: '100px' }}
-                    />
-                    {metadataError && (
-                      <div className="absolute bottom-2 right-2 text-xs text-red-500 bg-white px-2 py-1 rounded-md border border-red-200">
-                        ⚠️ Lỗi định dạng JSON
-                      </div>
-                    )}
-                    {!metadataError && parsedMetadata && (
-                      <div className="absolute bottom-2 right-2 text-xs text-green-500 bg-white px-2 py-1 rounded-md border border-green-200">
-                        ✓ JSON hợp lệ
-                      </div>
-                    )}
+                    <div className="text-xs text-gray-500 mt-2">
+                      Bạn có thể chỉnh sửa trực tiếp các thông tin trong khung này sau khi thêm mẫu
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Mẫu thông tin bổ sung</h4>
-              {/* Legal Documents Template */}
-              <div className="mb-3">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    try {
-                      safelyUpdateMetadata({
-                        thong_tin_giay_to: {
-                          so_giay_to: "",
-                          loai_giay_to: "",
-                          so_dang_ky: "",
-                          ngay_cap: "",
-                          noi_cap: "",
-                          ngay_het_han: "",
-                          ghi_chu: ""
-                        }
-                      });
-                    } catch (error) {
-                      console.error('Error clicking button:', error);
-                    }
-                  }}
-                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2 transition-all duration-200"
-                >
-                  <span className="text-sm text-blue-600">+ Thêm thông tin giấy tờ pháp lý</span>
-                </button>
-              </div>
-
-              {/* Insurance Template */}
-              <div className="mb-3">
-                <button
-                  type="button"
-                  onClick={() => safelyUpdateMetadata({
-                    thong_tin_bao_hiem: {
-                      cong_ty_bao_hiem: "",
-                      so_hop_dong_bh: "",
-                      loai_bao_hiem: "",
-                      ngay_hieu_luc: "",
-                      ngay_ket_thuc: "",
-                      phi_bao_hiem: "",
-                      gia_tri_bao_hiem: ""
-                    }
-                  })}
-                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
-                >
-                  <span className="text-sm text-blue-600">+ Thêm thông tin bảo hiểm</span>
-                </button>
-              </div>
-
-              {/* Asset Condition Template */}
-              <div className="mb-3">
-                <button
-                  type="button"
-                  onClick={() => safelyUpdateMetadata({
-                    tinh_trang_tai_san: {
-                      trang_thai: "tot",
-                      chi_tiet_trang_thai: "",
-                      lan_kiem_tra_cuoi: "",
-                      nguoi_kiem_tra: "",
-                      ghi_chu_kiem_tra: "",
-                      danh_gia_rui_ro: "",
-                      de_xuat_bao_tri: ""
-                    }
-                  })}
-                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
-                >
-                  <span className="text-sm text-blue-600">+ Thêm đánh giá tình trạng tài sản</span>
-                </button>
-              </div>
-
-              {/* Valuation Template */}
-              <div className="mb-3">
-                <button
-                  type="button"
-                  onClick={() => safelyUpdateMetadata({
-                    thong_tin_dinh_gia: {
-                      don_vi_dinh_gia: "",
-                      dinh_gia_vien: "",
-                      phuong_phap_dinh_gia: "",
-                      ngay_dinh_gia: "",
-                      gia_tri_uoc_tinh: "",
-                      do_tin_cay: "",
-                      ghi_chu_dinh_gia: ""
-                    }
-                  })}
-                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
-                >
-                  <span className="text-sm text-blue-600">+ Thêm thông tin định giá chi tiết</span>
-                </button>
-              </div>
-
-              {/* Additional Notes */}
-              <div className="mb-3">
-                <button
-                  type="button"
-                  onClick={() => safelyUpdateMetadata({
-                    ghi_chu_bo_sung: {
-                      dac_diem_noi_bat: "",
-                      han_che: "",
-                      lich_su_su_dung: "",
-                      ghi_chu_khac: ""
-                    }
-                  })}
-                  className="w-full text-left px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center space-x-2"
-                >
-                  <span className="text-sm text-blue-600">+ Thêm ghi chú bổ sung</span>
-                </button>
-              </div>
             </div>
-          </div>
 
           {/* Actions */}
           <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
