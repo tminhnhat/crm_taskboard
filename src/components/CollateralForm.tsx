@@ -7,15 +7,8 @@ import MetadataForm from './MetadataForm'
 interface CollateralFormProps {
   collateral?: Collateral | null;
   onSave: (collateralData: Partial<Collateral>) => void;
-  onCancel: () => void            rows={8}
-            placeholder="Nhập thông tin tùy chỉnh dưới dạng JSON"
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
-          />
-          <p className="text-sm text-gray-500">
-            Nhập thông tin dưới dạng JSON hợp lệ. Ví dụ: {'{'}&#34;key&#34;: &#34;value&#34;{'}'}
-          </p>
-        </div>
-      </div>ding?: boolean;
+  onCancel: () => void;
+  isLoading?: boolean;
   fetchCustomers: () => Promise<Customer[]>;
 }
 
