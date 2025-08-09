@@ -457,7 +457,10 @@ export default function CollateralForm({
                     }}
                   />
                   <div className="text-xs text-gray-500 mt-1">
-                    Thông tin bổ sung về tài sản thế chấp (chọn mẫu hoặc thêm thông tin tùy chỉnh)
+                    Thông tin bổ sung về tài sản thế chấp (chọn mẫu để thêm, sau đó có thể chỉnh sửa các trường trong khung bên phải)
+                  </div>
+                  <div className="text-xs text-blue-600 mt-1">
+                    ℹ️ Sau khi thêm mẫu, bạn có thể chỉnh sửa nội dung trong khung JSON bên phải
                   </div>
                   {metadataError && (
                     <div className="text-sm text-red-600 mt-1">
