@@ -44,18 +44,14 @@ export default function CollateralFormEnhanced({
   })
 
   const [customers, setCustomers] = useState<Customer[]>([])
-  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const loadCustomers = async () => {
       try {
-        setLoading(true)
         const data = await fetchCustomers()
         setCustomers(data)
       } catch (error) {
         console.error('Error loading customers:', error)
-      } finally {
-        setLoading(false)
       }
     }
     loadCustomers()
