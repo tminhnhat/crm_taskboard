@@ -5,7 +5,7 @@ import { useCollaterals } from '@/hooks/useCollaterals'
 import { Collateral } from '@/lib/supabase'
 import Navigation from '@/components/Navigation'
 import CollateralCard from '@/components/CollateralCard'
-import CollateralForm from '@/components/CollateralForm'
+import CollateralForm from '@/components/CollateralFormEnhanced'
 import CollateralFilters from '@/components/CollateralFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { 
