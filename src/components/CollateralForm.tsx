@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Collateral, Customer } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
+import JsonInputHelper from './JsonInputHelper'
 
 interface CollateralFormProps {
   collateral?: Collateral | null;
@@ -287,15 +288,14 @@ export default function CollateralForm({
       {/* Custom JSON Input */}
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Thông tin tùy chỉnh (JSON)
+          Thông tin tùy chỉnh
         </h3>
         <div className="space-y-2">
-          <textarea
-            name="custom_json"
+          <JsonInputHelper
             value={JSON.stringify(formState.metadata.custom || {}, null, 2)}
-            onChange={(e) => {
+            onChange={(jsonString: string) => {
               try {
-                const customData = JSON.parse(e.target.value);
+                const customData = JSON.parse(jsonString);
                 handleMetadataChange({
                   ...formState.metadata,
                   custom: customData
@@ -305,12 +305,9 @@ export default function CollateralForm({
                 console.error('Invalid JSON:', error);
               }
             }}
-            rows={8}
-            placeholder="Nhập thông tin tùy chỉnh dưới dạng JSON"
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
           />
           <p className="text-sm text-gray-500">
-            Nhập thông tin dưới dạng JSON hợp lệ. Ví dụ: {`{"key": "value"}`}
+            Thêm các trường thông tin tùy chỉnh theo nhu cầu
           </p>
         </div>
       </div>
