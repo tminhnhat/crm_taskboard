@@ -12,7 +12,7 @@ interface CollateralFormProps {
   fetchCustomers: () => Promise<Customer[]>;
 }
 
-export default function CollateralFormEnhanced({
+export default function CollateralForm({
   collateral,
   onSave,
   onCancel,
@@ -281,6 +281,7 @@ export default function CollateralFormEnhanced({
               : ['documents', 'communication']
             }
           />
+        )}
       </div>
 
       {/* Form Actions */}
