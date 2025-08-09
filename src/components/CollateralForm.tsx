@@ -469,16 +469,29 @@ export default function CollateralForm({
                   )}
                 </div>
                 <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                  <h5 className="text-sm font-medium text-gray-900 mb-2">Kết Quả JSON</h5>
-                  {parsedMetadata ? (
-                    <pre className="text-xs bg-white p-2 rounded border border-gray-200 overflow-auto max-h-[200px]">
-                      {JSON.stringify(parsedMetadata, null, 2)}
-                    </pre>
-                  ) : (
-                    <div className="text-sm text-gray-500 italic">
-                      Chưa có dữ liệu JSON
-                    </div>
-                  )}
+                  <h5 className="text-sm font-medium text-gray-900 mb-2">Kết Quả JSON (Chỉnh sửa trực tiếp)</h5>
+                  <div className="relative">
+                    <textarea
+                      value={parsedMetadata ? JSON.stringify(parsedMetadata, null, 2) : ''}
+                      onChange={(e) => {
+                        setMetadataInput(e.target.value);
+                        validateAndParseJSON(e.target.value);
+                      }}
+                      placeholder="Chưa có dữ liệu JSON"
+                      className="w-full h-[200px] text-xs font-mono bg-white p-2 rounded border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      style={{ resize: 'vertical', minHeight: '100px' }}
+                    />
+                    {metadataError && (
+                      <div className="absolute bottom-2 right-2 text-xs text-red-500 bg-white px-2 py-1 rounded-md border border-red-200">
+                        ⚠️ Lỗi định dạng JSON
+                      </div>
+                    )}
+                    {!metadataError && parsedMetadata && (
+                      <div className="absolute bottom-2 right-2 text-xs text-green-500 bg-white px-2 py-1 rounded-md border border-green-200">
+                        ✓ JSON hợp lệ
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
