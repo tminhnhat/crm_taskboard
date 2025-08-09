@@ -112,7 +112,6 @@ export default function CreditAssessmentForm({
   const [customers, setCustomers] = useState<Customer[]>([])
   const [staff, setStaff] = useState<Staff[]>([])
   const [loadingOptions, setLoadingOptions] = useState(true)
-  const [metadataInput, setMetadataInput] = useState('')
 
   // Load customers and staff for dropdowns
   useEffect(() => {
@@ -135,13 +134,6 @@ export default function CreditAssessmentForm({
     loadOptions()
   }, [fetchCustomers, fetchStaff])
 
-  // Initialize metadata input from existing data
-  useEffect(() => {
-    if (assessment?.metadata) {
-      setMetadataInput(JSON.stringify(assessment.metadata, null, 2))
-    }
-  }, [assessment])
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -151,8 +143,7 @@ export default function CreditAssessmentForm({
       return
     }
     
-    let parsedMetadata = {}
-    // Metadata is already parsed in the formData
+    const parsedMetadata = formData.metadata || {}
 
     const assessmentData: Partial<CreditAssessment> = {
       customer_id: parseInt(formData.customer_id),
