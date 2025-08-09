@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Collateral, Customer } from '@/lib/supabase'
 
 // Template definitions
@@ -84,7 +84,7 @@ export default function CollateralForm({
   onCancel, 
   isLoading,
   fetchCustomers
-}: CollateralFormProps) {
+}: CollateralFormProps): React.JSX.Element {
   // Helper functions for date format conversion
   const formatDateForDisplay = (dateString: string | null | undefined): string => {
     if (!dateString) return '';
@@ -157,14 +157,16 @@ export default function CollateralForm({
   const [loadingOptions, setLoadingOptions] = useState(true);
 
   // Metadata state with validation and parsing
-  const [activeMetadata, setActiveMetadata] = useState<{
+  interface MetadataState {
     input: string;
     parsed: MetadataTemplate | null;
     error: string | null;
     selectedTemplate: TemplateKeys | null;
     jsonData: string;
     isValid: boolean;
-  }>({
+  }
+
+  const [activeMetadata, setActiveMetadata] = useState<MetadataState>({
     input: collateral?.metadata ? JSON.stringify(collateral.metadata, null, 2) : '',
     parsed: collateral?.metadata as MetadataTemplate || null,
     error: null,
@@ -286,7 +288,7 @@ export default function CollateralForm({
   };
 
   // Helper function for form input handling
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof typeof formData, value: string): void => {
     setFormData(prev => ({
       ...prev,
       [field]: value
