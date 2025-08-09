@@ -270,9 +270,6 @@ export default function CreditAssessmentForm({
             >
               <option value="pending">Đang chờ</option>
               <option value="approved">Đã phê duyệt</option>
-              <option value="rejected">Đã từ chối</option>
-              <option value="conditional">Có điều kiện</option>
-              <option value="under_review">Đang xem xét</option>
             </select>
           </div>
 

@@ -4,7 +4,9 @@ import { CreditAssessment } from '@/lib/supabase'
 import { 
   PencilIcon, 
   TrashIcon,
-  DocumentArrowDownIcon
+                 assessment.assessment_result === 'approved' ? 'Đã phê duyệt' :
+               assessment.assessment_result === 'pending' ? 'Đang chờ' :
+               assessment.assessment_result || 'Chưa có'mentArrowDownIcon
 } from '@heroicons/react/24/outline'
 
 interface CreditAssessmentCardProps {
@@ -19,8 +21,6 @@ export default function CreditAssessmentCard({ assessment, onEdit, onDelete }: C
     switch (result.toLowerCase()) {
       case 'approved':
         return 'text-green-600'
-      case 'rejected':
-        return 'text-red-600'
       case 'pending':
         return 'text-yellow-600'
       default:
@@ -33,8 +33,6 @@ export default function CreditAssessmentCard({ assessment, onEdit, onDelete }: C
     switch (result.toLowerCase()) {
       case 'approved':
         return 'bg-green-100'
-      case 'rejected':
-        return 'bg-red-100'
       case 'pending':
         return 'bg-yellow-100'
       default:
@@ -107,9 +105,8 @@ export default function CreditAssessmentCard({ assessment, onEdit, onDelete }: C
               )} ${getResultColor(assessment.assessment_result)}`}
             >
               {assessment.assessment_result === 'approved' ? 'Đã phê duyệt' :
-               assessment.assessment_result === 'rejected' ? 'Đã từ chối' :
                assessment.assessment_result === 'pending' ? 'Đang chờ' :
-               assessment.assessment_result || 'Đang chờ'}
+               'Đang chờ'}
             </span>
           </div>
         </div>

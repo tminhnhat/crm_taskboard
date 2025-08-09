@@ -98,11 +98,8 @@ export default function CreditAssessmentFilters({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Tất cả kết quả</option>
-                <option value="approved">Đã phê duyệt</option>
-                <option value="rejected">Đã từ chối</option>
                 <option value="pending">Đang chờ</option>
-                <option value="conditional">Có điều kiện</option>
-                <option value="under_review">Đang xem xét</option>
+                <option value="approved">Đã phê duyệt</option>
               </select>
             </div>
 
@@ -178,10 +175,7 @@ export default function CreditAssessmentFilters({
             {filters.result && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 Kết quả: {filters.result === 'approved' ? 'Đã phê duyệt' :
-                         filters.result === 'rejected' ? 'Đã từ chối' :
                          filters.result === 'pending' ? 'Đang chờ' :
-                         filters.result === 'conditional' ? 'Có điều kiện' :
-                         filters.result === 'under_review' ? 'Đang xem xét' :
                          filters.result}
               </span>
             )}
