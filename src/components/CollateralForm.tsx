@@ -284,6 +284,37 @@ export default function CollateralForm({
         )}
       </div>
 
+      {/* Custom JSON Input */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Thông tin tùy chỉnh (JSON)
+        </h3>
+        <div className="space-y-2">
+          <textarea
+            name="custom_json"
+            value={JSON.stringify(formState.metadata.custom || {}, null, 2)}
+            onChange={(e) => {
+              try {
+                const customData = JSON.parse(e.target.value);
+                handleMetadataChange({
+                  ...formState.metadata,
+                  custom: customData
+                });
+              } catch (error) {
+                // If JSON is invalid, don't update the state
+                console.error('Invalid JSON:', error);
+              }
+            }}
+            rows={8}
+            placeholder="Nhập thông tin tùy chỉnh dưới dạng JSON"
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
+          />
+          <p className="text-sm text-gray-500">
+            Nhập thông tin dưới dạng JSON hợp lệ. Ví dụ: {"{"}"key": "value"{"}"}
+          </p>
+        </div>
+      </div>
+
       {/* Form Actions */}
       <div className="flex justify-end space-x-4">
         <button
