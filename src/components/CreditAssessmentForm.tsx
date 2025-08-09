@@ -166,219 +166,212 @@ export default function CreditAssessmentForm({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {assessment ? 'Chỉnh Sửa Đánh Giá Tín Dụng' : 'Đánh Giá Tín Dụng Mới'}
-          </h2>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Customer Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Khách hàng *
+          </label>
+          <select
+            value={formData.customer_id}
+            onChange={(e) => handleInputChange('customer_id', e.target.value)}
+            required
+            disabled={loadingOptions}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">Chọn khách hàng...</option>
+            {customers.map(customer => (
+              <option key={customer.customer_id} value={customer.customer_id}>
+                {customer.full_name} - {customer.account_number}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-4 space-y-6">
-          {/* Customer Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Khách hàng *
-            </label>
-            <select
-              value={formData.customer_id}
-              onChange={(e) => handleInputChange('customer_id', e.target.value)}
-              required
-              disabled={loadingOptions}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Chọn khách hàng...</option>
-              {customers.map(customer => (
-                <option key={customer.customer_id} value={customer.customer_id}>
-                  {customer.full_name} - {customer.account_number}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Staff Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Người đánh giá *
+          </label>
+          <select
+            value={formData.staff_id}
+            onChange={(e) => handleInputChange('staff_id', e.target.value)}
+            required
+            disabled={loadingOptions}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">Chọn nhân viên...</option>
+            {staff.map(staffMember => (
+              <option key={staffMember.staff_id} value={staffMember.staff_id}>
+                {staffMember.full_name} - {staffMember.position || staffMember.department}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          {/* Staff Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Người đánh giá *
-            </label>
-            <select
-              value={formData.staff_id}
-              onChange={(e) => handleInputChange('staff_id', e.target.value)}
-              required
-              disabled={loadingOptions}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Chọn nhân viên...</option>
-              {staff.map(staffMember => (
-                <option key={staffMember.staff_id} value={staffMember.staff_id}>
-                  {staffMember.full_name} - {staffMember.position || staffMember.department}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Assessment Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ngày đánh giá *
-            </label>
-            <input
-              type="text"
-              value={formData.assessment_date}
-              onChange={(e) => {
-                let value = e.target.value
-                // Auto-format as user types (add slashes)
-                value = value.replace(/\D/g, '') // Remove non-digits
-                if (value.length >= 3) {
-                  value = value.slice(0, 2) + '/' + value.slice(2)
-                }
-                if (value.length >= 6) {
-                  value = value.slice(0, 5) + '/' + value.slice(5, 9)
-                }
-                handleInputChange('assessment_date', value)
-              }}
-              placeholder="dd/mm/yyyy"
-              maxLength={10}
-              required
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                formData.assessment_date && !validateDateFormat(formData.assessment_date) 
-                  ? 'border-red-300 bg-red-50' 
-                  : 'border-gray-300'
-              }`}
-            />
-            {formData.assessment_date && !validateDateFormat(formData.assessment_date) && (
-              <div className="text-sm text-red-600 mt-1">
-                Định dạng ngày không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
-              </div>
-            )}
-            {formData.assessment_date && validateDateFormat(formData.assessment_date) && (
-              <div className="text-sm text-green-600 mt-1">
-                ✓ Định dạng ngày hợp lệ
-              </div>
-            )}
-          </div>
-
-          {/* Assessment Result */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Kết quả đánh giá
-            </label>
-            <select
-              value={formData.assessment_result}
-              onChange={(e) => handleInputChange('assessment_result', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="pending">Đang chờ</option>
-              <option value="approved">Đã phê duyệt</option>
-            </select>
-          </div>
-
-          {/* Comments */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nhận xét
-            </label>
-            <textarea
-              value={formData.comments}
-              onChange={(e) => handleInputChange('comments', e.target.value)}
-              placeholder="Ghi chú đánh giá, quan sát, khuyến nghị..."
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* Documents */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tài liệu
-            </label>
-            <input
-              type="text"
-              value={formData.documents}
-              onChange={(e) => handleInputChange('documents', e.target.value)}
-              placeholder="Tên file hoặc liên kết đến tài liệu hỗ trợ"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <div className="text-xs text-gray-500 mt-1">
-              Nhập tên file hoặc URL, cách nhau bằng dấu phẩy
+        {/* Assessment Date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Ngày đánh giá *
+          </label>
+          <input
+            type="text"
+            value={formData.assessment_date}
+            onChange={(e) => {
+              let value = e.target.value
+              // Auto-format as user types (add slashes)
+              value = value.replace(/\D/g, '') // Remove non-digits
+              if (value.length >= 3) {
+                value = value.slice(0, 2) + '/' + value.slice(2)
+              }
+              if (value.length >= 6) {
+                value = value.slice(0, 5) + '/' + value.slice(5, 9)
+              }
+              handleInputChange('assessment_date', value)
+            }}
+            placeholder="dd/mm/yyyy"
+            maxLength={10}
+            required
+            className={`block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              formData.assessment_date && !validateDateFormat(formData.assessment_date) 
+                ? 'border-red-300 bg-red-50' 
+                : 'border-gray-300'
+            }`}
+          />
+          {formData.assessment_date && !validateDateFormat(formData.assessment_date) && (
+            <div className="text-sm text-red-600 mt-1">
+              Định dạng ngày không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
             </div>
-          </div>
-
-          {/* Metadata */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Thông tin bổ sung
-            </label>
-            <JsonInputHelper
-              value={JSON.stringify(formData.metadata || {}, null, 2)}
-              onChange={(jsonString) => {
-                try {
-                  const customData = JSON.parse(jsonString);
-                  handleInputChange('metadata', customData);
-                } catch (error) {
-                  console.error('Invalid JSON:', error);
-                }
-              }}
-            />
-            <div className="text-xs text-gray-500 mt-1">
-              Thêm các trường tùy chỉnh cho đánh giá tín dụng
+          )}
+          {formData.assessment_date && validateDateFormat(formData.assessment_date) && (
+            <div className="text-sm text-green-600 mt-1">
+              ✓ Định dạng ngày hợp lệ
             </div>
-            <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleInputChange('metadata', {
-                  phuong_phap_danh_gia: "tu_dong",
-                  nguon_du_lieu: "trung_tam_tin_dung",
-                  phan_loai_rui_ro: "thap"
-                })}
-                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-              >
-                Đánh giá tự động
-              </button>
-              <button
-                type="button"
-                onClick={() => handleInputChange('metadata', {
-                  phuong_phap_danh_gia: "thu_cong",
-                  nguon_du_lieu: "bao_cao_tai_chinh",
-                  phan_loai_rui_ro: "trung_binh"
-                })}
-                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-              >
-                Đánh giá thủ công
-              </button>
-              <button
-                type="button"
-                onClick={() => handleInputChange('metadata', {
-                  phuong_phap_danh_gia: "ket_hop",
-                  nguon_du_lieu: "da_nguon",
-                  phan_loai_rui_ro: "can_xem_xet"
-                })}
-                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-              >
-                Đánh giá kết hợp
-              </button>
-            </div>
-          </div>
+          )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? 'Đang lưu...' : (assessment ? 'Cập nhật' : 'Tạo') + ' Đánh giá'}
-            </button>
-          </div>
-        </form>
+        {/* Assessment Result */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Kết quả đánh giá
+          </label>
+          <select
+            value={formData.assessment_result}
+            onChange={(e) => handleInputChange('assessment_result', e.target.value)}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="pending">Đang chờ</option>
+            <option value="approved">Đã phê duyệt</option>
+          </select>
+        </div>
       </div>
-    </div>
+
+      {/* Comments */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Nhận xét
+        </label>
+        <textarea
+          value={formData.comments}
+          onChange={(e) => handleInputChange('comments', e.target.value)}
+          placeholder="Ghi chú đánh giá, quan sát, khuyến nghị..."
+          rows={4}
+          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        />
+      </div>
+
+      {/* Documents */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Tài liệu
+        </label>
+        <input
+          type="text"
+          value={formData.documents}
+          onChange={(e) => handleInputChange('documents', e.target.value)}
+          placeholder="Tên file hoặc liên kết đến tài liệu hỗ trợ"
+          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        />
+        <div className="text-xs text-gray-500 mt-1">
+          Nhập tên file hoặc URL, cách nhau bằng dấu phẩy
+        </div>
+      </div>
+
+      {/* Metadata Form */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Thông tin chi tiết
+        </h3>
+        <JsonInputHelper
+          value={JSON.stringify(formData.metadata || {}, null, 2)}
+          onChange={(jsonString) => {
+            try {
+              const customData = JSON.parse(jsonString);
+              handleInputChange('metadata', customData);
+            } catch (error) {
+              console.error('Invalid JSON:', error);
+            }
+          }}
+        />
+        <div className="text-xs text-gray-500 mt-1">
+          Thêm các trường thông tin tùy chỉnh theo nhu cầu
+        </div>
+        <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => handleInputChange('metadata', {
+              phuong_phap_danh_gia: "tu_dong",
+              nguon_du_lieu: "trung_tam_tin_dung",
+              phan_loai_rui_ro: "thap"
+            })}
+            className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+          >
+            Đánh giá tự động
+          </button>
+          <button
+            type="button"
+            onClick={() => handleInputChange('metadata', {
+              phuong_phap_danh_gia: "thu_cong",
+              nguon_du_lieu: "bao_cao_tai_chinh",
+              phan_loai_rui_ro: "trung_binh"
+            })}
+            className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+          >
+            Đánh giá thủ công
+          </button>
+          <button
+            type="button"
+            onClick={() => handleInputChange('metadata', {
+              phuong_phap_danh_gia: "ket_hop",
+              nguon_du_lieu: "da_nguon",
+              phan_loai_rui_ro: "can_xem_xet"
+            })}
+            className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+          >
+            Đánh giá kết hợp
+          </button>
+        </div>
+      </div>
+
+      {/* Form Actions */}
+      <div className="flex justify-end space-x-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isLoading}
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Hủy
+        </button>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          {isLoading ? 'Đang lưu...' : assessment ? 'Cập nhật' : 'Tạo mới'}
+        </button>
+      </div>
+    </form>
   )
 }
