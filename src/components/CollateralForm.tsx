@@ -26,7 +26,6 @@ export default function CollateralForm({
     customer_id: string;
     valuation_date: string;
     status: string;
-    legal_status: string;
     location: string;
     description: string;
     owner_info: string;
@@ -37,7 +36,6 @@ export default function CollateralForm({
     customer_id: collateral?.customer_id?.toString() || '',
     valuation_date: collateral?.valuation_date || '',
     status: collateral?.status || 'active',
-    legal_status: collateral?.legal_status || '',
     location: collateral?.location || '',
     description: collateral?.description || '',
     owner_info: collateral?.owner_info || '',
@@ -67,7 +65,6 @@ export default function CollateralForm({
       customer_id: parseInt(formState.customer_id),
       valuation_date: formState.valuation_date,
       status: formState.status,
-      legal_status: formState.legal_status,
       location: formState.location,
       description: formState.description,
       owner_info: formState.owner_info,
@@ -198,20 +195,6 @@ export default function CollateralForm({
           </select>
         </div>
 
-        {/* Legal Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tình trạng pháp lý
-          </label>
-          <input
-            type="text"
-            name="legal_status"
-            value={formState.legal_status}
-            onChange={handleInputChange}
-            placeholder="VD: Đã công chứng, Đang thế chấp..."
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
       </div>
 
       {/* Location */}

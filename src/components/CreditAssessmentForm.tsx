@@ -152,14 +152,7 @@ export default function CreditAssessmentForm({
     }
     
     let parsedMetadata = {}
-    if (metadataInput.trim()) {
-      try {
-        parsedMetadata = JSON.parse(metadataInput)
-      } catch {
-        alert('Dữ liệu JSON không hợp lệ trong trường thông tin bổ sung')
-        return
-      }
-    }
+    // Metadata is already parsed in the formData
 
     const assessmentData: Partial<CreditAssessment> = {
       customer_id: parseInt(formData.customer_id),
@@ -174,7 +167,7 @@ export default function CreditAssessmentForm({
     onSave(assessmentData)
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | Record<string, unknown>) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -329,42 +322,49 @@ export default function CreditAssessmentForm({
               Thông tin bổ sung
             </label>
             <JsonInputHelper
-              value={metadataInput}
-              onChange={setMetadataInput}
+              value={JSON.stringify(formData.metadata || {}, null, 2)}
+              onChange={(jsonString) => {
+                try {
+                  const customData = JSON.parse(jsonString);
+                  handleInputChange('metadata', customData);
+                } catch (error) {
+                  console.error('Invalid JSON:', error);
+                }
+              }}
             />
             <div className="text-xs text-gray-500 mt-1">
-              Thêm các trường tùy chỉnh cho đánh giá tín dụng (phương pháp đánh giá, nguồn dữ liệu, phân loại rủi ro, v.v.)
+              Thêm các trường tùy chỉnh cho đánh giá tín dụng
             </div>
             <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => setMetadataInput(JSON.stringify({
+                onClick={() => handleInputChange('metadata', {
                   phuong_phap_danh_gia: "tu_dong",
                   nguon_du_lieu: "trung_tam_tin_dung",
                   phan_loai_rui_ro: "thap"
-                }, null, 2))}
+                })}
                 className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
               >
                 Đánh giá tự động
               </button>
               <button
                 type="button"
-                onClick={() => setMetadataInput(JSON.stringify({
+                onClick={() => handleInputChange('metadata', {
                   phuong_phap_danh_gia: "thu_cong",
                   nguon_du_lieu: "bao_cao_tai_chinh",
                   phan_loai_rui_ro: "trung_binh"
-                }, null, 2))}
+                })}
                 className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
               >
                 Đánh giá thủ công
               </button>
               <button
                 type="button"
-                onClick={() => setMetadataInput(JSON.stringify({
+                onClick={() => handleInputChange('metadata', {
                   phuong_phap_danh_gia: "ket_hop",
                   nguon_du_lieu: "da_nguon",
                   phan_loai_rui_ro: "can_xem_xet"
-                }, null, 2))}
+                })}
                 className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
               >
                 Đánh giá kết hợp
