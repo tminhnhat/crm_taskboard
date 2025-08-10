@@ -68,9 +68,8 @@ export interface Customer {
   registration_date: string | null
   legal_representative: string | null
   legal_representative_cif_number: string | null
+  business_registration_authority: string | null
   business_sector: string | null
-  company_size: 'micro' | 'small' | 'medium' | 'large' | null
-  annual_revenue: string | null
 }
 
 // Product types
