@@ -28,8 +28,19 @@ export default function CreditAssessmentsPage() {
     deleteAssessment,
     fetchCustomers,
     fetchStaff,
-    getAssessmentStats
-  
+    getAssessmentStats,
+  }: {
+    assessments: CreditAssessment[],
+    loading: boolean,
+    error: string | null,
+    createAssessment: (data: Partial<CreditAssessment>) => Promise<void>,
+    updateAssessment: (id: number, data: Partial<CreditAssessment>) => Promise<void>,
+    deleteAssessment: (id: number) => Promise<void>,
+    fetchCustomers: () => Promise<any>,
+    fetchStaff: () => Promise<any>,
+    getAssessmentStats: () => { total: number, approved: number, rejected: number, pending: number }
+  } = useCreditAssessments()
+
   const { fetchProducts } = useProducts()
 
   const [showForm, setShowForm] = useState(false)
@@ -40,6 +51,7 @@ export default function CreditAssessmentsPage() {
     customerId: '',
     staffId: '',
     dateRange: ''
+  })
   const [currentPage, setCurrentPage] = useState(1)
   const assessmentsPerPage = 9 // 3x3 grid layout
 
@@ -61,6 +73,17 @@ export default function CreditAssessmentsPage() {
 
   const availableStaff = useMemo(() => {
     const staff = new Map()
+    assessments.forEach(assessment => {
+      if (assessment.staff) {
+        staff.set(assessment.staff.staff_id, {
+          staff_id: assessment.staff.staff_id,
+          full_name: assessment.staff.full_name
+        })
+      }
+    })
+    return Array.from(staff.values()).sort((a, b) => a.full_name.localeCompare(b.full_name))
+  }, [assessments])
+
   const filteredAssessments = useMemo(() => {
     return assessments.filter(assessment => {
       const matchesSearch = !filters.search || 
@@ -344,7 +367,6 @@ export default function CreditAssessmentsPage() {
             onCancel={handleCancelForm}
             isLoading={loading}
             fetchCustomers={fetchCustomers}
-            fetchStaff={fetchStaff}
             fetchProducts={fetchProducts}
           />
         )}
