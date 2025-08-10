@@ -37,16 +37,17 @@ export default function CustomerFilters({ filters, onFiltersChange }: CustomerFi
         
         <div className="flex items-center gap-2">
           <label htmlFor="customer-type-filter" className="text-sm text-gray-600">Loại:</label>
-          <select
-            id="customer-type-filter"
-            value={filters.customerType}
-            onChange={(e) => updateFilter('customerType', e.target.value)}
-            className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tất Cả Loại</option>
-            <option value="individual">Cá Nhân</option>
-            <option value="corporate">Doanh Nghiệp</option>
-          </select>
+                            <select
+                    id="customer-type"
+                    value={filters.customerType}
+                    onChange={(e) => updateFilter('customerType', e.target.value)}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Tất Cả Loại</option>
+                    <option value="individual">Cá Nhân</option>
+                    <option value="business_individual">Cá Nhân Kinh Doanh</option>
+                    <option value="corporate">Doanh Nghiệp</option>
+                  </select>
         </div>
         
         <div className="flex items-center gap-2">

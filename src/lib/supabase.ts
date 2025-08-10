@@ -41,7 +41,7 @@ export interface Task {
 }
 
 // Customer types
-export type CustomerType = 'individual' | 'corporate'
+export type CustomerType = 'individual' | 'corporate' | 'business_individual'
 
 export interface Customer {
   customer_id: number

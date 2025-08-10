@@ -105,6 +105,7 @@ interface CustomerCardProps {
 
 const customerTypeColors = {
   individual: 'bg-blue-100 text-blue-800',
+  business_individual: 'bg-green-100 text-green-800',
   corporate: 'bg-purple-100 text-purple-800'
 }
 
@@ -115,6 +116,7 @@ const statusColors = {
 
 const customerTypeIcons = {
   individual: UserIcon,
+  business_individual: UserIcon,
   corporate: BuildingOfficeIcon
 }
 

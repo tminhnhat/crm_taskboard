@@ -334,7 +334,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                     setFormData(prev => ({
                       ...prev,
                       customer_type: newType,
-                      // Clear corporate fields when switching to individual
+                      // Clear business fields when switching to individual
                       ...(newType === 'individual' && {
                         company_name: null,
                         business_registration_number: null,
@@ -348,6 +348,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="individual">Cá Nhân</option>
+                  <option value="business_individual">Cá Nhân Kinh Doanh</option>
                   <option value="corporate">Doanh Nghiệp</option>
                 </select>
               </div>
@@ -369,73 +370,79 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
             </div>
 
                         {/* Customer Type Specific Fields */}
-            {formData.customer_type === 'individual' ? (
+            <div>
+              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
+                {formData.customer_type === 'corporate' ? 'Người Đại Diện *' : 'Họ Và Tên *'}
+              </label>
+              <input
+                type="text"
+                id="full_name"
+                name="full_name"
+                required
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Nhập họ và tên"
+              />
+            </div>
+
+            {formData.customer_type !== 'individual' && (
+              <>
                 <div>
-                  <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Họ Và Tên *
+                  <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    {formData.customer_type === 'corporate' ? 'Tên Doanh Nghiệp *' : 'Tên Cơ Sở Kinh Doanh *'}
                   </label>
                   <input
                     type="text"
-                    id="full_name"
-                    name="full_name"
+                    id="company_name"
+                    name="company_name"
                     required
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    value={formData.company_name || ''}
+                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập họ và tên"
+                    placeholder={formData.customer_type === 'corporate' ? 'Nhập tên doanh nghiệp' : 'Nhập tên cơ sở kinh doanh'}
                   />
                 </div>
-              ) : (
-                <>
-                  <div>
-                    <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
-                      Tên Doanh Nghiệp *
-                    </label>
-                    <input
-                      type="text"
-                      id="company_name"
-                      name="company_name"
-                      required
-                      value={formData.company_name || ''}
-                      onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Nhập tên doanh nghiệp"
-                    />
-                  </div>
+              </>
+            )}
 
-                  <div className="grid grid-cols-1 gap-4 mt-4">
-                      <div>
-                      <label htmlFor="business_registration_number" className="block text-sm font-medium text-gray-700 mb-1">
-                        Số Đăng Ký Kinh Doanh *
-                      </label>
-                      <input
-                        type="text"
-                        id="business_registration_number"
-                        name="business_registration_number"
-                        required
-                        value={formData.business_registration_number || ''}
-                        onChange={(e) => setFormData({ ...formData, business_registration_number: e.target.value })}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Nhập số đăng ký kinh doanh"
-                      />
-                    </div>
+            {formData.customer_type !== 'individual' && (
+              <div className="grid grid-cols-1 gap-4 mt-4">
+                <div>
+                  <label htmlFor="business_registration_number" className="block text-sm font-medium text-gray-700 mb-1">
+                    Số Đăng Ký Kinh Doanh *
+                  </label>
+                  <input
+                    type="text"
+                    id="business_registration_number"
+                    name="business_registration_number"
+                    required
+                    value={formData.business_registration_number || ''}
+                    onChange={(e) => setFormData({ ...formData, business_registration_number: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập số đăng ký kinh doanh"
+                  />
+                </div>
 
+                <div>
+                  <label htmlFor="business_registration_authority" className="block text-sm font-medium text-gray-700 mb-1">
+                    Nơi Đăng Ký Kinh Doanh *
+                  </label>
+                  <input
+                    type="text"
+                    id="business_registration_authority"
+                    name="business_registration_authority"
+                    required
+                    value={formData.business_registration_authority || ''}
+                    onChange={(e) => setFormData({ ...formData, business_registration_authority: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="VD: Sở Kế hoạch và Đầu tư TP. Hồ Chí Minh"
+                  />
+                </div>
+                                    
+                {formData.customer_type === 'corporate' && (
+                  <>
                     <div>
-                      <label htmlFor="business_registration_authority" className="block text-sm font-medium text-gray-700 mb-1">
-                        Nơi Đăng Ký Kinh Doanh *
-                      </label>
-                      <input
-                        type="text"
-                        id="business_registration_authority"
-                        name="business_registration_authority"
-                        required
-                        value={formData.business_registration_authority || ''}
-                        onChange={(e) => setFormData({ ...formData, business_registration_authority: e.target.value })}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="VD: Sở Kế hoạch và Đầu tư TP. Hồ Chí Minh"
-                      />
-                    </div>
-                                        <div>
                       <label htmlFor="legal_representative" className="block text-sm font-medium text-gray-700 mb-1">
                         Người Đại Diện Pháp Luật *
                       </label>
@@ -465,39 +472,42 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                         placeholder="Nhập số CIF của người đại diện"
                       />
                     </div>
-
-                    <div>
-                      <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
-                        Ngày Đăng Ký
-                      </label>
-                      <input
-                        type="text"
-                        id="registration_date"
-                        name="registration_date"
-                        value={formData.registration_date || ''}
-                        onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Nhập ngày đăng ký"
-                      />
+                  </>
+                )}
                     </div>
 
-                    <div>
-                      <label htmlFor="business_sector" className="block text-sm font-medium text-gray-700 mb-1">
-                        Ngành Nghề Kinh Doanh
-                      </label>
-                      <input
-                        type="text"
-                        id="business_sector"
-                        name="business_sector"
-                        value={formData.business_sector || ''}
-                        onChange={(e) => setFormData({ ...formData, business_sector: e.target.value })}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Nhập ngành nghề kinh doanh"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+                <div>
+                  <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
+                    Ngày Đăng Ký
+                  </label>
+                  <input
+                    type="text"
+                    id="registration_date"
+                    name="registration_date"
+                    value={formData.registration_date || ''}
+                    onChange={(e) => handleDateChange('registration_date', e)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="dd/mm/yyyy"
+                    maxLength={10}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="business_sector" className="block text-sm font-medium text-gray-700 mb-1">
+                    Ngành Nghề Kinh Doanh
+                  </label>
+                  <input
+                    type="text"
+                    id="business_sector"
+                    name="business_sector"
+                    value={formData.business_sector || ''}
+                    onChange={(e) => setFormData({ ...formData, business_sector: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập ngành nghề kinh doanh"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <label htmlFor="account_number" className="block text-sm font-medium text-gray-700 mb-1">
