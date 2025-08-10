@@ -231,22 +231,23 @@ export default function CreditAssessmentForm({
           </label>
           <select
             value={formData.product_id}
-              onChange={(e) => {
-                const productId = e.target.value;
-                const product = products.find(p => p.product_id.toString() === productId) || null;
-                setSelectedProduct(product);
-                setFormData(prev => ({
-                  ...prev,
-                  product_id: productId,
-                  metadata: {
-                    ...prev.metadata,
-                    product: {
-                      product_id: productId,
-                      product_type: product?.type || ''
-                    }
+            onChange={(e) => {
+              const productId = e.target.value;
+              const product = products.find(p => p.product_id.toString() === productId) || null;
+              setSelectedProduct(product);
+              setFormData(prev => ({
+                ...prev,
+                product_id: productId,
+                metadata: {
+                  ...prev.metadata,
+                  product: {
+                    ...(prev.metadata.product || {}),
+                    product_id: productId,
+                    product_type: product?.type || ''
                   }
-                }));
-              }}
+                }
+              }));
+            }}
             required
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
