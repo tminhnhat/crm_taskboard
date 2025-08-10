@@ -150,20 +150,6 @@ export interface Contract {
 }
 
 // Credit Assessment types
-export interface CreditAssessment {
-  assessment_id: number
-  customer_id: number
-  staff_id: number
-  assessment_date: string // DATE
-  assessment_result: string | null
-  comments: string | null
-  documents: string | null // link or file name
-  metadata: Record<string, unknown> | null // JSONB type
-  created_at: string
-  // Extended fields for joins
-  customer?: Customer
-  staff?: Staff
-}
 
 // Collateral types
 export interface Collateral {
@@ -220,11 +206,6 @@ export interface Database {
         Row: Contract
         Insert: Omit<Contract, 'contract_id' | 'customer' | 'product' | 'signed_by_staff'>
         Update: Partial<Omit<Contract, 'contract_id' | 'customer' | 'product' | 'signed_by_staff'>>
-      }
-      credit_assessments: {
-        Row: CreditAssessment
-        Insert: Omit<CreditAssessment, 'assessment_id' | 'created_at' | 'customer' | 'staff'>
-        Update: Partial<Omit<CreditAssessment, 'assessment_id' | 'created_at' | 'customer' | 'staff'>>
       }
       collaterals: {
         Row: Collateral
