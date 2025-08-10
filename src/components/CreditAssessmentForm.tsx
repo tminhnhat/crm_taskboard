@@ -5,6 +5,15 @@ import { CreditAssessment, Customer, Staff } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
 import JsonInputHelper from './JsonInputHelper'
 
+interface Product {
+  product_id: number;
+  name: string;
+  type: string;
+  description: string;
+  features: Record<string, unknown>;
+  status: string;
+}
+
 interface CreditAssessmentFormProps {
   assessment?: CreditAssessment | null
   onSave: (assessmentData: Partial<CreditAssessment>) => void
@@ -12,6 +21,7 @@ interface CreditAssessmentFormProps {
   isLoading?: boolean
   fetchCustomers: () => Promise<Customer[]>
   fetchStaff: () => Promise<Staff[]>
+  fetchProducts: () => Promise<Product[]>
 }
 
 export default function CreditAssessmentForm({ 
@@ -20,7 +30,8 @@ export default function CreditAssessmentForm({
   onCancel, 
   isLoading,
   fetchCustomers,
-  fetchStaff
+  fetchStaff,
+  fetchProducts
 }: CreditAssessmentFormProps) {
   // Helper functions for date format conversion
   const formatDateForDisplay = (dateString: string | null | undefined): string => {
@@ -107,12 +118,16 @@ export default function CreditAssessmentForm({
     assessment_result: assessment?.assessment_result || 'pending',
     comments: assessment?.comments || '',
     documents: assessment?.documents || '',
+    product_id: assessment?.metadata?.product_id?.toString() || '',
     metadata: (assessment?.metadata as Record<string, Record<string, unknown>>) || {}
   })
 
   const [customers, setCustomers] = useState<Customer[]>([])
   const [staff, setStaff] = useState<Staff[]>([])
   const [loadingOptions, setLoadingOptions] = useState(true)
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Load customers and staff for dropdowns
   useEffect(() => {
@@ -135,6 +150,21 @@ export default function CreditAssessmentForm({
     loadOptions()
   }, [fetchCustomers, fetchStaff])
 
+  // Load products and update selected product when product_id changes
+  useEffect(() => {
+    const loadProducts = async () => {
+      const fetchedProducts = await fetchProducts();
+      setProducts(fetchedProducts);
+      
+      if (formData.product_id) {
+        const product = fetchedProducts.find(p => p.product_id.toString() === formData.product_id);
+        setSelectedProduct(product || null);
+      }
+    };
+    
+    loadProducts();
+  }, [fetchProducts, formData.product_id])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -144,7 +174,11 @@ export default function CreditAssessmentForm({
       return
     }
     
-    const parsedMetadata = formData.metadata || {}
+    const parsedMetadata = {
+      ...formData.metadata,
+      product_id: formData.product_id,
+      product_type: selectedProduct?.type
+    }
 
     const assessmentData: Partial<CreditAssessment> = {
       customer_id: parseInt(formData.customer_id),
@@ -185,6 +219,31 @@ export default function CreditAssessmentForm({
             {customers.map(customer => (
               <option key={customer.customer_id} value={customer.customer_id}>
                 {customer.full_name} - {customer.account_number}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Product Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Sản phẩm *
+          </label>
+          <select
+            value={formData.product_id}
+            onChange={(e) => {
+              const productId = e.target.value;
+              handleInputChange('product_id', productId);
+              const product = products.find(p => p.product_id.toString() === productId);
+              setSelectedProduct(product || null);
+            }}
+            required
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">Chọn sản phẩm...</option>
+            {products.map(product => (
+              <option key={product.product_id} value={product.product_id}>
+                {product.name} - {product.type}
               </option>
             ))}
           </select>
@@ -307,13 +366,61 @@ export default function CreditAssessmentForm({
         <MetadataForm
           initialData={formData.metadata}
           onChange={(metadata) => handleInputChange('metadata', metadata)}
-          suggestedTemplates={
-            formData.assessment_result === 'approved' 
-              ? ['assessment', 'financial', 'risk', 'documents'] 
-              : formData.documents
-                ? ['assessment', 'documents']
-                : ['assessment', 'pending']
-          }
+          suggestedTemplates={(() => {
+            // Base templates that are always included
+            const baseTemplates = ['customer_profile', 'financial_statement'];
+            
+            // Product-specific templates
+            switch (selectedProduct?.type) {
+              case 'business_loan':
+                return [
+                  ...baseTemplates,
+                  'business_analysis',
+                  'cash_flow',
+                  'collateral',
+                  'industry_analysis'
+                ];
+              case 'consumer_loan':
+                return [
+                  ...baseTemplates,
+                  'employment',
+                  'income_verification',
+                  'credit_history'
+                ];
+              case 'mortgage':
+                return [
+                  ...baseTemplates,
+                  'property_valuation',
+                  'income_verification',
+                  'collateral',
+                  'insurance'
+                ];
+              case 'credit_card':
+                return [
+                  ...baseTemplates,
+                  'credit_history',
+                  'income_verification',
+                  'spending_patterns'
+                ];
+              case 'overdraft':
+                return [
+                  ...baseTemplates,
+                  'account_history',
+                  'cash_flow',
+                  'credit_limit'
+                ];
+              case 'investment_loan':
+                return [
+                  ...baseTemplates,
+                  'investment_analysis',
+                  'risk_assessment',
+                  'market_analysis',
+                  'collateral'
+                ];
+              default:
+                return baseTemplates;
+            }
+          })()}
         />
       </div>
 
