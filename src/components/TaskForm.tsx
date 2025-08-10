@@ -180,9 +180,9 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
-            <DialogTitle className="text-lg font-semibold text-gray-900">
+            <Dialog.Title className="text-lg font-semibold text-gray-900">
               {task ? 'Chỉnh sửa công việc' : 'Tạo công việc mới'}
-            </DialogTitle>
+            </Dialog.Title>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
