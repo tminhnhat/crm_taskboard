@@ -47,7 +47,6 @@ export default function CreditAssessmentsPage() {
     search: '',
     result: '',
     customerId: '',
-    staffId: '',
     dateRange: ''
   })
   const [currentPage, setCurrentPage] = useState(1)
@@ -69,24 +68,12 @@ export default function CreditAssessmentsPage() {
     return Array.from(customers.values()).sort((a, b) => a.full_name.localeCompare(b.full_name))
   }, [assessments])
 
-  const availableStaff = useMemo(() => {
-    const staff = new Map()
-    assessments.forEach(assessment => {
-      if (assessment.staff) {
-        staff.set(assessment.staff.staff_id, {
-          staff_id: assessment.staff.staff_id,
-          full_name: assessment.staff.full_name
-        })
-      }
-    })
-    return Array.from(staff.values()).sort((a, b) => a.full_name.localeCompare(b.full_name))
-  }, [assessments])
+
 
   const filteredAssessments = useMemo(() => {
     return assessments.filter(assessment => {
       const matchesSearch = !filters.search || 
         (assessment.customer && assessment.customer.full_name.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (assessment.staff && assessment.staff.full_name.toLowerCase().includes(filters.search.toLowerCase())) ||
         (assessment.comments && assessment.comments.toLowerCase().includes(filters.search.toLowerCase())) ||
         assessment.assessment_id.toString().includes(filters.search)
       
@@ -96,9 +83,6 @@ export default function CreditAssessmentsPage() {
       const matchesCustomer = !filters.customerId || 
         assessment.customer_id.toString() === filters.customerId
       
-      const matchesStaff = !filters.staffId || 
-        assessment.staff_id.toString() === filters.staffId
-
       let matchesDateRange = true
       if (filters.dateRange) {
         const assessmentDate = new Date(assessment.assessment_date)
@@ -127,7 +111,7 @@ export default function CreditAssessmentsPage() {
         }
       }
 
-      return matchesSearch && matchesResult && matchesCustomer && matchesStaff && matchesDateRange
+      return matchesSearch && matchesResult && matchesCustomer && matchesDateRange
     })
   }, [assessments, filters])
 
@@ -276,7 +260,6 @@ export default function CreditAssessmentsPage() {
         <CreditAssessmentFilters
           onFiltersChange={handleFiltersChange}
           availableCustomers={availableCustomers}
-          availableStaff={availableStaff}
         />
 
         {/* Results Summary */}
@@ -303,7 +286,7 @@ export default function CreditAssessmentsPage() {
             <DocumentChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy đánh giá nào</h3>
             <p className="text-gray-500 mb-6">
-              {filters.search || filters.result || filters.customerId || filters.staffId || filters.dateRange
+              {filters.search || filters.result || filters.customerId || filters.dateRange
                 ? 'Hãy thử điều chỉnh bộ lọc để xem thêm kết quả.'
                 : 'Bắt đầu bằng cách tạo đánh giá tín dụng đầu tiên của bạn.'
               }
