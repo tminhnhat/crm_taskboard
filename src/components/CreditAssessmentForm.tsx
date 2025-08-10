@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CreditAssessment, Customer, Staff } from '@/lib/supabase'
+import { CreditAssessment, Customer } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
 import JsonInputHelper from './JsonInputHelper'
 
@@ -20,7 +20,6 @@ interface CreditAssessmentFormProps {
   onCancel: () => void
   isLoading?: boolean
   fetchCustomers: () => Promise<Customer[]>
-  fetchStaff: () => Promise<Staff[]>
   fetchProducts: () => Promise<Product[]>
 }
 
@@ -30,7 +29,6 @@ export default function CreditAssessmentForm({
   onCancel, 
   isLoading,
   fetchCustomers,
-  fetchStaff,
   fetchProducts
 }: CreditAssessmentFormProps) {
   // Helper functions for date format conversion

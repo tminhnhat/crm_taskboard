@@ -11,13 +11,13 @@ interface CreditAssessmentFiltersProps {
     dateRange: string
   }) => void
   availableCustomers: Array<{ customer_id: number; full_name: string }>
-  availableStaff: Array<{ staff_id: number; full_name: string }>
+    // availableStaff: Array<{ staff_id: number; full_name: string }>
 }
 
 export default function CreditAssessmentFilters({ 
   onFiltersChange, 
   availableCustomers,
-  availableStaff
+    // availableStaff
 }: CreditAssessmentFiltersProps) {
   const [filters, setFilters] = useState({
     search: '',
@@ -163,11 +163,6 @@ export default function CreditAssessmentFilters({
             {filters.customerId && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                 Khách hàng: {availableCustomers.find(c => c.customer_id.toString() === filters.customerId)?.full_name}
-              </span>
-            )}
-            {filters.staffId && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                Nhân viên: {availableStaff.find(s => s.staff_id.toString() === filters.staffId)?.full_name}
               </span>
             )}
             {filters.dateRange && (
