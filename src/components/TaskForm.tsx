@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Task, TaskStatusEnum, TaskPriority } from '@/lib/supabase'
 
@@ -178,7 +178,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <Dialog.Panel className="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <DialogTitle className="text-lg font-semibold text-gray-900">
               {task ? 'Chỉnh sửa công việc' : 'Tạo công việc mới'}
@@ -396,7 +396,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
               </button>
             </div>
           </form>
-        </DialogPanel>
+        </Dialog.Panel>
       </div>
     </Dialog>
   )
