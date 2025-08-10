@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useCreditAssessments } from '@/hooks/useCreditAssessments'
 import { useProducts } from '@/hooks/useProducts'
-import { CreditAssessment } from '@/lib/supabase'
+import { CreditAssessment, Customer } from '@/lib/supabase'
 import Navigation from '@/components/Navigation'
 import CreditAssessmentCard from '@/components/CreditAssessmentCard'
 import CreditAssessmentForm from '@/components/CreditAssessmentForm'
@@ -27,7 +27,6 @@ export default function CreditAssessmentsPage() {
     updateAssessment, 
     deleteAssessment,
     fetchCustomers,
-    fetchStaff,
     getAssessmentStats,
   }: {
     assessments: CreditAssessment[],
@@ -36,8 +35,7 @@ export default function CreditAssessmentsPage() {
     createAssessment: (data: Partial<CreditAssessment>) => Promise<void>,
     updateAssessment: (id: number, data: Partial<CreditAssessment>) => Promise<void>,
     deleteAssessment: (id: number) => Promise<void>,
-    fetchCustomers: () => Promise<any>,
-    fetchStaff: () => Promise<any>,
+    fetchCustomers: () => Promise<Customer[]>,
     getAssessmentStats: () => { total: number, approved: number, rejected: number, pending: number }
   } = useCreditAssessments()
 
