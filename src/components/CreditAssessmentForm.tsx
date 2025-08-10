@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CreditAssessment, Customer, Staff } from '@/lib/supabase'
+import { CreditAssessment, Customer, Staff, Product } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
 import JsonInputHelper from './JsonInputHelper'
 
