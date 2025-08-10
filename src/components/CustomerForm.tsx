@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-import { Dialog } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Customer, CustomerType } from '@/lib/supabase'
-import { calculateNumerologyData } from '@/lib/numerology'
+import { useState, useEffect } from 'react';
+import { Dialog } from '@headlessui/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import { Customer, CustomerType } from '@/lib/supabase';
+import { calculateNumerologyData } from '@/lib/numerology';
 
 interface CustomerFormProps {
   isOpen: boolean;
@@ -312,6 +312,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               {customer ? 'Sửa Khách Hàng' : 'Tạo Khách Hàng Mới'}
             </Dialog.Title>
             <button
+              type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
             >
@@ -341,6 +342,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                         business_registration_authority: null,
                         registration_date: null,
                         legal_representative: null,
+                        legal_representative_cif_number: null,
                         business_sector: null
                       })
                     }))
@@ -348,7 +350,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="individual">Cá Nhân</option>
-                  <option value="business_individual">Cá Nhân Kinh Doanh</option>
                   <option value="corporate">Doanh Nghiệp</option>
                 </select>
               </div>
@@ -390,7 +391,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               <>
                 <div>
                   <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
-                    {formData.customer_type === 'corporate' ? 'Tên Doanh Nghiệp *' : 'Tên Cơ Sở Kinh Doanh *'}
+                    Tên Doanh Nghiệp *
                   </label>
                   <input
                     type="text"
@@ -400,14 +401,14 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                     value={formData.company_name || ''}
                     onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={formData.customer_type === 'corporate' ? 'Nhập tên doanh nghiệp' : 'Nhập tên cơ sở kinh doanh'}
+                    placeholder="Nhập tên doanh nghiệp"
                   />
                 </div>
               </>
             )}
 
-            {formData.customer_type !== 'individual' && (
-              <div className="grid grid-cols-1 gap-4 mt-4">
+            {formData.customer_type === 'corporate' && (
+              <div className="space-y-4">
                 <div>
                   <label htmlFor="business_registration_number" className="block text-sm font-medium text-gray-700 mb-1">
                     Số Đăng Ký Kinh Doanh *
@@ -474,8 +475,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                     </div>
                   </>
                 )}
-                    </div>
-
+                
                 <div>
                   <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
                     Ngày Đăng Ký
@@ -865,5 +865,5 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         </Dialog.Panel>
       </div>
     </Dialog>
-  )
+  );
 }
