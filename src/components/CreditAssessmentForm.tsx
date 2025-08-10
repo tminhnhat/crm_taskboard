@@ -113,7 +113,7 @@ export default function CreditAssessmentForm({
 
   const [formData, setFormData] = useState({
     customer_id: assessment?.customer_id?.toString() || '',
-    staff_id: assessment?.staff_id?.toString() || '',
+    // staff_id: assessment?.staff_id?.toString() || '',
     assessment_date: formatDateForDisplay(assessment?.assessment_date) || getTodayFormatted(),
     assessment_result: assessment?.assessment_result || 'pending',
     comments: assessment?.comments || '',
@@ -123,7 +123,7 @@ export default function CreditAssessmentForm({
   })
 
   const [customers, setCustomers] = useState<Customer[]>([])
-  const [staff, setStaff] = useState<Staff[]>([])
+  // const [staff, setStaff] = useState<Staff[]>([])
   const [loadingOptions, setLoadingOptions] = useState(true)
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -134,12 +134,8 @@ export default function CreditAssessmentForm({
     const loadOptions = async () => {
       try {
         setLoadingOptions(true)
-        const [customersData, staffData] = await Promise.all([
-          fetchCustomers(),
-          fetchStaff()
-        ])
+        const customersData = await fetchCustomers();
         setCustomers(customersData)
-        setStaff(staffData)
       } catch (error) {
         console.error('Error loading form options:', error)
       } finally {
@@ -148,7 +144,7 @@ export default function CreditAssessmentForm({
     }
 
     loadOptions()
-  }, [fetchCustomers, fetchStaff])
+  }, [fetchCustomers])
 
   // Load products and update selected product when product_id changes
   useEffect(() => {
@@ -182,7 +178,6 @@ export default function CreditAssessmentForm({
 
     const assessmentData: Partial<CreditAssessment> = {
       customer_id: parseInt(formData.customer_id),
-      staff_id: parseInt(formData.staff_id),
       assessment_date: formatDateForSubmission(formData.assessment_date) || undefined,
       assessment_result: formData.assessment_result || null,
       comments: formData.comments || null,
@@ -210,13 +205,7 @@ export default function CreditAssessmentForm({
           </label>
           <select
             value={formData.customer_id}
-            onChange={(e) => {
-              const customerId = e.target.value;
-              setFormData(prev => ({
-                ...prev,
-                customer_id: customerId
-              }));
-            }}
+            onChange={(e) => handleInputChange('customer_id', e.target.value.toString())}
             required
             disabled={loadingOptions}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -266,26 +255,7 @@ export default function CreditAssessmentForm({
           </select>
         </div>
 
-        {/* Staff Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Người đánh giá *
-          </label>
-          <select
-            value={formData.staff_id}
-            onChange={(e) => handleInputChange('staff_id', e.target.value)}
-            required
-            disabled={loadingOptions}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="">Chọn nhân viên...</option>
-            {staff.map(staffMember => (
-              <option key={staffMember.staff_id} value={staffMember.staff_id}>
-                {staffMember.full_name} - {staffMember.position || staffMember.department}
-              </option>
-            ))}
-          </select>
-        </div>
+  {/* Staff Selection removed for simple function */}
 
         {/* Assessment Date */}
         <div>

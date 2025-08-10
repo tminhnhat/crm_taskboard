@@ -81,16 +81,10 @@ export default function CreditAssessmentCard({ assessment, onEdit, onDelete }: C
 
       {/* Assessment Details */}
       <div className="space-y-3">
-        {/* Date and Staff */}
-        <div className="flex justify-between items-center">
-          <div>
-            <span className="text-sm text-gray-500">Ngày đánh giá:</span>
-            <p className="font-medium">{formatDate(assessment.assessment_date)}</p>
-          </div>
-          <div className="text-right">
-            <span className="text-sm text-gray-500">Người đánh giá:</span>
-            <p className="font-medium">{assessment.staff?.full_name || `Nhân viên #${assessment.staff_id}`}</p>
-          </div>
+        {/* Date only, staff removed */}
+        <div>
+          <span className="text-sm text-gray-500">Ngày đánh giá:</span>
+          <p className="font-medium">{formatDate(assessment.assessment_date)}</p>
         </div>
 
         {/* Assessment Result */}
