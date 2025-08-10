@@ -8,6 +8,7 @@ import CustomerForm from '@/components/CustomerForm'
 import CustomerFilters from '@/components/CustomerFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { useCustomers } from '@/hooks/useCustomers'
+import type { CustomerType } from '@/lib/supabase'
 import { Customer } from '@/lib/supabase'
 
 export default function CustomersPage() {
@@ -63,7 +64,11 @@ export default function CustomersPage() {
       
       // Handle customer type sorting
       if (sortBy === 'customer_type') {
-        const typeOrder = { 'individual': 1, 'corporate': 2 }
+        const typeOrder: Record<CustomerType, number> = {
+          'individual': 1,
+          'corporate': 2,
+          'business_individual': 3
+        }
         return typeOrder[a.customer_type] - typeOrder[b.customer_type]
       }
       
