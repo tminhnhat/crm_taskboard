@@ -10,6 +10,8 @@ import {
   UsersIcon,
   CubeIcon,
   UserIcon,
+  ChatBubbleLeftRightIcon,
+  CurrencyDollarIcon,
   DocumentTextIcon,
   HomeIcon
 } from '@heroicons/react/24/outline'
@@ -23,6 +25,8 @@ export default function Navigation() {
     { name: 'Khách Hàng', href: '/customers', icon: UsersIcon },
     { name: 'Sản Phẩm', href: '/products', icon: CubeIcon },
     { name: 'Nhân Viên', href: '/staff', icon: UserIcon },
+    { name: 'Tương Tác', href: '/interactions', icon: ChatBubbleLeftRightIcon },
+    { name: 'Cơ Hội', href: '/opportunities', icon: CurrencyDollarIcon },
     { name: 'Hợp Đồng', href: '/contracts', icon: DocumentTextIcon },
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: HomeIcon },
   ]

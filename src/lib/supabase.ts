@@ -101,6 +101,35 @@ export interface Staff {
   status: string
 }
 
+// Interaction types
+export interface Interaction {
+  interaction_id: number
+  customer_id: number
+  staff_id: number
+  interaction_type: string | null
+  interaction_date: string
+  notes: string | null
+  // Extended fields for joins
+  customer?: Customer
+  staff?: Staff
+}
+
+// Opportunity types
+export interface Opportunity {
+  opportunity_id: number
+  customer_id: number
+  product_id: number
+  staff_id: number
+  status: string // 'new', 'in_progress', 'won', 'lost'
+  expected_value: number | null
+  created_at: string
+  closed_at: string | null
+  // Extended fields for joins
+  customer?: Customer
+  product?: Product
+  staff?: Staff
+}
+
 // Contract types
 export interface Contract {
   contract_id: number
@@ -161,6 +190,16 @@ export interface Database {
         Row: Staff
         Insert: Omit<Staff, 'staff_id'>
         Update: Partial<Omit<Staff, 'staff_id'>>
+      }
+      interactions: {
+        Row: Interaction
+        Insert: Omit<Interaction, 'interaction_id' | 'interaction_date' | 'customer' | 'staff'>
+        Update: Partial<Omit<Interaction, 'interaction_id' | 'interaction_date' | 'customer' | 'staff'>>
+      }
+      opportunities: {
+        Row: Opportunity
+        Insert: Omit<Opportunity, 'opportunity_id' | 'created_at' | 'customer' | 'product' | 'staff'>
+        Update: Partial<Omit<Opportunity, 'opportunity_id' | 'created_at' | 'customer' | 'product' | 'staff'>>
       }
       contracts: {
         Row: Contract
