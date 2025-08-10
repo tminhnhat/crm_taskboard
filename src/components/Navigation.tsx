@@ -13,7 +13,6 @@ import {
   ChatBubbleLeftRightIcon,
   CurrencyDollarIcon,
   DocumentTextIcon,
-  DocumentChartBarIcon,
   HomeIcon
 } from '@heroicons/react/24/outline'
 
@@ -29,7 +28,6 @@ export default function Navigation() {
     { name: 'Tương Tác', href: '/interactions', icon: ChatBubbleLeftRightIcon },
     { name: 'Cơ Hội', href: '/opportunities', icon: CurrencyDollarIcon },
     { name: 'Hợp Đồng', href: '/contracts', icon: DocumentTextIcon },
-    { name: 'Đánh Giá Tín Dụng', href: '/credit-assessments', icon: DocumentChartBarIcon },
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: HomeIcon },
   ]
 
