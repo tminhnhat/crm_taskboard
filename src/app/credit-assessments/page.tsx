@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useCreditAssessments } from '@/hooks/useCreditAssessments'
+import { useProducts } from '@/hooks/useProducts'
 import { CreditAssessment } from '@/lib/supabase'
 import Navigation from '@/components/Navigation'
 import CreditAssessmentCard from '@/components/CreditAssessmentCard'
@@ -29,6 +30,8 @@ export default function CreditAssessmentsPage() {
     fetchStaff,
     getAssessmentStats
   } = useCreditAssessments()
+  
+  const { fetchProducts } = useProducts()
 
   const [showForm, setShowForm] = useState(false)
   const [editingAssessment, setEditingAssessment] = useState<CreditAssessment | null>(null)
@@ -356,6 +359,7 @@ export default function CreditAssessmentsPage() {
             isLoading={loading}
             fetchCustomers={fetchCustomers}
             fetchStaff={fetchStaff}
+            fetchProducts={fetchProducts}
           />
         )}
       </div>

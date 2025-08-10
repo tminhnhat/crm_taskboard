@@ -17,8 +17,10 @@ export function useProducts() {
 
       if (error) throw error
       setProducts(data || [])
+      return data || []
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
+      return []
     } finally {
       setLoading(false)
     }
@@ -108,6 +110,6 @@ export function useProducts() {
     deleteProduct,
     updateProductStatus,
     searchProducts,
-    refetch: fetchProducts
+    fetchProducts
   }
 }
