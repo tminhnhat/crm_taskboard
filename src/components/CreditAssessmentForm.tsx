@@ -210,7 +210,13 @@ export default function CreditAssessmentForm({
           </label>
           <select
             value={formData.customer_id}
-            onChange={(e) => handleInputChange('customer_id', e.target.value)}
+            onChange={(e) => {
+              const customerId = e.target.value;
+              setFormData(prev => ({
+                ...prev,
+                customer_id: customerId
+              }));
+            }}
             required
             disabled={loadingOptions}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
