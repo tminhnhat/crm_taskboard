@@ -29,7 +29,6 @@ export default function CreditAssessmentsPage() {
     fetchCustomers,
     fetchStaff,
     getAssessmentStats
-  } = useCreditAssessments()
   
   const { fetchProducts } = useProducts()
 
@@ -41,7 +40,6 @@ export default function CreditAssessmentsPage() {
     customerId: '',
     staffId: '',
     dateRange: ''
-  })
   const [currentPage, setCurrentPage] = useState(1)
   const assessmentsPerPage = 9 // 3x3 grid layout
 
@@ -63,18 +61,6 @@ export default function CreditAssessmentsPage() {
 
   const availableStaff = useMemo(() => {
     const staff = new Map()
-    assessments.forEach(assessment => {
-      if (assessment.staff) {
-        staff.set(assessment.staff.staff_id, {
-          staff_id: assessment.staff.staff_id,
-          full_name: assessment.staff.full_name
-        })
-      }
-    })
-    return Array.from(staff.values()).sort((a, b) => a.full_name.localeCompare(b.full_name))
-  }, [assessments])
-
-  // Filter assessments based on current filters
   const filteredAssessments = useMemo(() => {
     return assessments.filter(assessment => {
       const matchesSearch = !filters.search || 

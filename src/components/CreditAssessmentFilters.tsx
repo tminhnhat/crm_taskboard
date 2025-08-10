@@ -7,7 +7,6 @@ interface CreditAssessmentFiltersProps {
     search: string
     result: string
     customerId: string
-    staffId: string
     dateRange: string
   }) => void
   availableCustomers: Array<{ customer_id: number; full_name: string }>
@@ -23,7 +22,6 @@ export default function CreditAssessmentFilters({
     search: '',
     result: '',
     customerId: '',
-    staffId: '',
     dateRange: ''
   })
 
@@ -45,7 +43,6 @@ export default function CreditAssessmentFilters({
       search: '',
       result: '',
       customerId: '',
-      staffId: '',
       dateRange: ''
     })
   }
