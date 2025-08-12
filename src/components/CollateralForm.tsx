@@ -189,8 +189,6 @@ export default function CollateralForm({
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="active">Đang hoạt động</option>
-            <option value="pending">Đang xử lý</option>
-            <option value="frozen">Phong tỏa</option>
             <option value="released">Đã giải chấp</option>
           </select>
         </div>
