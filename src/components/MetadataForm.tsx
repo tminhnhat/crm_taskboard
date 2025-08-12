@@ -17,7 +17,7 @@ type IconType = ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref"> &
 interface MetadataField {
   key: string
   label: string
-  type: 'text' | 'number' | 'select' | 'date' | 'tel' | 'email' | 'textarea'
+  type: 'text' | 'number' | 'select' | 'date' | 'tel' | 'email' | 'textarea' | 'section'
   options?: string[]
 }
 
@@ -42,7 +42,8 @@ const METADATA_TEMPLATES: MetadataTemplates = {
     title: 'Thông tin bất động sản',
     icon: HomeIcon,
     fields: [
-      // Thông tin giấy chứng nhận
+      // SECTION 1: Thông tin giấy chứng nhận
+      { key: '_section_1', label: '1. THÔNG TIN GIẤY CHỨNG NHẬN', type: 'section' },
       { 
         key: 'loai_gcn', 
         label: 'Loại giấy chứng nhận', 
@@ -55,66 +56,62 @@ const METADATA_TEMPLATES: MetadataTemplates = {
         ]
       },
       { key: 'so_gcn', label: 'Số giấy chứng nhận', type: 'text' },
-      { key: 'noi_cap_gcn', label: 'Nơi cấp GCN', type: 'text' },
       { key: 'so_vao_so_gcn', label: 'Số vào sổ GCN', type: 'text' },
       { key: 'ngay_cap_gcn', label: 'Ngày cấp GCN', type: 'date' },
-      
-      // Thông tin chủ sở hữu
-      { key: 'so_cif_chu_ts', label: 'Số CIF chủ tài sản', type: 'text' },
-      
-      // Thông tin đất
+      { key: 'noi_cap_gcn', label: 'Nơi cấp GCN', type: 'text' },
+
+      // SECTION 2: Thông tin thửa đất
+      { key: '_section_2', label: '2. THÔNG TIN THỬA ĐẤT', type: 'section' },
       { key: 'so_thua', label: 'Số thửa', type: 'text' },
-      { key: 'to_ban_do', label: 'Tờ bản đồ', type: 'text' },
-      { key: 'dia_chi_dat', label: 'Địa chỉ đất', type: 'text' },
-      { key: 'hinh_thuc_su_dung', label: 'Hình thức sử dụng', type: 'text' },
-      { key: 'thoi_gian_su_dung', label: 'Thời gian sử dụng', type: 'text' },
-      { key: 'nguon_goc_dat', label: 'Nguồn gốc đất', type: 'text' },
-      { key: 'muc_dich_su_dung_dat', label: 'Mục đích sử dụng đất', type: 'text' },
+      { key: 'to_ban_do', label: 'Tờ bản đồ số', type: 'text' },
+      { key: 'dia_chi_dat', label: 'Địa chỉ thửa đất', type: 'text' },
       { key: 'vitri_thua_dat', label: 'Vị trí thửa đất', type: 'text' },
-      
-      // Thông tin tài sản trên đất
-      { key: 'loai_ts_tren_dat', label: 'Loại tài sản trên đất', type: 'text' },
-      { key: 'dia_chi_nha', label: 'Địa chỉ nhà', type: 'text' },
+      { key: 'muc_dich_su_dung_dat', label: 'Mục đích sử dụng đất', type: 'text' },
+      { key: 'thoi_gian_su_dung', label: 'Thời hạn sử dụng', type: 'text' },
+      { key: 'nguon_goc_dat', label: 'Nguồn gốc sử dụng', type: 'text' },
+      { key: 'hinh_thuc_su_dung', label: 'Hình thức sử dụng', type: 'text' },
+
+      // SECTION 3: Thông tin diện tích
+      { key: '_section_3', label: '3. THÔNG TIN DIỆN TÍCH', type: 'section' },
+      { key: 'dien_tich', label: 'Tổng diện tích (m²)', type: 'number' },
+      { key: 'dien_tich_bang_chu', label: 'Diện tích bằng chữ', type: 'text' },
+      { key: 'dien_tich_dat_o', label: 'Diện tích đất ở (m²)', type: 'number' },
+      { key: 'dien_tich_dat_trong_cay', label: 'Diện tích đất trồng cây (m²)', type: 'number' },
+      { key: 'dien_tich_dat_khac', label: 'Diện tích đất khác (m²)', type: 'number' },
+
+      // SECTION 4: Thông tin nhà ở
+      { key: '_section_4', label: '4. THÔNG TIN NHÀ Ở/TÀI SẢN GẮN LIỀN VỚI ĐẤT', type: 'section' },
+      { key: 'loai_ts_tren_dat', label: 'Loại tài sản', type: 'text' },
+      { key: 'dia_chi_nha', label: 'Địa chỉ', type: 'text' },
+      { key: 'dien_tich_xay_dung', label: 'Diện tích xây dựng (m²)', type: 'number' },
+      { key: 'dien_tich_san', label: 'Diện tích sàn (m²)', type: 'number' },
       { key: 'ket_cau', label: 'Kết cấu', type: 'text' },
       { key: 'cap_hang', label: 'Cấp hạng', type: 'text' },
       { key: 'so_tang', label: 'Số tầng', type: 'number' },
-      { key: 'nam_hoan_thanh_xd', label: 'Năm hoàn thành XD', type: 'number' },
+      { key: 'nam_hoan_thanh_xd', label: 'Năm hoàn thành', type: 'number' },
       { key: 'thoi_han_so_huu', label: 'Thời hạn sở hữu', type: 'text' },
-      { key: 'hinh_thuc_so_huu_nha', label: 'Hình thức sở hữu nhà', type: 'text' },
-      
-      // Diện tích
-      { key: 'dien_tich', label: 'Diện tích', type: 'number' },
-      { key: 'dien_tich_bang_chu', label: 'Diện tích bằng chữ', type: 'text' },
-      { key: 'dien_tich_san', label: 'Diện tích sàn', type: 'number' },
-      { key: 'dien_tich_xay_dung', label: 'Diện tích xây dựng', type: 'number' },
-      { key: 'dien_tich_dat_khac', label: 'Diện tích đất khác', type: 'number' },
-      { key: 'dien_tich_dat_trong_cay', label: 'Diện tích đất trồng cây', type: 'number' },
-      { key: 'dien_tich_dat_o', label: 'Diện tích đất ở', type: 'number' },
-      
-      // Giá trị và đơn giá
-      { key: 'tong_gia_tri_tsbd', label: 'Tổng giá trị TSBĐ', type: 'number' },
-      { key: 'tong_gia_tri_tsbd_bang_chu', label: 'Tổng giá trị TSBĐ bằng chữ', type: 'text' },
-      { key: 'tong_gia_tri_nha', label: 'Tổng giá trị nhà', type: 'number' },
-      { key: 'tong_gia_tri_dat', label: 'Tổng giá trị đất', type: 'number' },
-      { key: 'tong_gia_tri_dat_khac', label: 'Tổng giá trị đất khác', type: 'number' },
-      { key: 'tong_gia_tri_dat_trong_cay', label: 'Tổng giá trị đất trồng cây', type: 'number' },
-      { key: 'tong_gia_tri_dat_o', label: 'Tổng giá trị đất ở', type: 'number' },
-      { key: 'don_gia_nha', label: 'Đơn giá nhà', type: 'number' },
-      { key: 'don_gia_dat_khac', label: 'Đơn giá đất khác', type: 'number' },
-      { key: 'don_gia_dat_trong_cay', label: 'Đơn giá đất trồng cây', type: 'number' },
-      { key: 'don_gia_dat_o', label: 'Đơn giá đất ở', type: 'number' },
-      
-      // Thông tin cho vay và định giá
-      { key: 'muc_cho_vay_toi_da', label: 'Mức cho vay tối đa', type: 'number' },
-      { key: 'danhgiatsbd', label: 'Đánh giá TSBĐ', type: 'textarea' },
-      { key: 'ngay_dinh_gia_tsbd', label: 'Ngày định giá TSBĐ', type: 'date' },
-      { key: 'ty_le_khau_hao_nha_o', label: 'Tỷ lệ khấu hao nhà ở', type: 'number' },
-      
-      // Thông tin hợp đồng
+      { key: 'hinh_thuc_so_huu_nha', label: 'Hình thức sở hữu', type: 'text' },
+
+      // SECTION 5: Thông tin giá trị
+      { key: '_section_5', label: '5. THÔNG TIN GIÁ TRỊ TÀI SẢN', type: 'section' },
+      { key: 'tong_gia_tri_tsbd', label: 'Tổng giá trị TSBĐ (VNĐ)', type: 'number' },
+      { key: 'tong_gia_tri_tsbd_bang_chu', label: 'Tổng giá trị bằng chữ', type: 'text' },
+      { key: 'tong_gia_tri_dat', label: 'Giá trị đất (VNĐ)', type: 'number' },
+      { key: 'don_gia_dat_o', label: 'Đơn giá đất ở (VNĐ/m²)', type: 'number' },
+      { key: 'don_gia_dat_trong_cay', label: 'Đơn giá đất trồng cây (VNĐ/m²)', type: 'number' },
+      { key: 'don_gia_dat_khac', label: 'Đơn giá đất khác (VNĐ/m²)', type: 'number' },
+      { key: 'tong_gia_tri_nha', label: 'Giá trị nhà (VNĐ)', type: 'number' },
+      { key: 'don_gia_nha', label: 'Đơn giá nhà (VNĐ/m²)', type: 'number' },
+      { key: 'ty_le_khau_hao_nha_o', label: 'Tỷ lệ khấu hao (%)', type: 'number' },
+
+      // SECTION 6: Thông tin thẩm định
+      { key: '_section_6', label: '6. THÔNG TIN THẨM ĐỊNH', type: 'section' },
+      { key: 'so_cif_chu_ts', label: 'Số CIF chủ tài sản', type: 'text' },
+      { key: 'muc_cho_vay_toi_da', label: 'Mức cho vay tối đa (VNĐ)', type: 'number' },
+      { key: 'ngay_dinh_gia_tsbd', label: 'Ngày định giá', type: 'date' },
+      { key: 'danhgiatsbd', label: 'Nhận xét đánh giá', type: 'textarea' },
       { key: 'so_hdtc_tsbd', label: 'Số HĐTC TSBĐ', type: 'text' },
       { key: 'van_phong_dktc', label: 'Văn phòng ĐKTC', type: 'text' },
-      
-      // Ghi chú
       { key: 'ghi_chu', label: 'Ghi chú', type: 'textarea' }
     ]
   },
