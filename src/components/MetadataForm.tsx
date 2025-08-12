@@ -76,7 +76,6 @@ const METADATA_TEMPLATES: MetadataTemplates = {
       { key: 'hinh_thuc_su_dung', label: 'Hình thức sử dụng', type: 'text' },
       
       // Thông tin diện tích
-      { key: '_section_area', label: 'Thông tin diện tích', type: 'section' },
       { key: 'dien_tich', label: 'Tổng diện tích (m²)', type: 'number' },
       { key: 'dien_tich_bang_chu', label: 'Diện tích bằng chữ', type: 'text' },
       { key: 'dien_tich_dat_o', label: 'Diện tích đất ở (m²)', type: 'number' },
