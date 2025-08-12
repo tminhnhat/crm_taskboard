@@ -251,7 +251,7 @@ export default function CollateralForm({
             onChange={handleMetadataChange}
             suggestedTemplates={
               formState.collateral_type === 'real_estate' 
-                ? ['property_certificate', 'property_land', 'property_area', 'property_building', 'property_value', 'property_assessment'] 
+                ? ['property_certificate', 'property_land', 'property_building', 'property_value', 'property_assessment'] 
               : formState.collateral_type === 'vehicle'
                 ? ['vehicle', 'legal', 'assessment', 'documents']
               : formState.collateral_type === 'savings'

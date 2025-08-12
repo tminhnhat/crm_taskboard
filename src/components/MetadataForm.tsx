@@ -65,6 +65,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
     title: '2. Thông tin thửa đất',
     icon: MapPinIcon,
     fields: [
+      // Thông tin cơ bản thửa đất
       { key: 'so_thua', label: 'Số thửa', type: 'text' },
       { key: 'to_ban_do', label: 'Tờ bản đồ số', type: 'text' },
       { key: 'dia_chi_dat', label: 'Địa chỉ thửa đất', type: 'text' },
@@ -72,14 +73,10 @@ const METADATA_TEMPLATES: MetadataTemplates = {
       { key: 'muc_dich_su_dung_dat', label: 'Mục đích sử dụng đất', type: 'text' },
       { key: 'thoi_gian_su_dung', label: 'Thời hạn sử dụng', type: 'text' },
       { key: 'nguon_goc_dat', label: 'Nguồn gốc sử dụng', type: 'text' },
-      { key: 'hinh_thuc_su_dung', label: 'Hình thức sử dụng', type: 'text' }
-    ]
-  },
-
-  property_area: {
-    title: '3. Thông tin diện tích',
-    icon: DocumentChartBarIcon,
-    fields: [
+      { key: 'hinh_thuc_su_dung', label: 'Hình thức sử dụng', type: 'text' },
+      
+      // Thông tin diện tích
+      { key: '_section_area', label: 'Thông tin diện tích', type: 'section' },
       { key: 'dien_tich', label: 'Tổng diện tích (m²)', type: 'number' },
       { key: 'dien_tich_bang_chu', label: 'Diện tích bằng chữ', type: 'text' },
       { key: 'dien_tich_dat_o', label: 'Diện tích đất ở (m²)', type: 'number' },
@@ -89,7 +86,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
 
   property_building: {
-    title: '4. Thông tin nhà ở/tài sản gắn liền với đất',
+    title: '3. Thông tin nhà ở/tài sản gắn liền với đất',
     icon: HomeIcon,
     fields: [
       { key: 'loai_ts_tren_dat', label: 'Loại tài sản', type: 'text' },
@@ -106,7 +103,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
 
   property_value: {
-    title: '5. Thông tin giá trị tài sản',
+    title: '4. Thông tin giá trị tài sản',
     icon: BanknotesIcon,
     fields: [
       { key: 'tong_gia_tri_tsbd', label: 'Tổng giá trị TSBĐ (VNĐ)', type: 'number' },
@@ -122,7 +119,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
 
   property_assessment: {
-    title: '6. Thông tin thẩm định',
+    title: '5. Thông tin thẩm định',
     icon: ShieldCheckIcon,
     fields: [
       { key: 'so_cif_chu_ts', label: 'Số CIF chủ tài sản', type: 'text' },
