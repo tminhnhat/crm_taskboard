@@ -69,7 +69,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
       { key: 'so_thua', label: 'Số thửa', type: 'text' },
       { key: 'to_ban_do', label: 'Tờ bản đồ số', type: 'text' },
       { key: 'dia_chi_dat', label: 'Địa chỉ thửa đất', type: 'text' },
-      { key: 'vitri_thua_dat', label: 'Vị trí thửa đất', type: 'text' },
+      { key: 'vitri_thua_dat', label: 'Vị trí thửa đất', type: 'select', options: ['1', '2', '3', '4', '5'] },
       { key: 'muc_dich_su_dung_dat', label: 'Mục đích sử dụng đất', type: 'text' },
       { key: 'thoi_gian_su_dung', label: 'Thời hạn sử dụng', type: 'text' },
       { key: 'nguon_goc_dat', label: 'Nguồn gốc sử dụng', type: 'text' },
