@@ -122,9 +122,9 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                   Địa chỉ: {collateral.customer.address}
                 </div>
               )}
-              {collateral.customer.customer_id && (
+              {collateral.customer.cif_number && (
                 <div className="text-sm text-gray-500 mt-1">
-                  Mã KH: {collateral.customer.customer_id}
+                  Số CIF: {collateral.customer.cif_number}
                 </div>
               )}
             </div>
