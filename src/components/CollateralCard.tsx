@@ -143,12 +143,12 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
           </span>
         </div>
 
-        {/* Created Date */}
+        {/* Valuation Date */}
         <div className="flex items-center">
           <CalendarIcon className="h-5 w-5 text-gray-400 mr-2" />
-          <span className="text-sm text-gray-500">Ngày tạo:</span>
+          <span className="text-sm text-gray-500">Ngày định giá:</span>
           <span className="ml-2 text-gray-700">
-            {new Date(collateral.created_at).toLocaleDateString('vi-VN')}
+            {collateral.valuation_date ? new Date(collateral.valuation_date).toLocaleDateString('vi-VN') : 'Chưa định giá'}
           </span>
         </div>
 
