@@ -11,6 +11,7 @@ import {
   ChatBubbleLeftRightIcon,
   MapPinIcon,
 } from '@heroicons/react/24/outline'
+import { formatMoneyToWords } from '@/lib/currency'
 import { ForwardRefExoticComponent, SVGProps, RefAttributes } from 'react'
 
 type IconType = ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref"> & { title?: string | undefined; titleId?: string | undefined; } & RefAttributes<SVGSVGElement>>
@@ -20,6 +21,7 @@ interface MetadataField {
   label: string
   type: 'text' | 'number' | 'select' | 'date' | 'tel' | 'email' | 'textarea' | 'section'
   options?: string[]
+  readOnly?: boolean
 }
 
 interface TemplateConfig {
@@ -106,7 +108,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
     icon: BanknotesIcon,
     fields: [
       { key: 'tong_gia_tri_tsbd', label: 'Tổng giá trị TSBĐ (VNĐ)', type: 'number' },
-      { key: 'tong_gia_tri_tsbd_bang_chu', label: 'Tổng giá trị bằng chữ', type: 'text' },
+      { key: 'tong_gia_tri_tsbd_bang_chu', label: 'Tổng giá trị bằng chữ', type: 'text', readOnly: true },
       { key: 'tong_gia_tri_dat', label: 'Giá trị đất (VNĐ)', type: 'number' },
       { key: 'don_gia_dat_o', label: 'Đơn giá đất ở (VNĐ/m²)', type: 'number' },
       { key: 'don_gia_dat_trong_cay', label: 'Đơn giá đất trồng cây (VNĐ/m²)', type: 'number' },
@@ -212,6 +214,15 @@ export default function MetadataForm({
         [field]: value
       }
     }
+
+    // Automatically update tong_gia_tri_tsbd_bang_chu when tong_gia_tri_tsbd changes
+    if (template === 'property_value' && field === 'tong_gia_tri_tsbd' && typeof value === 'number') {
+      newMetadata[template] = {
+        ...newMetadata[template],
+        tong_gia_tri_tsbd_bang_chu: formatMoneyToWords(value)
+      }
+    }
+
     setMetadata(newMetadata)
     onChange(newMetadata)
   }
@@ -296,7 +307,12 @@ export default function MetadataForm({
                         : e.target.value
                       handleFieldChange(activeTemplate, field.key, value)
                     }}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    readOnly={field.readOnly}
+                    className={`block w-full rounded-md border-gray-300 shadow-sm ${
+                      field.readOnly 
+                        ? 'bg-gray-50 text-gray-500'
+                        : 'focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
                 )}
               </div>
