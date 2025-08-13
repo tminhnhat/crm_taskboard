@@ -102,6 +102,35 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
 
       {/* Content */}
       <div className="space-y-4">
+        {/* Customer Information */}
+        {collateral.customer && (
+          <div className="flex items-start">
+            <div className="flex-grow">
+              <div className="flex items-center">
+                <span className="text-sm text-gray-500">Khách hàng:</span>
+                <span className="ml-2 font-semibold text-gray-900">
+                  {collateral.customer.full_name}
+                </span>
+              </div>
+              {collateral.customer.phone && (
+                <div className="text-sm text-gray-600">
+                  SĐT: {collateral.customer.phone}
+                </div>
+              )}
+              {collateral.customer.address && (
+                <div className="text-sm text-gray-600">
+                  Địa chỉ: {collateral.customer.address}
+                </div>
+              )}
+              {collateral.customer.customer_id && (
+                <div className="text-sm text-gray-500 mt-1">
+                  Mã KH: {collateral.customer.customer_id}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Value */}
         <div className="flex items-center">
           <BanknotesIcon className="h-5 w-5 text-gray-400 mr-2" />
