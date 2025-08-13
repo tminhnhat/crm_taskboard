@@ -38,7 +38,13 @@ export default function CollateralForm({
     status: collateral?.status || 'active',
     location: collateral?.location || '',
     description: collateral?.description || '',
-    owner_info: collateral?.owner_info || '',
+    owner_info: collateral?.owner_info || JSON.stringify({
+      primary_owner_id: '',
+      primary_owner_name: '',
+      spouse_id: '',
+      spouse_name: '',
+      notes: ''
+    }),
     metadata: (collateral?.metadata as Record<string, Record<string, unknown>>) || {}
   })
 
@@ -226,18 +232,97 @@ export default function CollateralForm({
       </div>
 
       {/* Owner Info */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Thông tin chủ sở hữu
-        </label>
-        <textarea
-          name="owner_info"
-          value={formState.owner_info}
-          onChange={handleInputChange}
-          rows={2}
-          placeholder="Thông tin về chủ sở hữu tài sản"
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-gray-700">Thông tin chủ sở hữu</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Primary Owner Info */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Chủ sở hữu chính
+            </label>
+            <select
+              name="owner_info_primary"
+              value={JSON.parse(formState.owner_info || '{}').primary_owner_id || ''}
+              onChange={(e) => {
+                const selectedCustomer = customers.find(c => c.customer_id.toString() === e.target.value);
+                const currentInfo = JSON.parse(formState.owner_info || '{}');
+                setFormState(prev => ({
+                  ...prev,
+                  owner_info: JSON.stringify({
+                    ...currentInfo,
+                    primary_owner_id: e.target.value,
+                    primary_owner_name: selectedCustomer?.full_name || ''
+                  })
+                }));
+              }}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">Chọn chủ sở hữu chính</option>
+              {customers.map(customer => (
+                <option key={customer.customer_id} value={customer.customer_id}>
+                  {customer.full_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Spouse Info */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Vợ/Chồng đồng sở hữu
+            </label>
+            <select
+              name="owner_info_spouse"
+              value={JSON.parse(formState.owner_info || '{}').spouse_id || ''}
+              onChange={(e) => {
+                const selectedCustomer = customers.find(c => c.customer_id.toString() === e.target.value);
+                const currentInfo = JSON.parse(formState.owner_info || '{}');
+                setFormState(prev => ({
+                  ...prev,
+                  owner_info: JSON.stringify({
+                    ...currentInfo,
+                    spouse_id: e.target.value,
+                    spouse_name: selectedCustomer?.full_name || ''
+                  })
+                }));
+              }}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">Chọn vợ/chồng (nếu có)</option>
+              {customers
+                .filter(customer => customer.customer_id.toString() !== JSON.parse(formState.owner_info || '{}').primary_owner_id)
+                .map(customer => (
+                  <option key={customer.customer_id} value={customer.customer_id}>
+                    {customer.full_name}
+                  </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Additional Owner Info */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Thông tin bổ sung
+          </label>
+          <textarea
+            name="owner_info_notes"
+            value={JSON.parse(formState.owner_info || '{}').notes || ''}
+            onChange={(e) => {
+              const currentInfo = JSON.parse(formState.owner_info || '{}');
+              setFormState(prev => ({
+                ...prev,
+                owner_info: JSON.stringify({
+                  ...currentInfo,
+                  notes: e.target.value
+                })
+              }));
+            }}
+            rows={2}
+            placeholder="Thông tin bổ sung về chủ sở hữu (nếu có)"
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
       </div>
 
       {/* Metadata Form */}
