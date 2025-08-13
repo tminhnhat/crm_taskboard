@@ -229,6 +229,7 @@ export default function MetadataForm({
 
           return (
             <button
+              type="button"
               key={key}
               onClick={() => setActiveTemplate(isActive ? null : key)}
               className={`p-4 rounded-lg border ${
