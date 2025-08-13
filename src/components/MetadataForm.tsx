@@ -11,7 +11,7 @@ import {
   ChatBubbleLeftRightIcon,
   MapPinIcon,
 } from '@heroicons/react/24/outline'
-import { formatMoneyToWords } from '@/lib/currency'
+import { formatMoneyToWords, formatAreaToWords } from '@/lib/currency'
 import { ForwardRefExoticComponent, SVGProps, RefAttributes } from 'react'
 
 type IconType = ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref"> & { title?: string | undefined; titleId?: string | undefined; } & RefAttributes<SVGSVGElement>>
@@ -79,7 +79,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
       
       // Thông tin diện tích
       { key: 'dien_tich', label: 'Tổng diện tích (m²)', type: 'number' },
-      { key: 'dien_tich_bang_chu', label: 'Diện tích bằng chữ', type: 'text' },
+      { key: 'dien_tich_bang_chu', label: 'Diện tích bằng chữ', type: 'text', readOnly: true },
       { key: 'dien_tich_dat_o', label: 'Diện tích đất ở (m²)', type: 'number' },
       { key: 'dien_tich_dat_trong_cay', label: 'Diện tích đất trồng cây (m²)', type: 'number' },
       { key: 'dien_tich_dat_khac', label: 'Diện tích đất khác (m²)', type: 'number' }
@@ -215,11 +215,22 @@ export default function MetadataForm({
       }
     }
 
-    // Automatically update tong_gia_tri_tsbd_bang_chu when tong_gia_tri_tsbd changes
-    if (template === 'property_value' && field === 'tong_gia_tri_tsbd' && typeof value === 'number') {
-      newMetadata[template] = {
-        ...newMetadata[template],
-        tong_gia_tri_tsbd_bang_chu: formatMoneyToWords(value)
+    // Automatically update text representations of numbers
+    if (typeof value === 'number') {
+      // Update currency in words
+      if (template === 'property_value' && field === 'tong_gia_tri_tsbd') {
+        newMetadata[template] = {
+          ...newMetadata[template],
+          tong_gia_tri_tsbd_bang_chu: formatMoneyToWords(value)
+        }
+      }
+      
+      // Update area in words
+      if (template === 'property_land' && field === 'dien_tich') {
+        newMetadata[template] = {
+          ...newMetadata[template],
+          dien_tich_bang_chu: formatAreaToWords(value)
+        }
       }
     }
 
