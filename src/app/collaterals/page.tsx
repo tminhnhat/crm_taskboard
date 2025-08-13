@@ -11,7 +11,6 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import { 
   PlusIcon, 
   HomeIcon,
-  BanknotesIcon,
   ChartBarIcon,
   CubeIcon
 } from '@heroicons/react/24/outline'
@@ -222,37 +221,13 @@ export default function CollateralsPage() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <CubeIcon className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Tổng Tài Sản</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <BanknotesIcon className="h-8 w-8 text-green-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Tổng Giá Trị</p>
-                <p className="text-lg font-bold text-green-600">
-                  {formatCurrency(stats.totalValue)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <ChartBarIcon className="h-8 w-8 text-purple-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Giá Trị Trung Bình</p>
-                <p className="text-lg font-bold text-purple-600">
-                  {formatCurrency(stats.averageValue)}
-                </p>
               </div>
             </div>
           </div>
