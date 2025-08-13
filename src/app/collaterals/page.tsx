@@ -3,6 +3,16 @@
 import { useState, useMemo } from 'react'
 import { useCollaterals } from '@/hooks/useCollaterals'
 import { Collateral } from '@/lib/supabase'
+import   const handleCancelForm = () => {
+    setShowForm(false)
+    setEditingCollateral(null)
+  }
+
+  const handleFiltersChange = (newFilters: typeof filters) => {
+    setFilters(newFilters)
+  }
+
+  if (loading) {ncy } from '@/lib/currency'
 import Navigation from '@/components/Navigation'
 import CollateralCard from '@/components/CollateralCard'
 import CollateralForm from '@/components/CollateralForm'
@@ -169,8 +179,8 @@ export default function CollateralsPage() {
     setFilters(newFilters)
   }
 
-  // Import currency formatting functions from lib
-  const { formatCurrency, formatMoneyToWords } = require('@/lib/currency')
+  // Import currency formatting function from lib
+  import { formatCurrency } from '@/lib/currency'
 
   if (loading) {
     return (
