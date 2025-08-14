@@ -476,6 +476,43 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                   maxLength={10}
                   title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
                 />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date()
+                      const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`
+                      setFormData({ ...formData, task_date_start: formattedDate })
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Hôm nay
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tomorrow = new Date()
+                      tomorrow.setDate(tomorrow.getDate() + 1)
+                      const formattedDate = `${tomorrow.getDate().toString().padStart(2, '0')}/${(tomorrow.getMonth() + 1).toString().padStart(2, '0')}/${tomorrow.getFullYear()}`
+                      setFormData({ ...formData, task_date_start: formattedDate })
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Ngày mai
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextWeek = new Date()
+                      nextWeek.setDate(nextWeek.getDate() + 7)
+                      const formattedDate = `${nextWeek.getDate().toString().padStart(2, '0')}/${(nextWeek.getMonth() + 1).toString().padStart(2, '0')}/${nextWeek.getFullYear()}`
+                      setFormData({ ...formData, task_date_start: formattedDate })
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Tuần sau
+                  </button>
+                </div>
                 {formData.task_date_start && !validateDateFormat(formData.task_date_start) && (
                   <p className="text-red-500 text-xs mt-1">
                     Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
@@ -494,6 +531,36 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                   onChange={(e) => setFormData({ ...formData, task_start_time: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, task_start_time: '09:00' })}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    9:00
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, task_start_time: '10:30' })}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    10:30
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, task_start_time: '14:00' })}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    14:00
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, task_start_time: '15:30' })}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    15:30
+                  </button>
+                </div>
               </div>
             </div>
 
