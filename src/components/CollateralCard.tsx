@@ -81,8 +81,26 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-xl font-semibold text-gray-900">{collateral.collateral_type || 'Tài sản thế chấp'}</h3>
-          <p className="text-sm text-gray-500 mt-1">ID: {collateral.collateral_id}</p>
+          <div className="flex items-center space-x-2">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <DocumentChartBarIcon className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900">
+                {collateral.collateral_type ? (
+                  <span className="flex items-center">
+                    <span>{collateral.collateral_type}</span>
+                    <span className="ml-2 px-2.5 py-0.5 text-sm bg-blue-50 text-blue-700 rounded-full">
+                      ID: {collateral.collateral_id}
+                    </span>
+                  </span>
+                ) : (
+                  'Tài sản thế chấp'
+                )}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">Loại tài sản thế chấp</p>
+            </div>
+          </div>
         </div>
         <div className="flex space-x-2">
           <button
