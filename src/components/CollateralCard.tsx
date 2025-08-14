@@ -73,6 +73,31 @@ const formatFieldLabel = (key: string): string => {
     .join(' ')
 }
 
+const getCollateralTypeInVietnamese = (type: string): string => {
+  switch (type.toLowerCase()) {
+    case 'real_estate':
+      return 'Bất động sản'
+    case 'vehicle':
+      return 'Phương tiện'
+    case 'machinery':
+      return 'Máy móc thiết bị'
+    case 'inventory':
+      return 'Hàng hóa tồn kho'
+    case 'receivables':
+      return 'Khoản phải thu'
+    case 'securities':
+      return 'Chứng khoán'
+    case 'business_assets':
+      return 'Tài sản doanh nghiệp'
+    case 'intellectual_property':
+      return 'Tài sản trí tuệ'
+    case 'personal_property':
+      return 'Tài sản cá nhân'
+    default:
+      return type.charAt(0).toUpperCase() + type.slice(1)
+  }
+}
+
 export default function CollateralCard({ collateral, onEdit, onDelete }: CollateralCardProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>([])
 
@@ -89,7 +114,7 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
               <h3 className="text-xl font-semibold text-gray-900">
                 {collateral.collateral_type ? (
                   <span className="flex items-center">
-                    <span>{collateral.collateral_type}</span>
+                    <span>{getCollateralTypeInVietnamese(collateral.collateral_type)}</span>
                     <span className="ml-2 px-2.5 py-0.5 text-sm bg-blue-50 text-blue-700 rounded-full">
                       ID: {collateral.collateral_id}
                     </span>
