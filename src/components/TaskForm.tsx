@@ -12,29 +12,29 @@ interface TaskFormProps {
 
 export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormProps) {
   // Helper functions for time duration formatting
-  const formatTimeDurationForDisplay = (isoDuration: string | null): string => {
-    if (!isoDuration) return ''
+  const formatTimeDurationForDisplay = (dbDuration: string | null): string => {
+    if (!dbDuration) return ''
     
-    // Parse ISO duration like PT1H30M
-    const hourMatch = isoDuration.match(/(\d+)H/)
-    const minuteMatch = isoDuration.match(/(\d+)M/)
+    // Parse duration in format HH:mm:ss
+    const match = dbDuration.match(/^(\d{2}):(\d{2}):(\d{2})$/)
+    if (!match) return ''
     
-    const hours = hourMatch ? parseInt(hourMatch[1]) : 0
-    const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0
+    const [, hours, minutes, seconds] = match
+    const h = parseInt(hours)
+    const m = parseInt(minutes)
     
-    if (hours === 0 && minutes === 0) return ''
-    if (hours === 0) return `${minutes} phút`
-    if (minutes === 0) return hours === 1 ? '1 giờ' : `${hours} giờ`
-    return `${hours} giờ ${minutes} phút`
+    if (h === 0 && m === 0) return ''
+    if (h === 0) return `${m} phút`
+    if (m === 0) return h === 1 ? '1 giờ' : `${h} giờ`
+    return `${h} giờ ${m} phút`
   }
 
   const formatTimeDurationForDB = (minutes: number): string => {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
     
-    if (hours === 0) return `PT${minutes}M`
-    if (remainingMinutes === 0) return `PT${hours}H`
-    return `PT${hours}H${remainingMinutes}M`
+    // Format as HH:mm:ss
+    return `${hours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:00`
   }
 
   const parseUserInput = (input: string): string => {
