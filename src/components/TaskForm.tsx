@@ -210,11 +210,11 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       return
     }
 
-    // Tạo object mới không bao gồm task_time_process_display
-    const { task_time_process_display: _, ...dataToSubmit } = formData
-    
+    // Tạo object mới bỏ qua task_time_process_display
     onSubmit({
-      ...dataToSubmit,
+      ...Object.fromEntries(
+        Object.entries(formData).filter(([key]) => key !== 'task_time_process_display')
+      ),
       task_type: formData.task_type || null,
       task_priority: formData.task_priority || null,
       task_category: formData.task_category || null,
