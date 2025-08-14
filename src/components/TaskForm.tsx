@@ -11,19 +11,51 @@ interface TaskFormProps {
 }
 
 export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormProps) {
-  // Helper function to format time duration
-  const formatTimeDuration = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes} phút`
-    } else if (minutes === 60) {
-      return '1 giờ'
-    } else if (minutes % 60 === 0) {
-      return `${minutes / 60} giờ`
-    } else {
-      const hours = Math.floor(minutes / 60)
-      const remainingMinutes = minutes % 60
-      return `${hours} giờ ${remainingMinutes} phút`
-    }
+  // Helper functions for time duration formatting
+  const formatTimeDurationForDisplay = (isoDuration: string | null): string => {
+    if (!isoDuration) return ''
+    
+    // Parse ISO duration like PT1H30M
+    const hourMatch = isoDuration.match(/(\d+)H/)
+    const minuteMatch = isoDuration.match(/(\d+)M/)
+    
+    const hours = hourMatch ? parseInt(hourMatch[1]) : 0
+    const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0
+    
+    if (hours === 0 && minutes === 0) return ''
+    if (hours === 0) return `${minutes} phút`
+    if (minutes === 0) return hours === 1 ? '1 giờ' : `${hours} giờ`
+    return `${hours} giờ ${minutes} phút`
+  }
+
+  const formatTimeDurationForDB = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    
+    if (hours === 0) return `PT${minutes}M`
+    if (remainingMinutes === 0) return `PT${hours}H`
+    return `PT${hours}H${remainingMinutes}M`
+  }
+
+  const parseUserInput = (input: string): string => {
+    // Xử lý input từ người dùng
+    const hourMatch = input.match(/(\d+)\s*(?:giờ|h|hour|hours)/)
+    const minuteMatch = input.match(/(\d+)\s*(?:phút|p|minute|minutes|m)/)
+    
+    const hours = hourMatch ? parseInt(hourMatch[1]) : 0
+    const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0
+    
+    const totalMinutes = hours * 60 + minutes
+    return totalMinutes > 0 ? formatTimeDurationForDB(totalMinutes) : ''
+  }
+
+  const handleTimeProcessChange = (value: string) => {
+    const dbFormat = parseUserInput(value)
+    setFormData({ 
+      ...formData, 
+      task_time_process: dbFormat,
+      task_time_process_display: value // Thêm trường hiển thị
+    })
   }
 
   const [formData, setFormData] = useState({
@@ -34,6 +66,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     task_priority: '' as TaskPriority | '',
     task_category: '',
     task_time_process: '',
+    task_time_process_display: '',
     task_due_date: '',
     task_date_start: '',
     task_start_time: '',
@@ -135,6 +168,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
         task_priority: task.task_priority || '',
         task_category: task.task_category || '',
         task_time_process: task.task_time_process || '',
+        task_time_process_display: formatTimeDurationForDisplay(task.task_time_process),
         task_due_date: formatDateForDisplay(task.task_due_date),
         task_date_start: formatDateForDisplay(task.task_date_start),
         task_start_time: task.task_start_time || '',
@@ -151,6 +185,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
         task_priority: '',
         task_category: '',
         task_time_process: '',
+        task_time_process_display: '',
         task_due_date: '',
         task_date_start: '',
         task_start_time: '',
@@ -327,50 +362,92 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
               <input
                 type="text"
                 id="task_time_process"
-                value={formData.task_time_process}
-                onChange={(e) => setFormData({ ...formData, task_time_process: e.target.value })}
+                value={formData.task_time_process_display}
+                onChange={(e) => handleTimeProcessChange(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="VD: 2 giờ 30 phút, 45 phút"
               />
               <div className="flex flex-wrap gap-2 mt-2">
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(15) })}
+                  onClick={() => {
+                    const duration = formatTimeDurationForDB(15)
+                    setFormData({ 
+                      ...formData, 
+                      task_time_process: duration,
+                      task_time_process_display: formatTimeDurationForDisplay(duration)
+                    })
+                  }}
                   className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
                   15 phút
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(30) })}
+                  onClick={() => {
+                    const duration = formatTimeDurationForDB(30)
+                    setFormData({ 
+                      ...formData, 
+                      task_time_process: duration,
+                      task_time_process_display: formatTimeDurationForDisplay(duration)
+                    })
+                  }}
                   className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
                   30 phút
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(60) })}
+                  onClick={() => {
+                    const duration = formatTimeDurationForDB(60)
+                    setFormData({ 
+                      ...formData, 
+                      task_time_process: duration,
+                      task_time_process_display: formatTimeDurationForDisplay(duration)
+                    })
+                  }}
                   className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
                   1 giờ
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(120) })}
+                  onClick={() => {
+                    const duration = formatTimeDurationForDB(120)
+                    setFormData({ 
+                      ...formData, 
+                      task_time_process: duration,
+                      task_time_process_display: formatTimeDurationForDisplay(duration)
+                    })
+                  }}
                   className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
                   2 giờ
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(240) })}
+                  onClick={() => {
+                    const duration = formatTimeDurationForDB(240)
+                    setFormData({ 
+                      ...formData, 
+                      task_time_process: duration,
+                      task_time_process_display: formatTimeDurationForDisplay(duration)
+                    })
+                  }}
                   className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
                   4 giờ
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(480) })}
+                  onClick={() => {
+                    const duration = formatTimeDurationForDB(480)
+                    setFormData({ 
+                      ...formData, 
+                      task_time_process: duration,
+                      task_time_process_display: formatTimeDurationForDisplay(duration)
+                    })
+                  }}
                   className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
                   8 giờ
