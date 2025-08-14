@@ -209,9 +209,12 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       alert('Định dạng ngày hết hạn không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
     }
+
+    // Tạo object mới không bao gồm task_time_process_display
+    const { task_time_process_display, ...dataToSubmit } = formData
     
     onSubmit({
-      ...formData,
+      ...dataToSubmit,
       task_type: formData.task_type || null,
       task_priority: formData.task_priority || null,
       task_category: formData.task_category || null,
