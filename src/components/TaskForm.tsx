@@ -211,7 +211,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     }
 
     // Tạo object mới không bao gồm task_time_process_display
-    const { task_time_process_display, ...dataToSubmit } = formData
+    const { task_time_process_display: _, ...dataToSubmit } = formData
     
     onSubmit({
       ...dataToSubmit,
