@@ -11,6 +11,21 @@ interface TaskFormProps {
 }
 
 export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormProps) {
+  // Helper function to format time duration
+  const formatTimeDuration = (minutes: number): string => {
+    if (minutes < 60) {
+      return `${minutes} phút`
+    } else if (minutes === 60) {
+      return '1 giờ'
+    } else if (minutes % 60 === 0) {
+      return `${minutes / 60} giờ`
+    } else {
+      const hours = Math.floor(minutes / 60)
+      const remainingMinutes = minutes % 60
+      return `${hours} giờ ${remainingMinutes} phút`
+    }
+  }
+
   const [formData, setFormData] = useState({
     task_name: '',
     task_type: '',
@@ -315,47 +330,54 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                 value={formData.task_time_process}
                 onChange={(e) => setFormData({ ...formData, task_time_process: e.target.value })}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="VD: 2 giờ 30 phút, 1 ngày, 3 hours"
+                placeholder="VD: 2 giờ 30 phút, 45 phút"
               />
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: '15 phút' })}
-                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(15) })}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
-                  15p
+                  15 phút
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: '30 phút' })}
-                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(30) })}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
-                  30p
+                  30 phút
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: '1 giờ' })}
-                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(60) })}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
-                  1h
+                  1 giờ
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: '2 giờ' })}
-                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(120) })}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
-                  2h
+                  2 giờ
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, task_time_process: '4 giờ' })}
-                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(240) })}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
-                  4h
+                  4 giờ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, task_time_process: formatTimeDuration(480) })}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  8 giờ
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Nhập thời gian dự kiến (VD: 2 giờ 30 phút, 1 ngày, 45 phút) hoặc chọn nhanh từ các nút bên trên
+                Nhập thời gian thực hiện hoặc chọn từ các mốc thời gian có sẵn
               </p>
             </div>
 
