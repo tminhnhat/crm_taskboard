@@ -317,8 +317,45 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="VD: 2 giờ 30 phút, 1 ngày, 3 hours"
               />
+              <div className="flex gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, task_time_process: '15 phút' })}
+                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  15p
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, task_time_process: '30 phút' })}
+                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  30p
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, task_time_process: '1 giờ' })}
+                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  1h
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, task_time_process: '2 giờ' })}
+                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  2h
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, task_time_process: '4 giờ' })}
+                  className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  4h
+                </button>
+              </div>
               <p className="text-xs text-gray-500 mt-1">
-                Nhập thời gian dự kiến (VD: 2 giờ 30 phút, 1 ngày, 45 phút)
+                Nhập thời gian dự kiến (VD: 2 giờ 30 phút, 1 ngày, 45 phút) hoặc chọn nhanh từ các nút bên trên
               </p>
             </div>
 
