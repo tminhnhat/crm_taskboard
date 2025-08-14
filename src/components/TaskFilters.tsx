@@ -81,15 +81,7 @@ export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersPro
             <option value="">Tất cả</option>
             <option value="personal">Cá nhân</option>
             <option value="work">Công việc</option>
-            <option value="meeting">Cuộc họp</option>
-            <option value="project">Dự án</option>
-            <option value="reminder">Nhắc nhở</option>
-            <option value="call">Gọi điện</option>
-            <option value="email">Email</option>
-            <option value="training">Đào tạo</option>
-            <option value="research">Nghiên cứu</option>
-            <option value="maintenance">Bảo trì</option>
-            <option value="other">Khác</option>
+
           </select>
         </div>
         

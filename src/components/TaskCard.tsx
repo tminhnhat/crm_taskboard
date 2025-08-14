@@ -59,16 +59,7 @@ const statusLabels = {
 
 const taskTypeLabels: { [key: string]: string } = {
   'personal': 'Cá nhân',
-  'work': 'Công việc',
-  'meeting': 'Cuộc họp',
-  'project': 'Dự án',
-  'reminder': 'Nhắc nhở',
-  'call': 'Gọi điện',
-  'email': 'Email',
-  'training': 'Đào tạo',
-  'research': 'Nghiên cứu',
-  'maintenance': 'Bảo trì',
-  'other': 'Khác'
+  'work': 'Công việc'
 }
 
 export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: TaskCardProps) {

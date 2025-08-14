@@ -220,15 +220,6 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                 <option value="">Chọn loại công việc</option>
                 <option value="personal">Cá nhân</option>
                 <option value="work">Công việc</option>
-                <option value="meeting">Cuộc họp</option>
-                <option value="project">Dự án</option>
-                <option value="reminder">Nhắc nhở</option>
-                <option value="call">Gọi điện</option>
-                <option value="email">Email</option>
-                <option value="training">Đào tạo</option>
-                <option value="research">Nghiên cứu</option>
-                <option value="maintenance">Bảo trì</option>
-                <option value="other">Khác</option>
               </select>
             </div>
 
@@ -302,6 +293,14 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
               <option value="document preparation">Soạn hồ sơ</option>
               <option value="customer development">Phát triển khách hàng</option>
               <option value="customer care">Chăm sóc khách hàng</option>
+              <option value="meeting">Cuộc họp</option>
+              <option value="project">Dự án</option>
+              <option value="reminder">Nhắc nhở</option>
+              <option value="call">Gọi điện</option>
+              <option value="email">Email</option>
+              <option value="training">Đào tạo</option>
+              <option value="research">Nghiên cứu</option>
+              <option value="maintenance">Bảo trì</option>
               <option value="other">Khác</option>
               </select>
             </div>
