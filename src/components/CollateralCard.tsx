@@ -113,12 +113,7 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
             <div>
               <h3 className="text-xl font-semibold text-gray-900">
                 {collateral.collateral_type ? (
-                  <span className="flex items-center">
-                    <span>{getCollateralTypeInVietnamese(collateral.collateral_type)}</span>
-                    <span className="ml-2 px-2.5 py-0.5 text-sm bg-blue-50 text-blue-700 rounded-full">
-                      ID: {collateral.collateral_id}
-                    </span>
-                  </span>
+                  <span>{getCollateralTypeInVietnamese(collateral.collateral_type)}</span>
                 ) : (
                   'Tài sản thế chấp'
                 )}
