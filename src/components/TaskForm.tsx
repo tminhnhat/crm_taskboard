@@ -19,7 +19,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     const match = dbDuration.match(/^(\d{2}):(\d{2}):(\d{2})$/)
     if (!match) return ''
     
-    const [, hours, minutes, seconds] = match
+    const [, hours, minutes] = match // Chỉ lấy giờ và phút, bỏ qua giây
     const h = parseInt(hours)
     const m = parseInt(minutes)
     
