@@ -20,6 +20,35 @@ export default function CollateralForm({
   isLoading,
   fetchCustomers
 }: CollateralFormProps): React.JSX.Element {
+  // Helper function to format date from dd/mm/yyyy to yyyy-mm-dd
+  const formatDateForDB = (displayDate: string): string => {
+    if (!displayDate) return ''
+    
+    // If already in yyyy-mm-dd format, return as is
+    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
+    
+    // Convert from dd/mm/yyyy to yyyy-mm-dd
+    const parts = displayDate.split('/')
+    if (parts.length !== 3) return displayDate
+    
+    const [day, month, year] = parts
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  }
+
+  // Helper function to format date from yyyy-mm-dd to dd/mm/yyyy
+  const formatDateForDisplay = (dbDate: string): string => {
+    if (!dbDate) return ''
+    
+    // If already in dd/mm/yyyy format, return as is
+    if (dbDate.includes('/')) return dbDate
+    
+    // Convert from yyyy-mm-dd to dd/mm/yyyy
+    const parts = dbDate.split('-')
+    if (parts.length !== 3) return dbDate
+    
+    const [year, month, day] = parts
+    return `${day}/${month}/${year}`
+  }
   const [formState, setFormState] = useState<{
     collateral_type: string;
     value: string;
@@ -80,12 +109,51 @@ export default function CollateralForm({
     onSave(collateralData)
   }
 
+  // Helper function to format date from dd/mm/yyyy to yyyy-mm-dd
+  const formatDateForDB = (displayDate: string): string => {
+    if (!displayDate) return ''
+    
+    // If already in yyyy-mm-dd format, return as is
+    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
+    
+    // Convert from dd/mm/yyyy to yyyy-mm-dd
+    const parts = displayDate.split('/')
+    if (parts.length !== 3) return displayDate
+    
+    const [day, month, year] = parts
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  }
+
+  // Helper function to format date from yyyy-mm-dd to dd/mm/yyyy
+  const formatDateForDisplay = (dbDate: string): string => {
+    if (!dbDate) return ''
+    
+    // If already in dd/mm/yyyy format, return as is
+    if (dbDate.includes('/')) return dbDate
+    
+    // Convert from yyyy-mm-dd to dd/mm/yyyy
+    const parts = dbDate.split('-')
+    if (parts.length !== 3) return dbDate
+    
+    const [year, month, day] = parts
+    return `${day}/${month}/${year}`
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormState(prev => ({
-      ...prev,
-      [name]: value
-    }))
+
+    if (name === 'valuation_date') {
+      // Convert input date format for display
+      setFormState(prev => ({
+        ...prev,
+        [name]: value // Keep the original yyyy-mm-dd format in state
+      }))
+    } else {
+      setFormState(prev => ({
+        ...prev,
+        [name]: value
+      }))
+    }
   }
 
   const handleMetadataChange = (metadata: Record<string, Record<string, unknown>>) => {
@@ -174,13 +242,50 @@ export default function CollateralForm({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Ngày định giá
           </label>
-          <input
-            type="date"
-            name="valuation_date"
-            value={formState.valuation_date}
-            onChange={handleInputChange}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              name="valuation_date"
+              value={formatDateForDisplay(formState.valuation_date)}
+              onChange={(e) => {
+                const inputValue = e.target.value
+                // Only allow numbers and forward slashes
+                const sanitizedValue = inputValue.replace(/[^\d/]/g, '')
+                
+                // Auto-format as user types
+                let formattedValue = sanitizedValue
+                if (sanitizedValue.length >= 2 && !sanitizedValue.includes('/')) {
+                  formattedValue = sanitizedValue.slice(0, 2) + '/' + sanitizedValue.slice(2)
+                }
+                if (sanitizedValue.length >= 5 && sanitizedValue.split('/').length === 2) {
+                  const parts = formattedValue.split('/')
+                  formattedValue = parts[0] + '/' + parts[1].slice(0, 2) + '/' + parts[1].slice(2)
+                }
+                
+                // Update the state with yyyy-mm-dd format
+                const parts = formattedValue.split('/')
+                if (parts.length === 3 && parts[2].length === 4) {
+                  const dbFormat = formatDateForDB(formattedValue)
+                  setFormState(prev => ({
+                    ...prev,
+                    valuation_date: dbFormat
+                  }))
+                } else {
+                  setFormState(prev => ({
+                    ...prev,
+                    valuation_date: formattedValue
+                  }))
+                }
+              }}
+              placeholder="dd/mm/yyyy"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              maxLength={10}
+            />
+            {formState.valuation_date && !formState.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/) && (
+              <p className="mt-1 text-sm text-red-500">
+                Vui lòng nhập ngày theo định dạng dd/mm/yyyy
+              </p>
+            )}
         </div>
 
         {/* Status */}
