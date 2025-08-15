@@ -67,7 +67,17 @@ const getMetadataTitle = (key: string): string => {
 }
 
 const formatFieldLabel = (key: string): string => {
-  return key
+  // Mapping specific field names to Vietnamese labels
+  const vietnameseLabels: Record<string, string> = {
+    property_certificate: 'Giấy chứng nhận',
+    property_land: 'Thông tin đất',
+    property_building: 'Thông tin công trình',
+    property_value: 'Giá trị BĐS',
+    property_assessment: 'Đánh giá BĐS'
+  }
+
+  // Return Vietnamese label if it exists, otherwise format the key as before
+  return vietnameseLabels[key] || key
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
@@ -195,14 +205,6 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
           <div>
             <span className="text-sm text-gray-500">Mô tả:</span>
             <p className="text-gray-700 mt-1">{collateral.description}</p>
-          </div>
-        )}
-
-        {/* Legal Status */}
-        {collateral.legal_status && (
-          <div>
-            <span className="text-sm text-gray-500">Tình trạng pháp lý:</span>
-            <p className="text-gray-700 mt-1">{collateral.legal_status}</p>
           </div>
         )}
 
