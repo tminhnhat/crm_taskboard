@@ -69,11 +69,69 @@ const getMetadataTitle = (key: string): string => {
 const formatFieldLabel = (key: string): string => {
   // Mapping specific field names to Vietnamese labels
   const vietnameseLabels: Record<string, string> = {
+    // Thông tin bất động sản
     property_certificate: 'Giấy chứng nhận',
     property_land: 'Thông tin đất',
     property_building: 'Thông tin công trình',
     property_value: 'Giá trị BĐS',
-    property_assessment: 'Đánh giá BĐS'
+    property_assessment: 'Đánh giá BĐS',
+    property_address: 'Địa chỉ BĐS',
+    property_purpose: 'Mục đích sử dụng',
+    property_ownership: 'Chủ sở hữu',
+    property_restrictions: 'Hạn chế/Thế chấp',
+
+    // Thông tin phương tiện
+    vehicle_type: 'Loại phương tiện',
+    vehicle_brand: 'Nhãn hiệu',
+    vehicle_model: 'Model',
+    vehicle_year: 'Năm sản xuất',
+    vehicle_color: 'Màu sắc',
+    vehicle_registration: 'Đăng ký xe',
+    vehicle_chassis: 'Số khung',
+    vehicle_engine: 'Số máy',
+    vehicle_condition: 'Tình trạng',
+    vehicle_mileage: 'Số km đã đi',
+
+    // Thông tin tài chính
+    financial_value: 'Giá trị',
+    financial_currency: 'Loại tiền',
+    financial_institution: 'Tổ chức tài chính',
+    financial_account: 'Số tài khoản',
+    financial_type: 'Loại tài sản tài chính',
+    financial_maturity: 'Ngày đáo hạn',
+    financial_interest: 'Lãi suất',
+    
+    // Tài liệu
+    document_type: 'Loại tài liệu',
+    document_number: 'Số tài liệu',
+    document_date: 'Ngày tài liệu',
+    document_issuer: 'Nơi cấp',
+    document_status: 'Trạng thái',
+    document_location: 'Nơi lưu trữ',
+    
+    // Thông tin pháp lý
+    legal_status: 'Tình trạng pháp lý',
+    legal_restrictions: 'Hạn chế pháp lý',
+    legal_disputes: 'Tranh chấp',
+    legal_registration: 'Đăng ký pháp lý',
+    legal_owner: 'Chủ sở hữu pháp lý',
+    legal_representative: 'Người đại diện',
+    
+    // Đánh giá
+    assessment_date: 'Ngày đánh giá',
+    assessment_method: 'Phương pháp đánh giá',
+    assessment_appraiser: 'Đơn vị thẩm định',
+    assessment_value: 'Giá trị thẩm định',
+    assessment_notes: 'Ghi chú đánh giá',
+    assessment_expiry: 'Ngày hết hạn',
+    
+    // Giao tiếp
+    communication_contact: 'Người liên hệ',
+    communication_phone: 'Số điện thoại',
+    communication_email: 'Email',
+    communication_address: 'Địa chỉ liên hệ',
+    communication_preferred: 'Phương thức ưu tiên',
+    communication_notes: 'Ghi chú liên hệ'
   }
 
   // Return Vietnamese label if it exists, otherwise format the key as before
