@@ -46,24 +46,61 @@ const getMetadataIcon = (key: string) => {
 }
 
 const getMetadataTitle = (key: string): string => {
-  switch (key.toLowerCase()) {
-    case 'property':
-      return 'Thông tin bất động sản'
-    case 'vehicle':
-      return 'Thông tin phương tiện'
-    case 'financial':
-      return 'Thông tin tài chính'
-    case 'documents':
-      return 'Tài liệu'
-    case 'legal':
-      return 'Thông tin pháp lý'
-    case 'assessment':
-      return 'Đánh giá'
-    case 'communication':
-      return 'Giao tiếp'
-    default:
-      return key.charAt(0).toUpperCase() + key.slice(1)
+  const templateTitles: Record<string, string> = {
+    // Templates cho bất động sản
+    'property': 'Thông tin bất động sản',
+    'property_residential': 'Thông tin nhà ở',
+    'property_commercial': 'Thông tin BĐS thương mại',
+    'property_industrial': 'Thông tin BĐS công nghiệp',
+    'property_land_only': 'Thông tin đất',
+
+    // Templates cho phương tiện
+    'vehicle': 'Thông tin phương tiện',
+    'vehicle_car': 'Thông tin ô tô',
+    'vehicle_motorcycle': 'Thông tin xe máy',
+    'vehicle_truck': 'Thông tin xe tải',
+    'vehicle_special': 'Thông tin xe đặc biệt',
+
+    // Templates cho máy móc thiết bị
+    'machinery': 'Thông tin máy móc',
+    'machinery_production': 'Máy móc sản xuất',
+    'machinery_construction': 'Máy móc xây dựng',
+    'machinery_special': 'Máy móc chuyên dụng',
+
+    // Templates cho hàng hóa
+    'inventory': 'Thông tin hàng hóa',
+    'inventory_goods': 'Hàng hóa thành phẩm',
+    'inventory_materials': 'Nguyên vật liệu',
+    'inventory_wip': 'Hàng đang sản xuất',
+
+    // Templates tài chính
+    'financial': 'Thông tin tài chính',
+    'financial_deposit': 'Tiền gửi',
+    'financial_bond': 'Trái phiếu',
+    'financial_stock': 'Cổ phiếu',
+
+    // Templates pháp lý
+    'legal': 'Thông tin pháp lý',
+    'legal_property': 'Pháp lý BĐS',
+    'legal_vehicle': 'Pháp lý phương tiện',
+    'legal_business': 'Pháp lý doanh nghiệp',
+
+    // Templates đánh giá
+    'assessment': 'Đánh giá',
+    'assessment_property': 'Đánh giá BĐS',
+    'assessment_vehicle': 'Đánh giá phương tiện',
+    'assessment_machinery': 'Đánh giá máy móc',
+
+    // Templates khác
+    'documents': 'Tài liệu',
+    'communication': 'Giao tiếp',
+    'business_assets': 'Tài sản doanh nghiệp',
+    'intellectual_property': 'Tài sản trí tuệ',
+    'receivables': 'Khoản phải thu'
   }
+
+  // Trả về tiêu đề tiếng Việt nếu có, nếu không thì format key gốc
+  return templateTitles[key.toLowerCase()] || key.charAt(0).toUpperCase() + key.slice(1)
 }
 
 const formatFieldLabel = (key: string): string => {
