@@ -367,20 +367,47 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                               {value.toLocaleString('vi-VN')}
                             </span>
                           ) : typeof value === 'string' ? (
-                            value.startsWith('http') ? (
-                              <a 
-                                href={value}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                              >
-                                {value}
-                              </a>
-                            ) : (
-                              <span className="text-sm text-gray-800 whitespace-pre-wrap">
-                                {value}
-                              </span>
-                            )
+                            (() => {
+                              // Check if it's a date field
+                              const isDateField = fieldKey.toLowerCase().includes('date') || 
+                                                fieldKey.toLowerCase().includes('ngay') ||
+                                                fieldKey.toLowerCase().includes('birthday') ||
+                                                fieldKey.toLowerCase().includes('expiry')
+                              
+                              // Try to parse as date if it's a date field
+                              if (isDateField) {
+                                const date = new Date(value)
+                                if (!isNaN(date.getTime())) {
+                                  const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
+                                  return (
+                                    <span className="text-sm text-gray-800">
+                                      {formattedDate}
+                                    </span>
+                                  )
+                                }
+                              }
+                              
+                              // If it's a URL, render as link
+                              if (value.startsWith('http')) {
+                                return (
+                                  <a 
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                  >
+                                    {value}
+                                  </a>
+                                )
+                              }
+                              
+                              // Regular string display
+                              return (
+                                <span className="text-sm text-gray-800 whitespace-pre-wrap">
+                                  {value}
+                                </span>
+                              )
+                            })()
                           ) : (
                             <pre className="text-sm text-gray-800 bg-gray-50 rounded p-2 overflow-auto">
                               {JSON.stringify(value, null, 2)}

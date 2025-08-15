@@ -125,7 +125,6 @@ const METADATA_TEMPLATES: MetadataTemplates = {
     fields: [
       { key: 'so_cif_chu_ts', label: 'Số CIF chủ tài sản', type: 'text' },
       { key: 'muc_cho_vay_toi_da', label: 'Mức cho vay tối đa (VNĐ)', type: 'number' },
-      { key: 'ngay_dinh_gia_tsbd', label: 'Ngày định giá', type: 'date' },
       { key: 'danhgiatsbd', label: 'Nhận xét đánh giá', type: 'textarea' },
       { key: 'so_hdtc_tsbd', label: 'Số HĐTC TSBĐ', type: 'text' },
       { key: 'van_phong_dktc', label: 'Văn phòng ĐKTC', type: 'text' },
