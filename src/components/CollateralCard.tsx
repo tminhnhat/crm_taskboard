@@ -342,15 +342,51 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                 </button>
 
                 {isExpanded && (
-                  <div className="mt-2 pl-4 space-y-2">
-                    {Object.entries(data).map(([fieldKey, value]) => (
-                      <div key={fieldKey} className="flex justify-between items-start py-1 border-b border-gray-100">
-                        <span className="text-sm text-gray-600 flex-shrink-0 w-1/3">
-                          {formatFieldLabel(fieldKey)}:
-                        </span>
-                        <span className="text-sm text-gray-800 flex-grow pl-4 whitespace-pre-wrap font-mono">
-                          {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
-                        </span>
+                  <div className="mt-2 bg-white rounded-lg border border-gray-100">
+                    {Object.entries(data).map(([fieldKey, value], index) => (
+                      <div 
+                        key={fieldKey} 
+                        className={`flex items-start p-3 ${
+                          index !== Object.entries(data).length - 1 ? 'border-b border-gray-100' : ''
+                        }`}
+                      >
+                        <div className="w-1/3">
+                          <span className="text-sm font-medium text-gray-600">
+                            {formatFieldLabel(fieldKey)}
+                          </span>
+                        </div>
+                        <div className="flex-1 pl-4">
+                          {typeof value === 'boolean' ? (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {value ? 'Có' : 'Không'}
+                            </span>
+                          ) : typeof value === 'number' ? (
+                            <span className="text-sm text-gray-800">
+                              {value.toLocaleString('vi-VN')}
+                            </span>
+                          ) : typeof value === 'string' ? (
+                            value.startsWith('http') ? (
+                              <a 
+                                href={value}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                              >
+                                {value}
+                              </a>
+                            ) : (
+                              <span className="text-sm text-gray-800 whitespace-pre-wrap">
+                                {value}
+                              </span>
+                            )
+                          ) : (
+                            <pre className="text-sm text-gray-800 bg-gray-50 rounded p-2 overflow-auto">
+                              {JSON.stringify(value, null, 2)}
+                            </pre>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
