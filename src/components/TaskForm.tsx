@@ -570,6 +570,13 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                 <div className="flex flex-wrap gap-2 mt-2">
                   <button
                     type="button"
+                    onClick={() => setFormData({ ...formData, task_start_time: '08:00' })}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    8:00
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setFormData({ ...formData, task_start_time: '09:00' })}
                     className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                   >
@@ -595,6 +602,13 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                     className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                   >
                     15:30
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, task_start_time: '16:30' })}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    16:30
                   </button>
                 </div>
               </div>
