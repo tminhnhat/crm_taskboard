@@ -512,6 +512,42 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                   >
                     Tuần sau
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const threeDays = new Date()
+                      threeDays.setDate(threeDays.getDate() + 3)
+                      const formattedDate = `${threeDays.getDate().toString().padStart(2, '0')}/${(threeDays.getMonth() + 1).toString().padStart(2, '0')}/${threeDays.getFullYear()}`
+                      setFormData({ ...formData, task_date_start: formattedDate })
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    3 ngày
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const fourDays = new Date()
+                      fourDays.setDate(fourDays.getDate() + 4)
+                      const formattedDate = `${fourDays.getDate().toString().padStart(2, '0')}/${(fourDays.getMonth() + 1).toString().padStart(2, '0')}/${fourDays.getFullYear()}`
+                      setFormData({ ...formData, task_date_start: formattedDate })
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    4 ngày
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const fiveDays = new Date()
+                      fiveDays.setDate(fiveDays.getDate() + 5)
+                      const formattedDate = `${fiveDays.getDate().toString().padStart(2, '0')}/${(fiveDays.getMonth() + 1).toString().padStart(2, '0')}/${fiveDays.getFullYear()}`
+                      setFormData({ ...formData, task_date_start: formattedDate })
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    5 ngày
+                  </button>
                 </div>
                 {formData.task_date_start && !validateDateFormat(formData.task_date_start) && (
                   <p className="text-red-500 text-xs mt-1">
@@ -578,6 +614,79 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                 maxLength={10}
                 title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
               />
+              <div className="flex flex-wrap gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const today = new Date()
+                    const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`
+                    setFormData({ ...formData, task_due_date: formattedDate })
+                  }}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  Hôm nay
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const tomorrow = new Date()
+                    tomorrow.setDate(tomorrow.getDate() + 1)
+                    const formattedDate = `${tomorrow.getDate().toString().padStart(2, '0')}/${(tomorrow.getMonth() + 1).toString().padStart(2, '0')}/${tomorrow.getFullYear()}`
+                    setFormData({ ...formData, task_due_date: formattedDate })
+                  }}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  Ngày mai
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const threeDays = new Date()
+                    threeDays.setDate(threeDays.getDate() + 3)
+                    const formattedDate = `${threeDays.getDate().toString().padStart(2, '0')}/${(threeDays.getMonth() + 1).toString().padStart(2, '0')}/${threeDays.getFullYear()}`
+                    setFormData({ ...formData, task_due_date: formattedDate })
+                  }}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  3 ngày
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const fourDays = new Date()
+                    fourDays.setDate(fourDays.getDate() + 4)
+                    const formattedDate = `${fourDays.getDate().toString().padStart(2, '0')}/${(fourDays.getMonth() + 1).toString().padStart(2, '0')}/${fourDays.getFullYear()}`
+                    setFormData({ ...formData, task_due_date: formattedDate })
+                  }}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  4 ngày
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const fiveDays = new Date()
+                    fiveDays.setDate(fiveDays.getDate() + 5)
+                    const formattedDate = `${fiveDays.getDate().toString().padStart(2, '0')}/${(fiveDays.getMonth() + 1).toString().padStart(2, '0')}/${fiveDays.getFullYear()}`
+                    setFormData({ ...formData, task_due_date: formattedDate })
+                  }}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  5 ngày
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextWeek = new Date()
+                    nextWeek.setDate(nextWeek.getDate() + 7)
+                    const formattedDate = `${nextWeek.getDate().toString().padStart(2, '0')}/${(nextWeek.getMonth() + 1).toString().padStart(2, '0')}/${nextWeek.getFullYear()}`
+                    setFormData({ ...formData, task_due_date: formattedDate })
+                  }}
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  Tuần sau
+                </button>
+              </div>
               {formData.task_due_date && !validateDateFormat(formData.task_due_date) && (
                 <p className="text-red-500 text-xs mt-1">
                   Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
