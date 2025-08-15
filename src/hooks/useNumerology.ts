@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { calculateNumerologyData } from '@/lib/numerology'
+import { isValidDate, toISODate, toVNDate } from '@/lib/date'
 
 interface NumerologyHookResult {
   isCalculating: boolean
@@ -29,15 +30,11 @@ export function useNumerology(): NumerologyHookResult {
     setError(null)
 
     try {
-      // Convert dd/mm/yyyy to ISO format if needed
-      let isoDate = birthDate
-      if (birthDate.includes('/')) {
-        const [day, month, year] = birthDate.split('/')
-        if (!day || !month || !year) {
-          throw new Error('Định dạng ngày sinh không hợp lệ')
-        }
-        isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      // Validate and convert the date format
+      if (!isValidDate(birthDate)) {
+        throw new Error('Định dạng ngày sinh không hợp lệ');
       }
+      const isoDate = toISODate(birthDate);
 
       // Calculate numerology data using the existing library
       const rawData = calculateNumerologyData(fullName, isoDate)

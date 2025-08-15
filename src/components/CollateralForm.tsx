@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Collateral, Customer } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
 import JsonInputHelper from './JsonInputHelper'
+import { toVNDate, toISODate } from '@/lib/date'
 
 interface CollateralFormProps {
   collateral?: Collateral | null;
@@ -20,34 +21,24 @@ export default function CollateralForm({
   isLoading,
   fetchCustomers
 }: CollateralFormProps): React.JSX.Element {
-  // Helper function to format date from dd/mm/yyyy to yyyy-mm-dd
+  // Helper function to format date using utility functions
   const formatDateForDB = (displayDate: string): string => {
-    if (!displayDate) return ''
-    
-    // If already in yyyy-mm-dd format, return as is
-    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
-    
-    // Convert from dd/mm/yyyy to yyyy-mm-dd
-    const parts = displayDate.split('/')
-    if (parts.length !== 3) return displayDate
-    
-    const [day, month, year] = parts
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    if (!displayDate) return '';
+    try {
+      return toISODate(displayDate);
+    } catch {
+      return displayDate;
+    }
   }
 
-  // Helper function to format date from yyyy-mm-dd to dd/mm/yyyy
+  // Helper function to format date using utility functions
   const formatDateForDisplay = (dbDate: string): string => {
-    if (!dbDate) return ''
-    
-    // If already in dd/mm/yyyy format, return as is
-    if (dbDate.includes('/')) return dbDate
-    
-    // Convert from yyyy-mm-dd to dd/mm/yyyy
-    const parts = dbDate.split('-')
-    if (parts.length !== 3) return dbDate
-    
-    const [year, month, day] = parts
-    return `${day}/${month}/${year}`
+    if (!dbDate) return '';
+    try {
+      return toVNDate(dbDate);
+    } catch {
+      return dbDate;
+    }
   }
   const [formState, setFormState] = useState<{
     collateral_type: string;

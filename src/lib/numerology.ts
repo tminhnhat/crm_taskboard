@@ -1,6 +1,8 @@
 // Numerology Calculation Utilities
 // Adapted from n8n-numerology-function.js for use in the CRM system
 
+import { getDateParts } from './date';
+
 // Helper function to remove Vietnamese accents
 function removeAccents(str: string): string {
   const accents: Record<string, string> = {
@@ -63,11 +65,7 @@ function substractAdjacent(num1: number, num2: number): number {
 
 // Get walks of life from birth date
 function getWalksOfLife(birthDay: string): number {
-  const date = new Date(birthDay);
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
-  
+  const { day, month, year } = getDateParts(birthDay);
   const sum = day + month + year;
   return sumAdjacent(sum);
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Task, TaskStatusEnum, TaskPriority } from '@/lib/supabase'
+import { toVNDate, toISODate } from '@/lib/date'
 
 interface TaskFormProps {
   isOpen: boolean
@@ -75,29 +76,23 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     timezone: 'Asia/Ho_Chi_Minh'
   })
 
-  // Helper functions for date format conversion
+  // Date format conversion using utility functions
   const formatDateForDisplay = (dateString: string | null): string => {
-    if (!dateString) return ''
-    
-    // If already in dd/mm/yyyy format, return as is
-    if (dateString.includes('/')) return dateString
-    
-    // Convert from yyyy-mm-dd to dd/mm/yyyy
-    // Parse the date string directly as local date components to avoid timezone issues
-    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
-    if (!dateMatch) return ''
-    
-    const [, year, month, day] = dateMatch
-    return `${day}/${month}/${year}`
+    if (!dateString) return '';
+    try {
+      return toVNDate(dateString);
+    } catch {
+      return '';
+    }
   }
 
   const formatDateForSubmission = (displayDate: string): string | null => {
-    if (!displayDate) return null
-    
-    // If already in yyyy-mm-dd format, return as is
-    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
-    
-    // Convert from dd/mm/yyyy to yyyy-mm-dd
+    if (!displayDate) return null;
+    try {
+      return toISODate(displayDate);
+    } catch {
+      return null;
+    }
     const parts = displayDate.split('/')
     if (parts.length !== 3) return null
     

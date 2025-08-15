@@ -1,4 +1,5 @@
 import { Task, TaskStatusEnum } from '@/lib/supabase'
+import { toVNDate } from '@/lib/date'
 import { 
   CalendarIcon, 
   ClockIcon, 
@@ -66,16 +67,14 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
   const StatusIcon = statusIcons[task.task_status]
   const isOverdue = task.task_due_date && new Date(task.task_due_date) < new Date() && task.task_status !== 'completed'
 
-  // Helper function to format date consistently, avoiding timezone issues
+  // Helper function to format date using utility function
   const formatDateDisplay = (dateString: string | null): string => {
-    if (!dateString) return ''
-    
-    // Parse the date string directly as local date components to avoid timezone issues
-    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
-    if (!dateMatch) return ''
-    
-    const [, year, month, day] = dateMatch
-    return `${day}/${month}/${year}`
+    if (!dateString) return '';
+    try {
+      return toVNDate(dateString);
+    } catch {
+      return '';
+    }
   }
 
   return (
