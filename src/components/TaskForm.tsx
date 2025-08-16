@@ -12,44 +12,6 @@ interface TaskFormProps {
 }
 
 export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormProps) {
-  // Helper functions for time duration formatting
-  const formatTimeDurationForDisplay = (dbDuration: string | null): string => {
-    if (!dbDuration) return ''
-    
-    // Parse duration in format HH:mm:ss
-    const match = dbDuration.match(/^(\d{2}):(\d{2}):(\d{2})$/)
-    if (!match) return ''
-    
-    const [, hours, minutes] = match // Chỉ lấy giờ và phút, bỏ qua giây
-    const h = parseInt(hours)
-    const m = parseInt(minutes)
-    
-    if (h === 0 && m === 0) return ''
-    if (h === 0) return `${m} phút`
-    if (m === 0) return h === 1 ? '1 giờ' : `${h} giờ`
-    return `${h} giờ ${m} phút`
-  }
-
-  const formatTimeDurationForDB = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60)
-    const remainingMinutes = minutes % 60
-    
-    // Format as HH:mm:ss
-    return `${hours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:00`
-  }
-
-  const parseUserInput = (input: string): string => {
-    // Xử lý input từ người dùng
-    const hourMatch = input.match(/(\d+)\s*(?:giờ|h|hour|hours)/)
-    const minuteMatch = input.match(/(\d+)\s*(?:phút|p|minute|minutes|m)/)
-    
-    const hours = hourMatch ? parseInt(hourMatch[1]) : 0
-    const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0
-    
-    const totalMinutes = hours * 60 + minutes
-    return totalMinutes > 0 ? formatTimeDurationForDB(totalMinutes) : ''
-  }
-
   const [formData, setFormData] = useState({
     task_name: '',
     task_type: '',
@@ -67,7 +29,39 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     timezone: 'Asia/Ho_Chi_Minh'
   })
 
-  const handleTimeProcessChange = (value: string) => {
+  const formatTimeDurationForDisplay = (dbDuration: string | null): string => {
+    if (!dbDuration) return ''
+    const match = dbDuration.match(/^(\d{2}):(\d{2}):(\d{2})$/)
+    if (!match) return ''
+    
+    const [, hours, minutes] = match
+    const h = parseInt(hours)
+    const m = parseInt(minutes)
+    
+    if (h === 0 && m === 0) return ''
+    if (h === 0) return `${m} phút`
+    if (m === 0) return h === 1 ? '1 giờ' : `${h} giờ`
+    return `${h} giờ ${m} phút`
+  }
+
+  const formatTimeDurationForDB = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    return `${hours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:00`
+  }
+
+  const parseUserInput = (input: string): string => {
+    const hourMatch = input.match(/(\d+)\s*(?:giờ|h|hour|hours)/)
+    const minuteMatch = input.match(/(\d+)\s*(?:phút|p|minute|minutes|m)/)
+    
+    const hours = hourMatch ? parseInt(hourMatch[1]) : 0
+    const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0
+    
+    const totalMinutes = hours * 60 + minutes
+    return totalMinutes > 0 ? formatTimeDurationForDB(totalMinutes) : ''
+  }
+
+  const handleTimeProcessChange = (value: string): void => {
     const dbFormat = parseUserInput(value)
     setFormData(prev => ({ 
       ...prev, 
@@ -76,29 +70,9 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     }))
   }
 
-  // Date format conversion using utility functions
-  const formatDateForDisplay = (dateString: string | null): string => {
-    if (!dateString) return '';
-    try {
-      return toVNDate(dateString);
-    } catch {
-      return '';
-    }
-  }
-
-  const formatDateForSubmission = (displayDate: string): string | null => {
-    if (!displayDate) return null;
-    try {
-      return toISODate(displayDate);
-    } catch {
-      return null;
-    }
-  }
-
-  const handleDateChange = (field: 'task_date_start' | 'task_due_date', value: string) => {
-    let formattedValue = value.replace(/\D/g, '') // Remove all non-digits
+  const handleDateChange = (field: 'task_date_start' | 'task_due_date', value: string): void => {
+    let formattedValue = value.replace(/\D/g, '')
     
-    // Format as user types: dd/mm/yyyy
     if (formattedValue.length >= 2) {
       formattedValue = formattedValue.substring(0, 2) + '/' + formattedValue.substring(2)
     }
@@ -120,8 +94,8 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
         task_category: task.task_category || '',
         task_time_process: task.task_time_process || '',
         task_time_process_display: formatTimeDurationForDisplay(task.task_time_process),
-        task_due_date: formatDateForDisplay(task.task_due_date),
-        task_date_start: formatDateForDisplay(task.task_date_start),
+        task_due_date: task.task_due_date ? toVNDate(task.task_due_date) : '',
+        task_date_start: task.task_date_start ? toVNDate(task.task_date_start) : '',
         task_start_time: task.task_start_time || '',
         sync_status: task.sync_status,
         timezone_offset: task.timezone_offset,
@@ -147,10 +121,9 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     }
   }, [task, isOpen])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
     
-    // Validate date formats using utility function
     if (formData.task_date_start && !isValidDate(formData.task_date_start)) {
       alert('Định dạng ngày bắt đầu không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
@@ -161,7 +134,6 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       return
     }
 
-    // Tạo object mới bỏ qua task_time_process_display
     onSubmit({
       ...Object.fromEntries(
         Object.entries(formData).filter(([key]) => key !== 'task_time_process_display')
@@ -171,8 +143,8 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       task_category: formData.task_category || null,
       task_note: formData.task_note || null,
       task_time_process: formData.task_time_process || null,
-      task_due_date: formatDateForSubmission(formData.task_due_date),
-      task_date_start: formatDateForSubmission(formData.task_date_start),
+      task_due_date: formData.task_due_date ? toISODate(formData.task_due_date) : null,
+      task_date_start: formData.task_date_start ? toISODate(formData.task_date_start) : null,
       task_start_time: formData.task_start_time || null
     })
     onClose()
@@ -180,7 +152,186 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      {/* Dialog content */}
+      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+      
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <Dialog.Panel className="mx-auto max-w-2xl w-full bg-white rounded-xl shadow-lg">
+          <div className="flex items-center justify-between px-6 py-4 border-b">
+            <Dialog.Title className="text-lg font-medium text-gray-900">
+              {task ? 'Sửa công việc' : 'Tạo công việc mới'}
+            </Dialog.Title>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6">
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="task_name" className="block text-sm font-medium text-gray-700">
+                  Tên công việc
+                </label>
+                <input
+                  type="text"
+                  id="task_name"
+                  value={formData.task_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, task_name: e.target.value }))}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="task_type" className="block text-sm font-medium text-gray-700">
+                  Loại công việc
+                </label>
+                <select
+                  id="task_type"
+                  value={formData.task_type}
+                  onChange={(e) => setFormData(prev => ({ ...prev, task_type: e.target.value }))}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                  <option value="">Chọn loại công việc</option>
+                  <option value="personal">Cá nhân</option>
+                  <option value="work">Công việc</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="task_priority" className="block text-sm font-medium text-gray-700">
+                  Độ ưu tiên
+                </label>
+                <select
+                  id="task_priority"
+                  value={formData.task_priority}
+                  onChange={(e) => setFormData(prev => ({ ...prev, task_priority: e.target.value as TaskPriority }))}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                  <option value="">Chọn độ ưu tiên</option>
+                  <option value="Do first">Làm ngay</option>
+                  <option value="Schedule">Lên lịch</option>
+                  <option value="Delegate">Phân công</option>
+                  <option value="Eliminate">Loại bỏ</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="task_time_process" className="block text-sm font-medium text-gray-700">
+                  Thời gian xử lý
+                </label>
+                <input
+                  type="text"
+                  id="task_time_process"
+                  value={formData.task_time_process_display}
+                  onChange={(e) => handleTimeProcessChange(e.target.value)}
+                  placeholder="Ví dụ: 2 giờ 30 phút"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="task_date_start" className="block text-sm font-medium text-gray-700">
+                  Ngày bắt đầu
+                </label>
+                <input
+                  type="text"
+                  id="task_date_start"
+                  value={formData.task_date_start}
+                  onChange={(e) => handleDateChange('task_date_start', e.target.value)}
+                  placeholder="dd/mm/yyyy"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+                {formData.task_date_start && !isValidDate(formData.task_date_start) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="task_due_date" className="block text-sm font-medium text-gray-700">
+                  Ngày hết hạn
+                </label>
+                <input
+                  type="text"
+                  id="task_due_date"
+                  value={formData.task_due_date}
+                  onChange={(e) => handleDateChange('task_due_date', e.target.value)}
+                  placeholder="dd/mm/yyyy"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date()
+                      setFormData(prev => ({
+                        ...prev,
+                        task_due_date: toVNDate(today.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Hôm nay
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tomorrow = new Date()
+                      tomorrow.setDate(tomorrow.getDate() + 1)
+                      setFormData(prev => ({
+                        ...prev,
+                        task_due_date: toVNDate(tomorrow.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Ngày mai
+                  </button>
+                </div>
+                {formData.task_due_date && !isValidDate(formData.task_due_date) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="task_note" className="block text-sm font-medium text-gray-700">
+                  Ghi chú
+                </label>
+                <textarea
+                  id="task_note"
+                  rows={3}
+                  value={formData.task_note}
+                  onChange={(e) => setFormData(prev => ({ ...prev, task_note: e.target.value }))}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+              >
+                {task ? 'Cập nhật công việc' : 'Tạo công việc'}
+              </button>
+            </div>
+          </form>
+        </Dialog.Panel>
+      </div>
     </Dialog>
   )
 }

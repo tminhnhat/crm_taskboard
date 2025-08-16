@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { calculateNumerologyData } from '@/lib/numerology'
-import { isValidDate, toISODate, toVNDate } from '@/lib/date'
+import { isValidDate, toISODate } from '@/lib/date'
 
 interface NumerologyHookResult {
   isCalculating: boolean
