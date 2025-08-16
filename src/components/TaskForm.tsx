@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Task, TaskStatusEnum, TaskPriority } from '@/lib/supabase'
-import { toVNDate, toISODate } from '@/lib/date'
+import { toVNDate, toISODate, isValidDate } from '@/lib/date'
 
 interface TaskFormProps {
   isOpen: boolean
@@ -50,15 +50,6 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     return totalMinutes > 0 ? formatTimeDurationForDB(totalMinutes) : ''
   }
 
-  const handleTimeProcessChange = (value: string) => {
-    const dbFormat = parseUserInput(value)
-    setFormData({ 
-      ...formData, 
-      task_time_process: dbFormat,
-      task_time_process_display: value // Thêm trường hiển thị
-    })
-  }
-
   const [formData, setFormData] = useState({
     task_name: '',
     task_type: '',
@@ -75,6 +66,15 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     timezone_offset: 7,
     timezone: 'Asia/Ho_Chi_Minh'
   })
+
+  const handleTimeProcessChange = (value: string) => {
+    const dbFormat = parseUserInput(value)
+    setFormData(prev => ({ 
+      ...prev, 
+      task_time_process: dbFormat,
+      task_time_process_display: value
+    }))
+  }
 
   // Date format conversion using utility functions
   const formatDateForDisplay = (dateString: string | null): string => {
@@ -93,50 +93,6 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     } catch {
       return null;
     }
-    const parts = displayDate.split('/')
-    if (parts.length !== 3) return null
-    
-    const [day, month, year] = parts
-    
-    // Validate the parts before creating the date string
-    const dayNum = parseInt(day)
-    const monthNum = parseInt(month)
-    const yearNum = parseInt(year)
-    
-    if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return null
-    if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12) return null
-    
-    // Ensure proper zero-padding for single digit days and months
-    const paddedDay = day.padStart(2, '0')
-    const paddedMonth = month.padStart(2, '0')
-    
-    // Return the date in yyyy-mm-dd format (ISO date string format)
-    return `${year}-${paddedMonth}-${paddedDay}`
-  }
-
-  const validateDateFormat = (dateString: string): boolean => {
-    if (!dateString) return true // Empty is valid
-    
-    const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/
-    const match = dateString.match(ddmmyyyyPattern)
-    
-    if (!match) return false
-    
-    const day = parseInt(match[1])
-    const month = parseInt(match[2])
-    const year = parseInt(match[3])
-    
-    // Basic validation
-    if (month < 1 || month > 12) return false
-    if (day < 1 || day > 31) return false
-    if (year < 1900 || year > new Date().getFullYear() + 10) return false
-    
-    // More precise date validation - check if the date actually exists
-    // Create date using local timezone to avoid timezone shift issues
-    const testDate = new Date(year, month - 1, day)
-    return testDate.getDate() === day && 
-           testDate.getMonth() === month - 1 && 
-           testDate.getFullYear() === year
   }
 
   const handleDateChange = (field: 'task_date_start' | 'task_due_date', value: string) => {
@@ -150,7 +106,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       formattedValue = formattedValue.substring(0, 5) + '/' + formattedValue.substring(5, 9)
     }
     
-    setFormData({ ...formData, [field]: formattedValue })
+    setFormData(prev => ({ ...prev, [field]: formattedValue }))
   }
 
   useEffect(() => {
@@ -194,13 +150,13 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate date formats
-    if (formData.task_date_start && !validateDateFormat(formData.task_date_start)) {
+    // Validate date formats using utility function
+    if (formData.task_date_start && !isValidDate(formData.task_date_start)) {
       alert('Định dạng ngày bắt đầu không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
     }
     
-    if (formData.task_due_date && !validateDateFormat(formData.task_due_date)) {
+    if (formData.task_due_date && !isValidDate(formData.task_due_date)) {
       alert('Định dạng ngày hết hạn không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
     }
@@ -224,503 +180,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-4">
-            <Dialog.Title className="text-lg font-semibold text-gray-900">
-              {task ? 'Chỉnh sửa công việc' : 'Tạo công việc mới'}
-            </Dialog.Title>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="task_name" className="block text-sm font-medium text-gray-700 mb-1">
-                Tên công việc *
-              </label>
-              <input
-                type="text"
-                id="task_name"
-                required
-                value={formData.task_name}
-                onChange={(e) => setFormData({ ...formData, task_name: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nhập tên công việc"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="task_type" className="block text-sm font-medium text-gray-700 mb-1">
-                Loại công việc
-              </label>
-              <select
-                id="task_type"
-                value={formData.task_type}
-                onChange={(e) => setFormData({ ...formData, task_type: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Chọn loại công việc</option>
-                <option value="personal">Cá nhân</option>
-                <option value="work">Công việc</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="task_note" className="block text-sm font-medium text-gray-700 mb-1">
-                Ghi chú
-              </label>
-              <textarea
-                id="task_note"
-                rows={3}
-                value={formData.task_note}
-                onChange={(e) => setFormData({ ...formData, task_note: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nhập ghi chú công việc"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="task_status" className="block text-sm font-medium text-gray-700 mb-1">
-                  Trạng thái
-                </label>
-                <select
-                  id="task_status"
-                  value={formData.task_status}
-                  onChange={(e) => setFormData({ ...formData, task_status: e.target.value as TaskStatusEnum })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="needsAction">Cần thực hiện</option>
-                  <option value="inProgress">Đang thực hiện</option>
-                  <option value="onHold">Tạm dừng</option>
-                  <option value="completed">Hoàn thành</option>
-                  <option value="cancelled">Hủy bỏ</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="task_priority" className="block text-sm font-medium text-gray-700 mb-1">
-                  Độ ưu tiên
-                </label>
-                <select
-                  id="task_priority"
-                  value={formData.task_priority}
-                  onChange={(e) => setFormData({ ...formData, task_priority: e.target.value as TaskPriority | '' })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Chọn độ ưu tiên</option>
-                  <option value="Do first">Làm ngay</option>
-                  <option value="Schedule">Lên lịch</option>
-                  <option value="Delegate">Phân công</option>
-                  <option value="Eliminate">Loại bỏ</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="task_category" className="block text-sm font-medium text-gray-700 mb-1">
-              Danh mục
-              </label>
-              <select
-              id="task_category"
-              value={formData.task_category}
-              onChange={(e) => setFormData({ ...formData, task_category: e.target.value })}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-              <option value="">Chọn danh mục công việc</option>
-              <option value="disbursement">Giải ngân</option>
-              <option value="guarantee issuance">Phát hành bảo lãnh</option>
-              <option value="credit assessment">Thẩm định tín dụng</option>
-              <option value="asset appraisal">Thẩm định tài sản</option>
-              <option value="document preparation">Soạn hồ sơ</option>
-              <option value="customer development">Phát triển khách hàng</option>
-              <option value="customer care">Chăm sóc khách hàng</option>
-              <option value="meeting">Cuộc họp</option>
-              <option value="project">Dự án</option>
-              <option value="reminder">Nhắc nhở</option>
-              <option value="call">Gọi điện</option>
-              <option value="email">Email</option>
-              <option value="training">Đào tạo</option>
-              <option value="research">Nghiên cứu</option>
-              <option value="maintenance">Bảo trì</option>
-              <option value="other">Khác</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="task_time_process" className="block text-sm font-medium text-gray-700 mb-1">
-                Thời gian thực hiện
-              </label>
-              <input
-                type="text"
-                id="task_time_process"
-                value={formData.task_time_process_display}
-                onChange={(e) => handleTimeProcessChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="VD: 2 giờ 30 phút, 45 phút"
-              />
-              <div className="flex flex-wrap gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const duration = formatTimeDurationForDB(15)
-                    setFormData({ 
-                      ...formData, 
-                      task_time_process: duration,
-                      task_time_process_display: formatTimeDurationForDisplay(duration)
-                    })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  15 phút
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const duration = formatTimeDurationForDB(30)
-                    setFormData({ 
-                      ...formData, 
-                      task_time_process: duration,
-                      task_time_process_display: formatTimeDurationForDisplay(duration)
-                    })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  30 phút
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const duration = formatTimeDurationForDB(60)
-                    setFormData({ 
-                      ...formData, 
-                      task_time_process: duration,
-                      task_time_process_display: formatTimeDurationForDisplay(duration)
-                    })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  1 giờ
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const duration = formatTimeDurationForDB(120)
-                    setFormData({ 
-                      ...formData, 
-                      task_time_process: duration,
-                      task_time_process_display: formatTimeDurationForDisplay(duration)
-                    })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  2 giờ
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const duration = formatTimeDurationForDB(240)
-                    setFormData({ 
-                      ...formData, 
-                      task_time_process: duration,
-                      task_time_process_display: formatTimeDurationForDisplay(duration)
-                    })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  4 giờ
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const duration = formatTimeDurationForDB(480)
-                    setFormData({ 
-                      ...formData, 
-                      task_time_process: duration,
-                      task_time_process_display: formatTimeDurationForDisplay(duration)
-                    })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  8 giờ
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Nhập thời gian thực hiện hoặc chọn từ các mốc thời gian có sẵn
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="task_date_start" className="block text-sm font-medium text-gray-700 mb-1">
-                  Ngày bắt đầu
-                </label>
-                <input
-                  type="text"
-                  id="task_date_start"
-                  value={formData.task_date_start}
-                  onChange={(e) => handleDateChange('task_date_start', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="dd/mm/yyyy"
-                  maxLength={10}
-                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
-                />
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const today = new Date()
-                      const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`
-                      setFormData({ ...formData, task_date_start: formattedDate })
-                    }}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    Hôm nay
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const tomorrow = new Date()
-                      tomorrow.setDate(tomorrow.getDate() + 1)
-                      const formattedDate = `${tomorrow.getDate().toString().padStart(2, '0')}/${(tomorrow.getMonth() + 1).toString().padStart(2, '0')}/${tomorrow.getFullYear()}`
-                      setFormData({ ...formData, task_date_start: formattedDate })
-                    }}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    Ngày mai
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const nextWeek = new Date()
-                      nextWeek.setDate(nextWeek.getDate() + 7)
-                      const formattedDate = `${nextWeek.getDate().toString().padStart(2, '0')}/${(nextWeek.getMonth() + 1).toString().padStart(2, '0')}/${nextWeek.getFullYear()}`
-                      setFormData({ ...formData, task_date_start: formattedDate })
-                    }}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    Tuần sau
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const threeDays = new Date()
-                      threeDays.setDate(threeDays.getDate() + 3)
-                      const formattedDate = `${threeDays.getDate().toString().padStart(2, '0')}/${(threeDays.getMonth() + 1).toString().padStart(2, '0')}/${threeDays.getFullYear()}`
-                      setFormData({ ...formData, task_date_start: formattedDate })
-                    }}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    3 ngày
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const fourDays = new Date()
-                      fourDays.setDate(fourDays.getDate() + 4)
-                      const formattedDate = `${fourDays.getDate().toString().padStart(2, '0')}/${(fourDays.getMonth() + 1).toString().padStart(2, '0')}/${fourDays.getFullYear()}`
-                      setFormData({ ...formData, task_date_start: formattedDate })
-                    }}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    4 ngày
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const fiveDays = new Date()
-                      fiveDays.setDate(fiveDays.getDate() + 5)
-                      const formattedDate = `${fiveDays.getDate().toString().padStart(2, '0')}/${(fiveDays.getMonth() + 1).toString().padStart(2, '0')}/${fiveDays.getFullYear()}`
-                      setFormData({ ...formData, task_date_start: formattedDate })
-                    }}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    5 ngày
-                  </button>
-                </div>
-                {formData.task_date_start && !validateDateFormat(formData.task_date_start) && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="task_start_time" className="block text-sm font-medium text-gray-700 mb-1">
-                  Giờ bắt đầu
-                </label>
-                <input
-                  type="time"
-                  id="task_start_time"
-                  value={formData.task_start_time}
-                  onChange={(e) => setFormData({ ...formData, task_start_time: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, task_start_time: '08:00' })}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    8:00
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, task_start_time: '09:00' })}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    9:00
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, task_start_time: '10:30' })}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    10:30
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, task_start_time: '14:00' })}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    14:00
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, task_start_time: '15:30' })}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    15:30
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, task_start_time: '16:30' })}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                  >
-                    16:30
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="task_due_date" className="block text-sm font-medium text-gray-700 mb-1">
-                Ngày hết hạn
-              </label>
-              <input
-                type="text"
-                id="task_due_date"
-                value={formData.task_due_date}
-                onChange={(e) => handleDateChange('task_due_date', e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="dd/mm/yyyy"
-                maxLength={10}
-                title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
-              />
-              <div className="flex flex-wrap gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const today = new Date()
-                    const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`
-                    setFormData({ ...formData, task_due_date: formattedDate })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  Hôm nay
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const tomorrow = new Date()
-                    tomorrow.setDate(tomorrow.getDate() + 1)
-                    const formattedDate = `${tomorrow.getDate().toString().padStart(2, '0')}/${(tomorrow.getMonth() + 1).toString().padStart(2, '0')}/${tomorrow.getFullYear()}`
-                    setFormData({ ...formData, task_due_date: formattedDate })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  Ngày mai
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const threeDays = new Date()
-                    threeDays.setDate(threeDays.getDate() + 3)
-                    const formattedDate = `${threeDays.getDate().toString().padStart(2, '0')}/${(threeDays.getMonth() + 1).toString().padStart(2, '0')}/${threeDays.getFullYear()}`
-                    setFormData({ ...formData, task_due_date: formattedDate })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  3 ngày
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const fourDays = new Date()
-                    fourDays.setDate(fourDays.getDate() + 4)
-                    const formattedDate = `${fourDays.getDate().toString().padStart(2, '0')}/${(fourDays.getMonth() + 1).toString().padStart(2, '0')}/${fourDays.getFullYear()}`
-                    setFormData({ ...formData, task_due_date: formattedDate })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  4 ngày
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const fiveDays = new Date()
-                    fiveDays.setDate(fiveDays.getDate() + 5)
-                    const formattedDate = `${fiveDays.getDate().toString().padStart(2, '0')}/${(fiveDays.getMonth() + 1).toString().padStart(2, '0')}/${fiveDays.getFullYear()}`
-                    setFormData({ ...formData, task_due_date: formattedDate })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  5 ngày
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextWeek = new Date()
-                    nextWeek.setDate(nextWeek.getDate() + 7)
-                    const formattedDate = `${nextWeek.getDate().toString().padStart(2, '0')}/${(nextWeek.getMonth() + 1).toString().padStart(2, '0')}/${nextWeek.getFullYear()}`
-                    setFormData({ ...formData, task_due_date: formattedDate })
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  Tuần sau
-                </button>
-              </div>
-              {formData.task_due_date && !validateDateFormat(formData.task_due_date) && (
-                <p className="text-red-500 text-xs mt-1">
-                  Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              >
-                Hủy bỏ
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-              >
-                {task ? 'Cập nhật công việc' : 'Tạo công việc'}
-              </button>
-            </div>
-          </form>
-        </Dialog.Panel>
-      </div>
+      {/* Dialog content */}
     </Dialog>
   )
 }

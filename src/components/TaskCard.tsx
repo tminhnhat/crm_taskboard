@@ -65,7 +65,10 @@ const taskTypeLabels: { [key: string]: string } = {
 
 export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: TaskCardProps) {
   const StatusIcon = statusIcons[task.task_status]
-  const isOverdue = task.task_due_date && new Date(task.task_due_date) < new Date() && task.task_status !== 'completed'
+  // Check if task is overdue by comparing ISO dates to avoid timezone issues
+  const isOverdue = task.task_due_date && 
+    new Date(task.task_due_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && 
+    task.task_status !== 'completed'
 
   // Helper function to format date using utility function
   const formatDateDisplay = (dateString: string | null): string => {
