@@ -150,9 +150,9 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-2xl w-full bg-white rounded-xl shadow-lg">
-          <div className="flex items-center justify-between px-6 py-4 border-b">
+      <div className="fixed inset-0 flex items-start justify-center p-4 sm:items-center">
+        <Dialog.Panel className="mx-auto max-w-2xl w-full bg-white rounded-xl shadow-lg max-h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
             <Dialog.Title className="text-lg font-medium text-gray-900">
               {task ? 'Sửa công việc' : 'Tạo công việc mới'}
             </Dialog.Title>
@@ -165,7 +165,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6">
+          <form onSubmit={handleSubmit} className="p-6 overflow-y-auto">
             <div className="space-y-4">
               <div>
                 <label htmlFor="task_name" className="block text-sm font-medium text-gray-700">
