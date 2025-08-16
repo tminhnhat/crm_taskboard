@@ -241,6 +241,80 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                   placeholder="Ví dụ: 2 giờ 30 phút"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleTimeProcessChange("30 phút")}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    30 phút
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTimeProcessChange("1 giờ")}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    1 giờ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTimeProcessChange("2 giờ")}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    2 giờ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTimeProcessChange("4 giờ")}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    4 giờ
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="task_start_time" className="block text-sm font-medium text-gray-700">
+                  Giờ bắt đầu
+                </label>
+                <input
+                  type="text"
+                  id="task_start_time"
+                  value={formData.task_start_time}
+                  onChange={(e) => setFormData(prev => ({ ...prev, task_start_time: e.target.value }))}
+                  placeholder="HH:mm"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, task_start_time: '08:00' }))}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    8:00
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, task_start_time: '09:00' }))}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    9:00
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, task_start_time: '13:30' }))}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    13:30
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, task_start_time: '14:00' }))}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    14:00
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -255,6 +329,77 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                   placeholder="dd/mm/yyyy"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date()
+                      setFormData(prev => ({
+                        ...prev,
+                        task_date_start: toVNDate(today.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Hôm nay
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tomorrow = new Date()
+                      tomorrow.setDate(tomorrow.getDate() + 1)
+                      setFormData(prev => ({
+                        ...prev,
+                        task_date_start: toVNDate(tomorrow.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Ngày mai
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date()
+                      date.setDate(date.getDate() + 3)
+                      setFormData(prev => ({
+                        ...prev,
+                        task_date_start: toVNDate(date.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    3 ngày
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date()
+                      date.setDate(date.getDate() + 4)
+                      setFormData(prev => ({
+                        ...prev,
+                        task_date_start: toVNDate(date.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    4 ngày
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date()
+                      date.setDate(date.getDate() + 5)
+                      setFormData(prev => ({
+                        ...prev,
+                        task_date_start: toVNDate(date.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    5 ngày
+                  </button>
+                </div>
                 {formData.task_date_start && !isValidDate(formData.task_date_start) && (
                   <p className="text-red-500 text-xs mt-1">
                     Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
@@ -301,6 +446,48 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                     className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                   >
                     Ngày mai
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date()
+                      date.setDate(date.getDate() + 3)
+                      setFormData(prev => ({
+                        ...prev,
+                        task_due_date: toVNDate(date.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    3 ngày
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date()
+                      date.setDate(date.getDate() + 4)
+                      setFormData(prev => ({
+                        ...prev,
+                        task_due_date: toVNDate(date.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    4 ngày
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date()
+                      date.setDate(date.getDate() + 5)
+                      setFormData(prev => ({
+                        ...prev,
+                        task_due_date: toVNDate(date.toISOString().split('T')[0])
+                      }))
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    5 ngày
                   </button>
                 </div>
                 {formData.task_due_date && !isValidDate(formData.task_due_date) && (
