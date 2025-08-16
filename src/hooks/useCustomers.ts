@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, Customer } from '@/lib/supabase'
 import { calculateNumerologyData } from '@/lib/numerology'
-import { toISODate, toVNDate, isValidDate } from '@/lib/date'
+import { toISODate, isValidDate } from '@/lib/date'
 
 export function useCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
