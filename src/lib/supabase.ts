@@ -25,7 +25,6 @@ export interface Task {
   task_time_process: string | null // INTERVAL type
   task_date_start: string | null // DATE
   task_start_time: string | null // TIME
-  task_category: string | null
   task_note: string | null
   task_due_date: string | null // DATE
   task_time_finish: string | null // TIME
