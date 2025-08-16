@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, Customer } from '@/lib/supabase'
 import { calculateNumerologyData } from '@/lib/numerology'
+import { toISODate, toVNDate, isValidDate } from '@/lib/date'
 
 export function useCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -28,10 +29,18 @@ export function useCustomers() {
   // Create a new customer
   const createCustomer = async (customerData: Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>) => {
     try {
-      // Auto-calculate numerology if name and birth date are provided
+      // Convert date format and validate
       const finalCustomerData = { ...customerData }
-      if (customerData.full_name && customerData.date_of_birth) {
-        const numerologyData = calculateNumerologyData(customerData.full_name, customerData.date_of_birth)
+      if (finalCustomerData.date_of_birth) {
+        if (!isValidDate(finalCustomerData.date_of_birth)) {
+          throw new Error('Định dạng ngày sinh không hợp lệ')
+        }
+        finalCustomerData.date_of_birth = toISODate(finalCustomerData.date_of_birth)
+      }
+
+      // Auto-calculate numerology if name and birth date are provided
+      if (finalCustomerData.full_name && finalCustomerData.date_of_birth) {
+        const numerologyData = calculateNumerologyData(finalCustomerData.full_name, finalCustomerData.date_of_birth)
         finalCustomerData.numerology_data = numerologyData
       }
 
@@ -52,8 +61,14 @@ export function useCustomers() {
   // Update a customer
   const updateCustomer = async (id: number, updates: Partial<Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>>) => {
     try {
-      // Auto-calculate numerology if name or birth date are being updated
+      // Convert date format and validate if date_of_birth is being updated
       const finalUpdates = { ...updates }
+      if (finalUpdates.date_of_birth) {
+        if (!isValidDate(finalUpdates.date_of_birth)) {
+          throw new Error('Định dạng ngày sinh không hợp lệ')
+        }
+        finalUpdates.date_of_birth = toISODate(finalUpdates.date_of_birth)
+      }
       
       // Get current customer data to have complete info for numerology calculation
       const { data: currentCustomer } = await supabase
@@ -64,7 +79,7 @@ export function useCustomers() {
 
       if (currentCustomer) {
         const fullName = updates.full_name || currentCustomer.full_name
-        const dateOfBirth = updates.date_of_birth || currentCustomer.date_of_birth
+        const dateOfBirth = finalUpdates.date_of_birth || currentCustomer.date_of_birth
         
         // Recalculate numerology if we have both name and birth date
         if (fullName && dateOfBirth && (updates.full_name || updates.date_of_birth)) {

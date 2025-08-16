@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Customer } from '@/lib/supabase'
+import { toVNDate } from '@/lib/date'
 import { 
   UserIcon, 
   BuildingOfficeIcon,
@@ -124,16 +125,9 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
   const TypeIcon = customerTypeIcons[customer.customer_type]
   const [showNumerology, setShowNumerology] = useState(false)
 
-  // Helper function to format dates safely, avoiding timezone issues
   const formatDateDisplay = (dateString: string | null): string => {
     if (!dateString) return ''
-    
-    // Parse the date string directly as local date components to avoid timezone issues
-    const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
-    if (!dateMatch) return ''
-    
-    const [, year, month, day] = dateMatch
-    return `${day}/${month}/${year}`
+    return toVNDate(dateString)
   }
 
   return (

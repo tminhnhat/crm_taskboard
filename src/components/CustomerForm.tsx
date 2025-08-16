@@ -146,7 +146,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     } catch {
       return null;
     }
-    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
     
     // Convert from dd/mm/yyyy to yyyy-mm-dd
     const parts = displayDate.split('/')
@@ -172,13 +171,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
 
   const validateDateFormat = (dateString: string): boolean => {
     if (!dateString) return true // Empty is valid
-    
-    const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/
-    const match = dateString.match(ddmmyyyyPattern)
-    
-    if (!match) return false
-    
-    const day = parseInt(match[1])
+    return isValidDate(dateString)
     const month = parseInt(match[2])
     const year = parseInt(match[3])
     
