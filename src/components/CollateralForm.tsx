@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import type { JSX } from 'react'
 import { Collateral, Customer } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
 import JsonInputHelper from './JsonInputHelper'
@@ -21,25 +22,7 @@ export default function CollateralForm({
   isLoading,
   fetchCustomers
 }: CollateralFormProps): React.JSX.Element {
-  // Helper function to format date using utility functions
-  const formatDateForDB = (displayDate: string): string => {
-    if (!displayDate) return '';
-    try {
-      return toISODate(displayDate);
-    } catch {
-      return displayDate;
-    }
-  }
-
-  // Helper function to format date using utility functions
-  const formatDateForDisplay = (dbDate: string): string => {
-    if (!dbDate) return '';
-    try {
-      return toVNDate(dbDate);
-    } catch {
-      return dbDate;
-    }
-  }
+  // Helper function declarations moved to avoid duplication
   const [formState, setFormState] = useState<{
     collateral_type: string;
     value: string;
@@ -277,6 +260,7 @@ export default function CollateralForm({
                 Vui lòng nhập ngày theo định dạng dd/mm/yyyy
               </p>
             )}
+          </div>
         </div>
 
         {/* Status */}
