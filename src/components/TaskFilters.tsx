@@ -79,9 +79,22 @@ export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersPro
             className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Tất cả</option>
-            <option value="personal">Cá nhân</option>
-            <option value="work">Công việc</option>
-
+            <option value="disbursement">Giải ngân</option>
+            <option value="guarantee issuance">Phát hành bảo lãnh</option>
+            <option value="credit assessment">Thẩm định tín dụng</option>
+            <option value="asset appraisal">Thẩm định tài sản</option>
+            <option value="document preparation">Soạn hồ sơ</option>
+            <option value="customer development">Phát triển khách hàng</option>
+            <option value="customer care">Chăm sóc khách hàng</option>
+            <option value="meeting">Cuộc họp</option>
+            <option value="project">Dự án</option>
+            <option value="reminder">Nhắc nhở</option>
+            <option value="call">Gọi điện</option>
+            <option value="email">Email</option>
+            <option value="training">Đào tạo</option>
+            <option value="research">Nghiên cứu</option>
+            <option value="maintenance">Bảo trì</option>
+            <option value="other">Khác</option>
           </select>
         </div>
         

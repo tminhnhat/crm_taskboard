@@ -59,8 +59,22 @@ const statusLabels = {
 }
 
 const taskTypeLabels: { [key: string]: string } = {
-  'personal': 'Cá nhân',
-  'work': 'Công việc'
+  'disbursement': 'Giải ngân',
+  'guarantee issuance': 'Phát hành bảo lãnh',
+  'credit assessment': 'Thẩm định tín dụng',
+  'asset appraisal': 'Thẩm định tài sản',
+  'document preparation': 'Soạn hồ sơ',
+  'customer development': 'Phát triển khách hàng',
+  'customer care': 'Chăm sóc khách hàng',
+  'meeting': 'Cuộc họp',
+  'project': 'Dự án',
+  'reminder': 'Nhắc nhở',
+  'call': 'Gọi điện',
+  'email': 'Email',
+  'training': 'Đào tạo',
+  'research': 'Nghiên cứu',
+  'maintenance': 'Bảo trì',
+  'other': 'Khác'
 }
 
 export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: TaskCardProps) {
@@ -108,11 +122,6 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
             {task.task_type && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                 {taskTypeLabels[task.task_type] || task.task_type}
-              </span>
-            )}
-            {task.task_category && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                {task.task_category}
               </span>
             )}
           </div>
