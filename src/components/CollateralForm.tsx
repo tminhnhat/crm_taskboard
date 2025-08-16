@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import type { JSX } from 'react'
 import { Collateral, Customer } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
 import JsonInputHelper from './JsonInputHelper'
@@ -21,8 +20,18 @@ export default function CollateralForm({
   onCancel,
   isLoading,
   fetchCustomers
-}: CollateralFormProps): React.JSX.Element {
-  // Helper function declarations moved to avoid duplication
+}: CollateralFormProps) {
+  // Helper functions for date formatting
+  const formatDateForDB = (displayDate: string): string => {
+    if (!displayDate) return ''
+    return toISODate(displayDate)
+  }
+
+  const formatDateForDisplay = (dbDate: string): string => {
+    if (!dbDate) return ''
+    return toVNDate(dbDate)
+  }
+
   const [formState, setFormState] = useState<{
     collateral_type: string;
     value: string;
@@ -83,47 +92,17 @@ export default function CollateralForm({
     onSave(collateralData)
   }
 
-  // Helper function to format date from dd/mm/yyyy to yyyy-mm-dd
-  const formatDateForDB = (displayDate: string): string => {
-    if (!displayDate) return ''
-    
-    // If already in yyyy-mm-dd format, return as is
-    if (displayDate.includes('-') && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) return displayDate
-    
-    // Convert from dd/mm/yyyy to yyyy-mm-dd
-    const parts = displayDate.split('/')
-    if (parts.length !== 3) return displayDate
-    
-    const [day, month, year] = parts
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-  }
-
-  // Helper function to format date from yyyy-mm-dd to dd/mm/yyyy
-  const formatDateForDisplay = (dbDate: string): string => {
-    if (!dbDate) return ''
-    
-    // If already in dd/mm/yyyy format, return as is
-    if (dbDate.includes('/')) return dbDate
-    
-    // Convert from yyyy-mm-dd to dd/mm/yyyy
-    const parts = dbDate.split('-')
-    if (parts.length !== 3) return dbDate
-    
-    const [year, month, day] = parts
-    return `${day}/${month}/${year}`
-  }
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
 
     if (name === 'valuation_date') {
       // Convert input date format for display
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         [name]: value // Keep the original yyyy-mm-dd format in state
       }))
     } else {
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         [name]: value
       }))
@@ -131,7 +110,7 @@ export default function CollateralForm({
   }
 
   const handleMetadataChange = (metadata: Record<string, Record<string, unknown>>) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
       metadata
     }))
@@ -153,7 +132,7 @@ export default function CollateralForm({
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="">Chọn khách hàng</option>
-            {customers.map(customer => (
+            {customers.map((customer: Customer) => (
               <option key={customer.customer_id} value={customer.customer_id}>
                 {customer.full_name}
               </option>
@@ -240,12 +219,12 @@ export default function CollateralForm({
                 const parts = formattedValue.split('/')
                 if (parts.length === 3 && parts[2].length === 4) {
                   const dbFormat = formatDateForDB(formattedValue)
-                  setFormState(prev => ({
+                  setFormState((prev) => ({
                     ...prev,
                     valuation_date: dbFormat
                   }))
                 } else {
-                  setFormState(prev => ({
+                  setFormState((prev) => ({
                     ...prev,
                     valuation_date: formattedValue
                   }))
@@ -278,7 +257,6 @@ export default function CollateralForm({
             <option value="released">Đã giải chấp</option>
           </select>
         </div>
-
       </div>
 
       {/* Location */}
@@ -324,21 +302,21 @@ export default function CollateralForm({
               name="owner_info_primary"
               value={JSON.parse(formState.owner_info || '{}').primary_owner_id || ''}
               onChange={(e) => {
-                const selectedCustomer = customers.find(c => c.customer_id.toString() === e.target.value);
-                const currentInfo = JSON.parse(formState.owner_info || '{}');
-                setFormState(prev => ({
+                const selectedCustomer = customers.find((c: Customer) => c.customer_id.toString() === e.target.value)
+                const currentInfo = JSON.parse(formState.owner_info || '{}')
+                setFormState((prev) => ({
                   ...prev,
                   owner_info: JSON.stringify({
                     ...currentInfo,
                     primary_owner_id: e.target.value,
                     primary_owner_name: selectedCustomer?.full_name || ''
                   })
-                }));
+                }))
               }}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
               <option value="">Chọn chủ sở hữu chính</option>
-              {customers.map(customer => (
+              {customers.map((customer: Customer) => (
                 <option key={customer.customer_id} value={customer.customer_id}>
                   {customer.full_name}
                 </option>
@@ -355,27 +333,27 @@ export default function CollateralForm({
               name="owner_info_spouse"
               value={JSON.parse(formState.owner_info || '{}').spouse_id || ''}
               onChange={(e) => {
-                const selectedCustomer = customers.find(c => c.customer_id.toString() === e.target.value);
-                const currentInfo = JSON.parse(formState.owner_info || '{}');
-                setFormState(prev => ({
+                const selectedCustomer = customers.find((c: Customer) => c.customer_id.toString() === e.target.value)
+                const currentInfo = JSON.parse(formState.owner_info || '{}')
+                setFormState((prev) => ({
                   ...prev,
                   owner_info: JSON.stringify({
                     ...currentInfo,
                     spouse_id: e.target.value,
                     spouse_name: selectedCustomer?.full_name || ''
                   })
-                }));
+                }))
               }}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
               <option value="">Chọn vợ/chồng (nếu có)</option>
               {customers
-                .filter(customer => customer.customer_id.toString() !== JSON.parse(formState.owner_info || '{}').primary_owner_id)
-                .map(customer => (
+                .filter((customer: Customer) => customer.customer_id.toString() !== JSON.parse(formState.owner_info || '{}').primary_owner_id)
+                .map((customer: Customer) => (
                   <option key={customer.customer_id} value={customer.customer_id}>
                     {customer.full_name}
                   </option>
-              ))}
+                ))}
             </select>
           </div>
         </div>
@@ -389,14 +367,14 @@ export default function CollateralForm({
             name="owner_info_notes"
             value={JSON.parse(formState.owner_info || '{}').notes || ''}
             onChange={(e) => {
-              const currentInfo = JSON.parse(formState.owner_info || '{}');
-              setFormState(prev => ({
+              const currentInfo = JSON.parse(formState.owner_info || '{}')
+              setFormState((prev) => ({
                 ...prev,
                 owner_info: JSON.stringify({
                   ...currentInfo,
                   notes: e.target.value
                 })
-              }));
+              }))
             }}
             rows={2}
             placeholder="Thông tin bổ sung về chủ sở hữu (nếu có)"
@@ -441,14 +419,14 @@ export default function CollateralForm({
             value={JSON.stringify(formState.metadata.custom || {}, null, 2)}
             onChange={(jsonString: string) => {
               try {
-                const customData = JSON.parse(jsonString);
+                const customData = JSON.parse(jsonString)
                 handleMetadataChange({
                   ...formState.metadata,
                   custom: customData
-                });
+                })
               } catch (error) {
                 // If JSON is invalid, don't update the state
-                console.error('Invalid JSON:', error);
+                console.error('Invalid JSON:', error)
               }
             }}
           />
