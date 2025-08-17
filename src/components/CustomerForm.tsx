@@ -60,13 +60,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         soul: String(numerologyData.soul || numerologyData.linhhon || 'N/A'),
         birthDate: String(numerologyData.birthDate || numerologyData.ngaysinh || 'N/A')
       }
-      
-      return {
-        walksOfLife: String(numerologyData.walksOfLife || numerologyData.duongdoi || 'N/A'),
-        mission: String(numerologyData.mission || numerologyData.sumeng || 'N/A'),
-        soul: String(numerologyData.soul || numerologyData.linhhon || 'N/A'),
-        birthDate: String(numerologyData.birthDate || numerologyData.ngaysinh || 'N/A')
-      }
     } catch {
       return null
     }
@@ -601,7 +594,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 />
               </div>
 
-              <div>
+                            <div>
                 <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
                   Ngày Đăng Ký
                 </label>
@@ -609,16 +602,10 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   type="text"
                   id="registration_date"
                   value={formData.registration_date || ''}
-                  onChange={(e) => handleDateChange('registration_date', e)}
+                  onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="dd/mm/yyyy"
-                  maxLength={10}
+                  placeholder="Nhập ngày đăng ký hoặc ghi chú"
                 />
-                {formData.registration_date && !validateDateFormat(formData.registration_date) && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
-                  </p>
-                )}
               </div>
 
               <div>
