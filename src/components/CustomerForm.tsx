@@ -3,7 +3,7 @@ import { Dialog } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Customer, CustomerType } from '@/lib/supabase';
 import { calculateNumerologyData } from '@/lib/numerology';
-import { toVNDate, toISODate } from '@/lib/date';
+import { toVNDate, toISODate, isValidDate } from '@/lib/date';
 
 interface CustomerFormProps {
   isOpen: boolean;
@@ -172,20 +172,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
   const validateDateFormat = (dateString: string): boolean => {
     if (!dateString) return true // Empty is valid
     return isValidDate(dateString)
-    const month = parseInt(match[2])
-    const year = parseInt(match[3])
-    
-    // Basic validation
-    if (month < 1 || month > 12) return false
-    if (day < 1 || day > 31) return false
-    if (year < 1900 || year > new Date().getFullYear() + 10) return false
-    
-    // More precise date validation - check if the date actually exists
-    // Create date using local timezone to avoid timezone shift issues
-    const testDate = new Date(year, month - 1, day)
-    return testDate.getDate() === day && 
-           testDate.getMonth() === month - 1 && 
-           testDate.getFullYear() === year
   }
 
   useEffect(() => {
