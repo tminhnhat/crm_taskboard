@@ -23,13 +23,30 @@ export default function CollateralForm({
 }: CollateralFormProps) {
   // Helper functions for date formatting
   const formatDateForDB = (displayDate: string): string => {
-    if (!displayDate) return ''
-    return toISODate(displayDate)
+    if (!displayDate) return '';
+    try {
+      // Validate date format dd/mm/yyyy
+      const [day, month, year] = displayDate.split('/').map(Number);
+      
+      // Basic date validation
+      if (!day || !month || !year) return '';
+      if (day < 1 || day > 31) return '';
+      if (month < 1 || month > 12) return '';
+      if (year < 1900 || year > 2100) return '';
+      
+      return toISODate(displayDate);
+    } catch (error) {
+      return '';
+    }
   }
 
   const formatDateForDisplay = (dbDate: string): string => {
-    if (!dbDate) return ''
-    return toVNDate(dbDate)
+    if (!dbDate) return '';
+    try {
+      return toVNDate(dbDate);
+    } catch (error) {
+      return dbDate; // Return original value if conversion fails
+    }
   }
 
   const [formState, setFormState] = useState<{
@@ -201,33 +218,41 @@ export default function CollateralForm({
               name="valuation_date"
               value={formatDateForDisplay(formState.valuation_date)}
               onChange={(e) => {
-                const inputValue = e.target.value
-                // Only allow numbers and forward slashes
-                const sanitizedValue = inputValue.replace(/[^\d/]/g, '')
+                let inputValue = e.target.value;
                 
-                // Auto-format as user types
-                let formattedValue = sanitizedValue
-                if (sanitizedValue.length >= 2 && !sanitizedValue.includes('/')) {
-                  formattedValue = sanitizedValue.slice(0, 2) + '/' + sanitizedValue.slice(2)
-                }
-                if (sanitizedValue.length >= 5 && sanitizedValue.split('/').length === 2) {
-                  const parts = formattedValue.split('/')
-                  formattedValue = parts[0] + '/' + parts[1].slice(0, 2) + '/' + parts[1].slice(2)
-                }
+                // Remove any non-digit characters except slashes
+                inputValue = inputValue.replace(/[^\d/]/g, '');
                 
-                // Update the state with yyyy-mm-dd format
-                const parts = formattedValue.split('/')
-                if (parts.length === 3 && parts[2].length === 4) {
-                  const dbFormat = formatDateForDB(formattedValue)
-                  setFormState((prev) => ({
-                    ...prev,
-                    valuation_date: dbFormat
-                  }))
-                } else {
-                  setFormState((prev) => ({
-                    ...prev,
-                    valuation_date: formattedValue
-                  }))
+                // Format the date as the user types (dd/mm/yyyy)
+                if (inputValue.length > 0) {
+                  const digits = inputValue.replace(/\D/g, '');
+                  if (digits.length <= 2) {
+                    inputValue = digits;
+                  } else if (digits.length <= 4) {
+                    inputValue = digits.slice(0, 2) + '/' + digits.slice(2);
+                  } else {
+                    inputValue = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
+                  }
+                }
+
+                // First update the display value
+                if (inputValue.length <= 10) { // Prevent more than dd/mm/yyyy format
+                  if (inputValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                    // If the input is complete (dd/mm/yyyy), convert to database format (yyyy-mm-dd)
+                    const dbFormat = formatDateForDB(inputValue);
+                    if (dbFormat) {
+                      setFormState(prev => ({
+                        ...prev,
+                        valuation_date: dbFormat
+                      }));
+                    }
+                  } else {
+                    // For partial input, store as is
+                    setFormState(prev => ({
+                      ...prev,
+                      valuation_date: inputValue
+                    }));
+                  }
                 }
               }}
               placeholder="dd/mm/yyyy"
@@ -236,7 +261,12 @@ export default function CollateralForm({
             />
             {formState.valuation_date && !formState.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/) && (
               <p className="mt-1 text-sm text-red-500">
-                Vui lòng nhập ngày theo định dạng dd/mm/yyyy
+                Vui lòng nhập ngày theo định dạng dd/mm/yyyy (VD: 31/12/2025)
+              </p>
+            )}
+            {formState.valuation_date && formState.valuation_date.includes('/') && !formState.valuation_date.match(/^\d{2}\/\d{2}\/\d{4}$/) && (
+              <p className="mt-1 text-sm text-red-500">
+                Ngày chưa đúng định dạng, vui lòng nhập đầy đủ
               </p>
             )}
           </div>
