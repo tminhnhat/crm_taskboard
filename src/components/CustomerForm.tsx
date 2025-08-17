@@ -37,9 +37,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     company_name: '',
     legal_representative: '',
     legal_representative_cif_number: '',
-    business_sector: '',
-    company_size: null as 'micro' | 'small' | 'medium' | 'large' | null,
-    annual_revenue: ''
+    business_sector: ''
   })
 
   const [showNumerologyInfo, setShowNumerologyInfo] = useState(false)
@@ -202,8 +200,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         company_name: customer.company_name || '',
         legal_representative: customer.legal_representative || '',
         business_sector: customer.business_sector || '',
-        company_size: customer.company_size || null,
-        annual_revenue: customer.annual_revenue || ''
       })
     } else {
       setFormData({
@@ -275,13 +271,10 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       // Business registration fields
       business_registration_number: formData.business_registration_number || null,
       business_registration_authority: formData.business_registration_authority || null,
-      registration_date: formData.registration_date ? formatDateForSubmission(formData.registration_date) : null,
       // Corporate fields
       company_name: formData.company_name || null,
       legal_representative: formData.legal_representative || null,
       business_sector: formData.business_sector || null,
-      company_size: formData.company_size || null,
-      annual_revenue: formData.annual_revenue || null
     })
     onClose()
   }
@@ -443,25 +436,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 </div>
 
                 <div>
-                  <label htmlFor="company_size" className="block text-sm font-medium text-gray-700 mb-1">
-                    Quy Mô Doanh Nghiệp
-                  </label>
-                  <select
-                    id="company_size"
-                    name="company_size"
-                    value={formData.company_size || ''}
-                    onChange={(e) => setFormData({ ...formData, company_size: e.target.value ? e.target.value as 'micro' | 'small' | 'medium' | 'large' : null })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Chọn quy mô</option>
-                    <option value="micro">Siêu nhỏ</option>
-                    <option value="small">Nhỏ</option>
-                    <option value="medium">Vừa</option>
-                    <option value="large">Lớn</option>
-                  </select>
-                </div>
-
-                <div>
                   <label htmlFor="business_sector" className="block text-sm font-medium text-gray-700 mb-1">
                     Ngành Nghề Kinh Doanh
                   </label>
@@ -473,21 +447,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                     onChange={(e) => setFormData({ ...formData, business_sector: e.target.value })}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Nhập ngành nghề kinh doanh"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="annual_revenue" className="block text-sm font-medium text-gray-700 mb-1">
-                    Doanh Thu Hàng Năm
-                  </label>
-                  <input
-                    type="text"
-                    id="annual_revenue"
-                    name="annual_revenue"
-                    value={formData.annual_revenue || ''}
-                    onChange={(e) => setFormData({ ...formData, annual_revenue: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập doanh thu hàng năm (VND)"
                   />
                 </div>
               </div>
