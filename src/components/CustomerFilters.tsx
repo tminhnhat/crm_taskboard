@@ -45,7 +45,6 @@ export default function CustomerFilters({ filters, onFiltersChange }: CustomerFi
                   >
                     <option value="">Tất Cả Loại</option>
                     <option value="individual">Cá Nhân</option>
-                    <option value="business_individual">Cá Nhân Kinh Doanh</option>
                     <option value="corporate">Doanh Nghiệp</option>
                   </select>
         </div>

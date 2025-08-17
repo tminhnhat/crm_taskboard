@@ -45,23 +45,25 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
 
   // Quick preview calculation helper (simplified)
   const getQuickPreview = (): { walksOfLife: string, mission: string, soul: string, birthDate: string } | null => {
-    if (!formData.full_name || !formData.date_of_birth) return null
+    if (!formData.full_name || !formData.date_of_birth) return null;
     
     try {
-      const [day, month, year] = formData.date_of_birth.split('/')
-      if (!day || !month || !year) return null
+      const [day, month, year] = formData.date_of_birth.split('/');
+      if (!day || !month || !year) return null;
       
-      const birthDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-      const numerologyData = calculateNumerologyData(formData.full_name, birthDate)
+      if (!validateDateFormat(formData.date_of_birth)) return null;
+      
+      const birthDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      const numerologyData = calculateNumerologyData(formData.full_name, birthDate);
       
       return {
         walksOfLife: String(numerologyData.walksOfLife || numerologyData.duongdoi || 'N/A'),
         mission: String(numerologyData.mission || numerologyData.sumeng || 'N/A'),
         soul: String(numerologyData.soul || numerologyData.linhhon || 'N/A'),
         birthDate: String(numerologyData.birthDate || numerologyData.ngaysinh || 'N/A')
-      }
+      };
     } catch {
-      return null
+      return null;
     }
   }
 
@@ -137,29 +139,31 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     try {
       return toISODate(displayDate);
     } catch {
-      return null;
+      // If the utility function fails, try manual conversion
+      try {
+        const parts = displayDate.split('/')
+        if (parts.length !== 3) return null
+        
+        const [day, month, year] = parts
+        
+        // Validate the parts before creating the date string
+        const dayNum = parseInt(day)
+        const monthNum = parseInt(month)
+        const yearNum = parseInt(year)
+        
+        if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return null
+        if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12) return null
+        
+        // Ensure proper zero-padding for single digit days and months
+        const paddedDay = day.padStart(2, '0')
+        const paddedMonth = month.padStart(2, '0')
+        
+        // Return the date in yyyy-mm-dd format (ISO date string format)
+        return `${year}-${paddedMonth}-${paddedDay}`
+      } catch {
+        return null
+      }
     }
-    
-    // Convert from dd/mm/yyyy to yyyy-mm-dd
-    const parts = displayDate.split('/')
-    if (parts.length !== 3) return null
-    
-    const [day, month, year] = parts
-    
-    // Validate the parts before creating the date string
-    const dayNum = parseInt(day)
-    const monthNum = parseInt(month)
-    const yearNum = parseInt(year)
-    
-    if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return null
-    if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12) return null
-    
-    // Ensure proper zero-padding for single digit days and months
-    const paddedDay = day.padStart(2, '0')
-    const paddedMonth = month.padStart(2, '0')
-    
-    // Return the date in yyyy-mm-dd format (ISO date string format)
-    return `${year}-${paddedMonth}-${paddedDay}`
   }
 
   const validateDateFormat = (dateString: string): boolean => {
@@ -240,6 +244,11 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     
     if (formData.id_issue_date && !validateDateFormat(formData.id_issue_date)) {
       alert('Định dạng ngày cấp CMND/CCCD không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
+
+    if (formData.registration_date && !validateDateFormat(formData.registration_date)) {
+      alert('Định dạng ngày đăng ký không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
     }
     
@@ -602,10 +611,17 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   type="text"
                   id="registration_date"
                   value={formData.registration_date || ''}
-                  onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
+                  onChange={(e) => handleDateChange('registration_date', e)}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Nhập ngày đăng ký hoặc ghi chú"
+                  placeholder="dd/mm/yyyy"
+                  maxLength={10}
+                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
                 />
+                {formData.registration_date && !validateDateFormat(formData.registration_date) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
               </div>
 
               <div>
