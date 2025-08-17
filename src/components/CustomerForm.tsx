@@ -29,10 +29,12 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     account_number: '',
     cif_number: '',
     numerology_data: {} as Record<string, unknown>,
-    // Corporate specific fields
-    company_name: '',
+    // Business registration fields for both individual and corporate
     business_registration_number: '',
     registration_date: '',
+    business_registration_authority: '',
+    // Corporate specific fields
+    company_name: '',
     legal_representative: '',
     legal_representative_cif_number: '',
     business_sector: '',
@@ -192,11 +194,12 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         account_number: customer.account_number,
         cif_number: customer.cif_number || '',
         numerology_data: customer.numerology_data || {} as Record<string, unknown>,
+        // Business registration fields
+        business_registration_number: customer.business_registration_number || '',
+        business_registration_authority: customer.business_registration_authority || '',
+        registration_date: formatDateForDisplay(customer.registration_date),
         // Corporate fields
         company_name: customer.company_name || '',
-        business_registration_number: customer.business_registration_number || '',
-
-        registration_date: formatDateForDisplay(customer.registration_date),
         legal_representative: customer.legal_representative || '',
         business_sector: customer.business_sector || '',
         company_size: customer.company_size || null,
@@ -260,7 +263,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       ...formData,
       date_of_birth: formData.date_of_birth ? formatDateForSubmission(formData.date_of_birth) : null,
       id_issue_date: formData.id_issue_date ? formatDateForSubmission(formData.id_issue_date) : null,
-      registration_date: formData.registration_date || null,
       gender: formData.gender || null,
       id_number: formData.id_number || null,
       id_issue_authority: formData.id_issue_authority || null,
@@ -270,10 +272,12 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       hobby: formData.hobby || null,
       cif_number: formData.cif_number || null,
       numerology_data: numerologyData,
+      // Business registration fields
+      business_registration_number: formData.business_registration_number || null,
+      business_registration_authority: formData.business_registration_authority || null,
+      registration_date: formData.registration_date ? formatDateForSubmission(formData.registration_date) : null,
       // Corporate fields
       company_name: formData.company_name || null,
-      business_registration_number: formData.business_registration_number || null,
-
       legal_representative: formData.legal_representative || null,
       business_sector: formData.business_sector || null,
       company_size: formData.company_size || null,
@@ -314,18 +318,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                     const newType = e.target.value as CustomerType;
                     setFormData(prev => ({
                       ...prev,
-                      customer_type: newType,
-                      // Clear business fields when switching to individual
-                      ...(newType === 'individual' && {
-                        company_name: null,
-                        business_registration_number: null,
-
-                        registration_date: null,
-                        legal_representative: null,
-                        business_sector: null,
-                        company_size: null,
-                        annual_revenue: null
-                      })
+                      customer_type: newType
                     }))
                   }}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -635,9 +628,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 )}
               </div>
 
-              <div>
+                            <div>
                 <label htmlFor="id_issue_authority" className="block text-sm font-medium text-gray-700 mb-1">
-                  Nơi Cấp CMND/CCCD
+                  Nơi Cấp
                 </label>
                 <input
                   type="text"
@@ -645,7 +638,56 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   value={formData.id_issue_authority || ''}
                   onChange={(e) => setFormData({ ...formData, id_issue_authority: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="VD: Công an TP. Hồ Chí Minh"
+                  placeholder="Nhập nơi cấp CMND/CCCD"
+                />
+              </div>
+
+              {/* Business Registration Fields for Individual */}
+              <div>
+                <label htmlFor="business_registration_number" className="block text-sm font-medium text-gray-700 mb-1">
+                  Số Đăng Ký Kinh Doanh
+                </label>
+                <input
+                  type="text"
+                  id="business_registration_number"
+                  value={formData.business_registration_number || ''}
+                  onChange={(e) => setFormData({ ...formData, business_registration_number: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Nhập số đăng ký kinh doanh (nếu có)"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Ngày Đăng Ký
+                </label>
+                <input
+                  type="text"
+                  id="registration_date"
+                  value={formData.registration_date || ''}
+                  onChange={(e) => handleDateChange('registration_date', e)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="dd/mm/yyyy"
+                  maxLength={10}
+                />
+                {formData.registration_date && !validateDateFormat(formData.registration_date) && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="business_registration_authority" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nơi Cấp ĐKKD
+                </label>
+                <input
+                  type="text"
+                  id="business_registration_authority"
+                  value={formData.business_registration_authority || ''}
+                  onChange={(e) => setFormData({ ...formData, business_registration_authority: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Nhập nơi cấp đăng ký kinh doanh"
                 />
               </div>
             </div>

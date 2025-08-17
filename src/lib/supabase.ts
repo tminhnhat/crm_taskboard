@@ -61,10 +61,12 @@ export interface Customer {
   numerology_data: Record<string, unknown> | null // JSONB type
   created_at: string
   updated_at: string
+  // Business registration fields
+  business_registration_number: string | null
+  business_registration_authority: string | null
+  registration_date: string | null
   // Corporate specific fields
   company_name: string | null
-  business_registration_number: string | null
-  registration_date: string | null
   legal_representative: string | null
   legal_representative_cif_number: string | null
   business_sector: string | null
