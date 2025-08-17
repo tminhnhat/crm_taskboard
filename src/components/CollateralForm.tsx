@@ -27,15 +27,13 @@ export default function CollateralForm({
     try {
       // Validate date format dd/mm/yyyy
       const [day, month, year] = displayDate.split('/').map(Number);
-      
       // Basic date validation
       if (!day || !month || !year) return '';
       if (day < 1 || day > 31) return '';
       if (month < 1 || month > 12) return '';
       if (year < 1900 || year > 2100) return '';
-      
       return toISODate(displayDate);
-    } catch (error) {
+    } catch {
       return '';
     }
   }
@@ -44,7 +42,7 @@ export default function CollateralForm({
     if (!dbDate) return '';
     try {
       return toVNDate(dbDate);
-    } catch (error) {
+    } catch {
       return dbDate; // Return original value if conversion fails
     }
   }
@@ -84,8 +82,8 @@ export default function CollateralForm({
       try {
         const data = await fetchCustomers()
         setCustomers(data)
-      } catch (error) {
-        console.error('Error loading customers:', error)
+      } catch {
+        // Error loading customers
       }
     }
     loadCustomers()
