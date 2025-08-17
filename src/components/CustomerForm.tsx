@@ -421,21 +421,6 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 </div>
 
                 <div>
-                  <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700 mb-1">
-                    Ngày Đăng Ký
-                  </label>
-                  <input
-                    type="text"
-                    id="registration_date"
-                    name="registration_date"
-                    value={formData.registration_date || ''}
-                    onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập ngày đăng ký"
-                  />
-                </div>
-
-                <div>
                   <label htmlFor="business_sector" className="block text-sm font-medium text-gray-700 mb-1">
                     Ngành Nghề Kinh Doanh
                   </label>
