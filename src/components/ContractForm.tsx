@@ -346,16 +346,29 @@ export default function ContractForm({
                 <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 mb-1">
                   Ngày Bắt Đầu
                 </label>
-                <input
-                  type="text"
-                  id="start_date"
-                  value={formData.start_date}
-                  onChange={(e) => handleDateChange('start_date', e)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="dd/mm/yyyy"
-                  maxLength={10}
-                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    id="start_date"
+                    value={formData.start_date}
+                    onChange={(e) => handleDateChange('start_date', e)}
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="dd/mm/yyyy"
+                    maxLength={10}
+                    title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+                      setFormData(prev => ({ ...prev, start_date: formattedDate }));
+                    }}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md text-sm whitespace-nowrap"
+                  >
+                    Hôm nay
+                  </button>
+                </div>
                 {formData.start_date && !validateDateFormat(formData.start_date) && (
                   <p className="text-red-500 text-xs mt-1">
                     Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
@@ -367,16 +380,30 @@ export default function ContractForm({
                 <label htmlFor="end_date" className="block text-sm font-medium text-gray-700 mb-1">
                   Ngày Kết Thúc
                 </label>
-                <input
-                  type="text"
-                  id="end_date"
-                  value={formData.end_date}
-                  onChange={(e) => handleDateChange('end_date', e)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="dd/mm/yyyy"
-                  maxLength={10}
-                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    id="end_date"
+                    value={formData.end_date}
+                    onChange={(e) => handleDateChange('end_date', e)}
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="dd/mm/yyyy"
+                    maxLength={10}
+                    title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextYear = new Date();
+                      nextYear.setFullYear(nextYear.getFullYear() + 1);
+                      const formattedDate = `${nextYear.getDate().toString().padStart(2, '0')}/${(nextYear.getMonth() + 1).toString().padStart(2, '0')}/${nextYear.getFullYear()}`;
+                      setFormData(prev => ({ ...prev, end_date: formattedDate }));
+                    }}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md text-sm whitespace-nowrap"
+                  >
+                    Năm sau
+                  </button>
+                </div>
                 {formData.end_date && !validateDateFormat(formData.end_date) && (
                   <p className="text-red-500 text-xs mt-1">
                     Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
