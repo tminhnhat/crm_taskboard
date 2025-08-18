@@ -6,7 +6,7 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import * as XLSX from 'xlsx';
 import nodemailer from 'nodemailer';
-import { Redis } from '@upstash/redis';
+import { createClient } from 'redis';
 import { 
   Template, 
   TemplateWithData, 
@@ -16,10 +16,16 @@ import {
 } from '@/types/templates';
 
 // Initialize Redis client
-const redis = new Redis({
-  url: 'https://redis-12583.c295.ap-southeast-1-1.ec2.redns.redis-cloud.com:12583',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || ''
-});
+const client = createClient({ url: process.env.REDIS_URL });
+let redis = client;
+
+// Handle connection in an async function
+async function getRedisClient() {
+  if (!client.isOpen) {
+    redis = await client.connect();
+  }
+  return redis;
+}
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
@@ -53,7 +59,9 @@ export async function POST(req: Request) {
       const { id, type, data: templateData } = template;
       
       // Get template metadata from Redis
-      const allTemplates = await redis.get('document_templates') as any[] || [];
+      const redis = await getRedisClient();
+      const templatesStr = await redis.get('document_templates');
+      const allTemplates: Template[] = templatesStr ? JSON.parse(templatesStr) : [];
       const templateInfo = allTemplates.find(t => t.id === id);
       
       if (!templateInfo) {

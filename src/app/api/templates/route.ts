@@ -1,18 +1,26 @@
 import { NextResponse } from 'next/server';
 import { put, list, del } from '@vercel/blob';
-import { Redis } from '@upstash/redis';
+import { createClient } from 'redis';
 import { Template } from '@/types/templates';
 
 // Initialize Redis client
-const redis = new Redis({
-  url: 'https://redis-12583.c295.ap-southeast-1-1.ec2.redns.redis-cloud.com:12583',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || ''
-});
+const client = createClient({ url: process.env.REDIS_URL });
+let redis = client;
+
+// Handle connection in an async function
+async function getRedisClient() {
+  if (!client.isOpen) {
+    redis = await client.connect();
+  }
+  return redis;
+}
 
 export async function GET() {
   try {
     // Get templates metadata from Redis
-    const templates = await redis.get<Template[]>('document_templates') || [];
+    const redis = await getRedisClient();
+    const templatesStr = await redis.get('document_templates');
+    const templates: Template[] = templatesStr ? JSON.parse(templatesStr) : [];
     return NextResponse.json(templates);
   } catch (error) {
     console.error('Error fetching templates:', error);
@@ -55,9 +63,11 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString()
     };
 
-    const templates = await redis.get<Template[]>('document_templates') || [];
+    const redis = await getRedisClient();
+    const templatesStr = await redis.get('document_templates');
+    const templates: Template[] = templatesStr ? JSON.parse(templatesStr) : [];
     templates.push(template as Template);
-    await redis.set('document_templates', templates);
+    await redis.set('document_templates', JSON.stringify(templates));
 
     return NextResponse.json(template);
   } catch (error) {
@@ -72,8 +82,10 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   try {
     const { id } = await req.json();
-    const templates = await redis.get<Template[]>('document_templates') || [];
-    const templateIndex = templates.findIndex((t: Template) => t.id === id);
+    const redis = await getRedisClient();
+    const templatesStr = await redis.get('document_templates');
+    const templates: Template[] = templatesStr ? JSON.parse(templatesStr) : [];
+    const templateIndex = templates.findIndex(t => t.id === id);
     
     if (templateIndex === -1) {
       return NextResponse.json(
@@ -89,7 +101,7 @@ export async function DELETE(req: Request) {
     
     // Remove from Redis
     templates.splice(templateIndex, 1);
-    await redis.set('document_templates', templates);
+    await redis.set('document_templates', JSON.stringify(templates));
 
     return NextResponse.json({ message: 'Template deleted successfully' });
   } catch (error) {
