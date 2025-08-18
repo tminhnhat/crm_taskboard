@@ -218,39 +218,38 @@ export default function CollateralForm({
               onChange={(e) => {
                 let inputValue = e.target.value;
                 
-                // Remove any non-digit characters except slashes
+                // Only allow digits and slashes
                 inputValue = inputValue.replace(/[^\d/]/g, '');
                 
-                // Format the date as the user types (dd/mm/yyyy)
-                if (inputValue.length > 0) {
-                  const digits = inputValue.replace(/\D/g, '');
-                  if (digits.length <= 2) {
-                    inputValue = digits;
-                  } else if (digits.length <= 4) {
-                    inputValue = digits.slice(0, 2) + '/' + digits.slice(2);
-                  } else {
-                    inputValue = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
-                  }
+                // Don't process if longer than 10 characters
+                if (inputValue.length > 10) return;
+                
+                // Auto-format as user types
+                const digits = inputValue.replace(/\D/g, '');
+                
+                // Format with slashes
+                if (digits.length > 4) {
+                  inputValue = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+                } else if (digits.length > 2) {
+                  inputValue = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+                } else {
+                  inputValue = digits;
                 }
-
-                // First update the display value
-                if (inputValue.length <= 10) { // Prevent more than dd/mm/yyyy format
-                  if (inputValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-                    // If the input is complete (dd/mm/yyyy), convert to database format (yyyy-mm-dd)
-                    const dbFormat = formatDateForDB(inputValue);
-                    if (dbFormat) {
-                      setFormState(prev => ({
-                        ...prev,
-                        valuation_date: dbFormat
-                      }));
-                    }
-                  } else {
-                    // For partial input, store as is
+                
+                // Update state with either formatted date or partial input
+                if (inputValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                  const dbFormat = formatDateForDB(inputValue);
+                  if (dbFormat) {
                     setFormState(prev => ({
                       ...prev,
-                      valuation_date: inputValue
+                      valuation_date: dbFormat
                     }));
                   }
+                } else {
+                  setFormState(prev => ({
+                    ...prev,
+                    valuation_date: inputValue
+                  }));
                 }
               }}
               placeholder="dd/mm/yyyy"
