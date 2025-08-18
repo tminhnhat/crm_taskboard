@@ -60,21 +60,22 @@ export default function CollateralsPage() {
   // Filter collaterals based on current filters
   const filteredCollaterals = useMemo(() => {
     return collaterals.filter(collateral => {
+      const searchLower = filters.search.toLowerCase();
       const matchesSearch = !filters.search || 
-        (collateral.description && collateral.description.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (collateral.location && collateral.location.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (collateral.customer && collateral.customer.full_name.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (collateral.collateral_type && collateral.collateral_type.toLowerCase().includes(filters.search.toLowerCase())) ||
-        collateral.collateral_id.toString().includes(filters.search)
+        (collateral.description?.toLowerCase().includes(searchLower)) ||
+        (collateral.location?.toLowerCase().includes(searchLower)) ||
+        (collateral.customer?.full_name.toLowerCase().includes(searchLower)) ||
+        (collateral.collateral_type?.toLowerCase().includes(searchLower)) ||
+        collateral.collateral_id.toString().includes(searchLower);
       
       const matchesType = !filters.type || 
-        (collateral.collateral_type && collateral.collateral_type === filters.type)
+        (collateral.collateral_type && collateral.collateral_type === filters.type);
       
       const matchesStatus = !filters.status || 
-        (collateral.status && collateral.status.toLowerCase() === filters.status.toLowerCase())
+        (collateral.status?.toLowerCase() === filters.status.toLowerCase());
       
       const matchesCustomer = !filters.customerId || 
-        collateral.customer_id.toString() === filters.customerId
+        collateral.customer_id.toString() === filters.customerId;
 
       let matchesValueRange = true
       if (filters.valueRange && collateral.value) {
@@ -129,67 +130,73 @@ export default function CollateralsPage() {
     })
   }, [collaterals, filters])
 
-  // Memoize total pages calculation
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredCollaterals.length / collateralsPerPage);
-  }, [filteredCollaterals.length, collateralsPerPage]);
-
-  // Memoize current page items
-  const currentItems = useMemo(() => {
+  // Memoize pagination data
+  const paginationData = useMemo(() => {
+    const totalItems = filteredCollaterals.length;
+    const totalPages = Math.ceil(totalItems / collateralsPerPage);
     const startIndex = (currentPage - 1) * collateralsPerPage;
-    return filteredCollaterals.slice(startIndex, startIndex + collateralsPerPage);
+    const endIndex = startIndex + collateralsPerPage;
+    const currentItems = filteredCollaterals.slice(startIndex, endIndex);
+
+    return {
+      totalItems,
+      totalPages,
+      currentItems,
+      startIndex,
+      endIndex
+    };
   }, [filteredCollaterals, currentPage, collateralsPerPage]);
 
   // Reset page when filters change or if current page is invalid
   useEffect(() => {
-    if (currentPage > totalPages) {
+    if (currentPage > paginationData.totalPages && paginationData.totalPages > 0) {
       setCurrentPage(1);
     }
-  }, [totalPages, currentPage]);
+  }, [currentPage, paginationData.totalPages]);
 
-  const handleNewCollateral = () => {
-    setEditingCollateral(null)
-    setShowForm(true)
-  }
+  const handleNewCollateral = useCallback(() => {
+    setEditingCollateral(null);
+    setShowForm(true);
+  }, []);
 
-  const handleEditCollateral = (collateral: Collateral) => {
-    setEditingCollateral(collateral)
-    setShowForm(true)
-  }
+  const handleEditCollateral = useCallback((collateral: Collateral) => {
+    setEditingCollateral(collateral);
+    setShowForm(true);
+  }, []);
 
-  const handleDeleteCollateral = async (collateral: Collateral) => {
+  const handleDeleteCollateral = useCallback(async (collateral: Collateral) => {
     if (confirm('Bạn có chắc chắn muốn xóa tài sản đảm bảo này không?')) {
       try {
-        await deleteCollateral(collateral.collateral_id)
+        await deleteCollateral(collateral.collateral_id);
       } catch (error) {
-        console.error('Error deleting collateral:', error)
+        console.error('Error deleting collateral:', error);
       }
     }
-  }
+  }, [deleteCollateral]);
 
-  const handleSaveCollateral = async (collateralData: Partial<Collateral>) => {
+  const handleSaveCollateral = useCallback(async (collateralData: Partial<Collateral>) => {
     try {
       if (editingCollateral) {
-        await updateCollateral(editingCollateral.collateral_id, collateralData)
+        await updateCollateral(editingCollateral.collateral_id, collateralData);
       } else {
-        await createCollateral(collateralData)
+        await createCollateral(collateralData);
       }
-      setShowForm(false)
-      setEditingCollateral(null)
+      setShowForm(false);
+      setEditingCollateral(null);
     } catch (error) {
-      console.error('Error saving collateral:', error)
+      console.error('Error saving collateral:', error);
     }
-  }
+  }, [editingCollateral, updateCollateral, createCollateral]);
 
-  const handleCancelForm = () => {
-    setShowForm(false)
-    setEditingCollateral(null)
-  }
+  const handleCancelForm = useCallback(() => {
+    setShowForm(false);
+    setEditingCollateral(null);
+  }, []);
 
-    const handleFiltersChange = useCallback((newFilters: any) => {
-      setFilters(newFilters);
-      setCurrentPage(1); // Reset to first page when filters change
-    }, [])
+  const handleFiltersChange = useCallback((newFilters: any) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [])
 
   if (loading) {
     return (
@@ -304,7 +311,7 @@ export default function CollateralsPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {currentItems.map((collateral: Collateral) => (
+              {paginationData.currentItems.map((collateral: Collateral) => (
                 <CollateralCard
                   key={collateral.collateral_id}
                   collateral={collateral}
@@ -315,7 +322,7 @@ export default function CollateralsPage() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {paginationData.totalPages > 1 && (
               <div className="mt-8 flex justify-center">
                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                   <button
@@ -332,7 +339,7 @@ export default function CollateralsPage() {
                   </button>
                   
                   {useMemo(() => (
-                    Array.from({ length: totalPages }, (_, index) => (
+                    Array.from({ length: paginationData.totalPages }, (_, index) => (
                       <button
                         type="button"
                         key={index + 1}
@@ -346,14 +353,14 @@ export default function CollateralsPage() {
                         {index + 1}
                       </button>
                     ))
-                  ), [totalPages, currentPage])}
+                  ), [paginationData.totalPages, currentPage])}
                   
                   <button
                     type="button"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, paginationData.totalPages))}
+                    disabled={currentPage === paginationData.totalPages}
                     className={`relative inline-flex items-center px-2 py-2 rounded-r-md border ${
-                      currentPage === totalPages
+                      currentPage === paginationData.totalPages
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         : 'bg-white text-gray-500 hover:bg-gray-50'
                     } text-sm font-medium`}
