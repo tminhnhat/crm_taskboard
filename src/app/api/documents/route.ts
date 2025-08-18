@@ -6,6 +6,14 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import * as XLSX from 'xlsx';
 import nodemailer from 'nodemailer';
+import { kv } from '@vercel/kv';
+import { 
+  Template, 
+  TemplateWithData, 
+  DocxTemplateData, 
+  XlsxTemplateData, 
+  GeneratedFile 
+} from '@/types/templates';
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
@@ -21,48 +29,79 @@ const transporter = nodemailer.createTransport({
 // Handle POST request
 export async function POST(req: Request) {
   try {
-    const { templateType, data, email, downloadOnly } = await req.json();
+    const { templates, data, email, downloadOnly } = await req.json();
+
+    if (!Array.isArray(templates)) {
+      return NextResponse.json({ error: 'Templates must be an array' }, { status: 400 });
+    }
 
     // Create ketqua directory if it doesn't exist
     const outputDir = join(process.cwd(), 'ketqua');
     await mkdir(outputDir, { recursive: true });
 
-    let generatedFile;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const generatedFiles = [];
 
-    if (templateType === 'docx') {
-      generatedFile = await generateDocx(data, timestamp);
-    } else if (templateType === 'xlsx') {
-      generatedFile = await generateXlsx(data, timestamp);
-    } else {
-      return NextResponse.json({ error: 'Unsupported template type' }, { status: 400 });
-    }
+    // Generate all documents
+    for (const template of templates) {
+      const { id, type, data: templateData } = template;
+      
+      // Get template metadata from KV store
+      const allTemplates = await kv.get('document_templates') as any[] || [];
+      const templateInfo = allTemplates.find(t => t.id === id);
+      
+      if (!templateInfo) {
+        console.warn(`Template ${id} not found, skipping...`);
+        continue;
+      }
 
-    // Save file to ketqua folder
-    const fileName = `${timestamp}-${templateType}.${templateType}`;
-    const filePath = join(outputDir, fileName);
-    await writeFile(filePath, generatedFile);
+      let generatedFile;
+      if (type === 'docx') {
+        generatedFile = await generateDocx(templateInfo.url, templateData || data);
+      } else if (type === 'xlsx') {
+        generatedFile = await generateXlsx(templateInfo.url, templateData || data);
+      } else {
+        console.warn(`Unsupported template type: ${type}, skipping...`);
+        continue;
+      }
 
-    // Upload to Vercel Blob for temporary storage
-    const blob = await put(fileName, generatedFile, {
-      access: 'public',
-      addRandomSuffix: false,
-      token: process.env.BLOB_READ_WRITE_TOKEN
-    });
+      // Save file to ketqua folder
+      const fileName = `${timestamp}-${templateInfo.name}.${type}`;
+      const filePath = join(outputDir, fileName);
+      await writeFile(filePath, generatedFile);
 
-    // Send email if requested
-    if (email && !downloadOnly) {
-      await sendEmail(email, blob.url, fileName);
-      return NextResponse.json({ 
-        message: 'File generated and sent via email',
-        fileUrl: blob.url 
+      // Upload to Vercel Blob for temporary storage
+      const blob = await put(fileName, generatedFile, {
+        access: 'public',
+        addRandomSuffix: false,
+        token: process.env.BLOB_READ_WRITE_TOKEN
+      });
+
+      generatedFiles.push({
+        fileName,
+        url: blob.url,
+        type,
+        templateName: templateInfo.name
       });
     }
 
-    // Return download URL
+    if (generatedFiles.length === 0) {
+      return NextResponse.json({ error: 'No files were generated' }, { status: 400 });
+    }
+
+    // Send email if requested
+    if (email && !downloadOnly) {
+      await sendEmail(email, generatedFiles);
+      return NextResponse.json({ 
+        message: 'Files generated and sent via email',
+        files: generatedFiles 
+      });
+    }
+
+    // Return download URLs
     return NextResponse.json({ 
-      message: 'File generated successfully',
-      fileUrl: blob.url 
+      message: 'Files generated successfully',
+      files: generatedFiles 
     });
 
   } catch (error) {
@@ -74,10 +113,9 @@ export async function POST(req: Request) {
   }
 }
 
-async function generateDocx(data: any, timestamp: string) {
+async function generateDocx(templateUrl: string, data: DocxTemplateData): Promise<Buffer> {
   // Get template from Vercel Blob
-  const templateUrl = process.env.DOCX_TEMPLATE_URL;
-  const templateResponse = await fetch(templateUrl as string);
+  const templateResponse = await fetch(templateUrl);
   const templateBuffer = await templateResponse.arrayBuffer();
 
   // Create template instance
@@ -91,10 +129,9 @@ async function generateDocx(data: any, timestamp: string) {
   return doc.getZip().generate({ type: 'nodebuffer' });
 }
 
-async function generateXlsx(data: any, timestamp: string) {
+async function generateXlsx(templateUrl: string, data: XlsxTemplateData): Promise<Buffer> {
   // Get template from Vercel Blob
-  const templateUrl = process.env.XLSX_TEMPLATE_URL;
-  const templateResponse = await fetch(templateUrl as string);
+  const templateResponse = await fetch(templateUrl);
   const templateBuffer = await templateResponse.arrayBuffer();
 
   // Load template
@@ -112,18 +149,18 @@ async function generateXlsx(data: any, timestamp: string) {
   return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 }
 
-async function sendEmail(to: string, fileUrl: string, fileName: string) {
+async function sendEmail(to: string, files: Array<{ fileName: string; url: string; templateName: string }>) {
   const mailOptions = {
     from: process.env.SMTP_USER,
     to,
-    subject: 'Generated Document',
-    text: `Your document has been generated. You can download it here: ${fileUrl}`,
-    attachments: [
-      {
-        filename: fileName,
-        path: fileUrl
-      }
-    ]
+    subject: 'Generated Documents',
+    text: `Your documents have been generated. You can download them using the following links:\n\n${
+      files.map(file => `${file.templateName}: ${file.url}`).join('\n')
+    }`,
+    attachments: files.map(file => ({
+      filename: file.fileName,
+      path: file.url
+    }))
   };
 
   await transporter.sendMail(mailOptions);
