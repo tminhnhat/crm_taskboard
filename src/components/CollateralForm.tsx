@@ -21,31 +21,7 @@ export default function CollateralForm({
   isLoading,
   fetchCustomers
 }: CollateralFormProps) {
-  // Helper functions for date formatting
-  const formatDateForDB = (displayDate: string): string => {
-    if (!displayDate) return '';
-    try {
-      // Validate date format dd/mm/yyyy
-      const [day, month, year] = displayDate.split('/').map(Number);
-      // Basic date validation
-      if (!day || !month || !year) return '';
-      if (day < 1 || day > 31) return '';
-      if (month < 1 || month > 12) return '';
-      if (year < 1900 || year > 2100) return '';
-      return toISODate(displayDate);
-    } catch {
-      return '';
-    }
-  }
-
-  const formatDateForDisplay = (dbDate: string): string => {
-    if (!dbDate) return '';
-    try {
-      return toVNDate(dbDate);
-    } catch {
-      return dbDate; // Return original value if conversion fails
-    }
-  }
+  // No helper functions needed as we're using the date functions directly
 
   const [formState, setFormState] = useState<{
     collateral_type: string;
@@ -220,18 +196,14 @@ export default function CollateralForm({
                   const inputValue = e.target.value;
                   if (!inputValue) return;
 
-                  try {
-                    // Validate the date using the built-in Date object
-                    const date = new Date(inputValue);
-                    if (date.toString() === 'Invalid Date') return;
+                  // Validate the date using the built-in Date object
+                  const date = new Date(inputValue);
+                  if (date.toString() === 'Invalid Date') return;
 
-                    setFormState(prev => ({
-                      ...prev,
-                      valuation_date: inputValue // Store in ISO format directly
-                    }));
-                  } catch (error) {
-                    // Invalid date - do nothing
-                  }
+                  setFormState(prev => ({
+                    ...prev,
+                    valuation_date: inputValue // Store in ISO format directly
+                  }));
                 }}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
