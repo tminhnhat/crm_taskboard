@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useCollaterals } from '@/hooks/useCollaterals'
 import { Collateral } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/currency'
@@ -129,29 +129,23 @@ export default function CollateralsPage() {
     })
   }, [collaterals, filters])
 
-  // Memoize pagination calculations
-  const pagination = useMemo(() => {
-    const totalItems = filteredCollaterals.length;
-    const totalPages = Math.ceil(totalItems / collateralsPerPage);
+  // Memoize total pages calculation
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredCollaterals.length / collateralsPerPage);
+  }, [filteredCollaterals.length, collateralsPerPage]);
+
+  // Memoize current page items
+  const currentItems = useMemo(() => {
     const startIndex = (currentPage - 1) * collateralsPerPage;
-    const endIndex = startIndex + collateralsPerPage;
-    const currentItems = filteredCollaterals.slice(startIndex, endIndex);
-    
-    return {
-      totalItems,
-      totalPages,
-      currentItems,
-      startIndex,
-      endIndex
-    };
+    return filteredCollaterals.slice(startIndex, startIndex + collateralsPerPage);
   }, [filteredCollaterals, currentPage, collateralsPerPage]);
 
-  // Ensure current page is valid
+  // Reset page when filters change or if current page is invalid
   useEffect(() => {
-    if (currentPage > Math.ceil(filteredCollaterals.length / collateralsPerPage)) {
+    if (currentPage > totalPages) {
       setCurrentPage(1);
     }
-  }, [filteredCollaterals.length, collateralsPerPage, currentPage]);
+  }, [totalPages, currentPage]);
 
   const handleNewCollateral = () => {
     setEditingCollateral(null)
@@ -192,10 +186,10 @@ export default function CollateralsPage() {
     setEditingCollateral(null)
   }
 
-    const handleFiltersChange = (newFilters: any) => {
-    setFilters(newFilters)
-    setCurrentPage(1) // Reset to first page when filters change
-  }
+    const handleFiltersChange = useCallback((newFilters: any) => {
+      setFilters(newFilters);
+      setCurrentPage(1); // Reset to first page when filters change
+    }, [])
 
   if (loading) {
     return (
@@ -310,7 +304,7 @@ export default function CollateralsPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {pagination.currentItems.map((collateral) => (
+              {currentItems.map((collateral: Collateral) => (
                 <CollateralCard
                   key={collateral.collateral_id}
                   collateral={collateral}
@@ -321,7 +315,7 @@ export default function CollateralsPage() {
             </div>
 
             {/* Pagination */}
-            {pagination.totalPages > 1 && (
+            {totalPages > 1 && (
               <div className="mt-8 flex justify-center">
                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                   <button
@@ -337,27 +331,29 @@ export default function CollateralsPage() {
                     Trước
                   </button>
                   
-                  {Array.from({ length: pagination.totalPages }, (_, index) => (
-                    <button
-                      type="button"
-                      key={index + 1}
-                      onClick={() => setCurrentPage(index + 1)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        currentPage === index + 1
-                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
+                  {useMemo(() => (
+                    Array.from({ length: totalPages }, (_, index) => (
+                      <button
+                        type="button"
+                        key={index + 1}
+                        onClick={() => setCurrentPage(index + 1)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          currentPage === index + 1
+                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {index + 1}
+                      </button>
+                    ))
+                  ), [totalPages, currentPage])}
                   
                   <button
                     type="button"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.totalPages))}
-                    disabled={currentPage === pagination.totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
                     className={`relative inline-flex items-center px-2 py-2 rounded-r-md border ${
-                      currentPage === pagination.totalPages
+                      currentPage === totalPages
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         : 'bg-white text-gray-500 hover:bg-gray-50'
                     } text-sm font-medium`}
