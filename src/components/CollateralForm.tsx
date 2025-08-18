@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Collateral, Customer } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
 import JsonInputHelper from './JsonInputHelper'
-import { toVNDate, toISODate } from '@/lib/date'
+import { toVNDate } from '@/lib/date'
 
 interface CollateralFormProps {
   collateral?: Collateral | null;
