@@ -189,23 +189,66 @@ export default function CollateralForm({
           <div className="relative">
             <div className="flex gap-2 items-center">
               <input
-                type="date"
+                type="text"
                 name="valuation_date"
-                value={formState.valuation_date}
+                value={formState.valuation_date ? toVNDate(formState.valuation_date) : ''}
                 onChange={(e) => {
-                  const inputValue = e.target.value;
-                  if (!inputValue) return;
+                  let inputValue = e.target.value;
+                  
+                  // Remove any non-digit characters except slashes
+                  inputValue = inputValue.replace(/[^\d/]/g, '');
+                  
+                  // Don't process if longer than 10 characters
+                  if (inputValue.length > 10) return;
+                  
+                  // Auto-format as user types
+                  const digits = inputValue.replace(/\D/g, '');
+                  
+                  // Format with slashes
+                  if (digits.length > 4) {
+                    inputValue = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+                  } else if (digits.length > 2) {
+                    inputValue = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+                  } else {
+                    inputValue = digits;
+                  }
 
-                  // Validate the date using the built-in Date object
-                  const date = new Date(inputValue);
-                  if (date.toString() === 'Invalid Date') return;
+                  // For incomplete input, just show what they're typing
+                  if (!inputValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                    setFormState(prev => ({
+                      ...prev,
+                      valuation_date: '' // Clear ISO date if input is incomplete
+                    }));
+                    e.target.value = inputValue; // Show what they're typing
+                    return;
+                  }
 
-                  setFormState(prev => ({
-                    ...prev,
-                    valuation_date: inputValue // Store in ISO format directly
-                  }));
+                  // Convert to ISO format when input is complete
+                  try {
+                    const [day, month, year] = inputValue.split('/').map(Number);
+                    // Validate date parts
+                    if (month < 1 || month > 12) return;
+                    if (day < 1 || day > 31) return;
+                    if (year < 1900 || year > 2100) return;
+                    
+                    // Create ISO date string
+                    const isoDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                    
+                    // Validate the resulting date
+                    const date = new Date(isoDate);
+                    if (date.toString() === 'Invalid Date') return;
+                    
+                    setFormState(prev => ({
+                      ...prev,
+                      valuation_date: isoDate
+                    }));
+                  } catch {
+                    // Invalid date - do nothing
+                  }
                 }}
+                placeholder="dd/mm/yyyy"
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                maxLength={10}
               />
               <button
                 type="button"
@@ -225,9 +268,6 @@ export default function CollateralForm({
               >
                 Hôm nay
               </button>
-              <div className="text-sm text-gray-500">
-                {formState.valuation_date && toVNDate(formState.valuation_date)}
-              </div>
             </div>
           </div>
           {formState.valuation_date && !formState.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/) && (
