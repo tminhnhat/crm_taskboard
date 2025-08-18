@@ -30,6 +30,8 @@ export default function CollateralsPage() {
 
   const [showForm, setShowForm] = useState(false)
   const [editingCollateral, setEditingCollateral] = useState<Collateral | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const collateralsPerPage = 9 // 3x3 grid layout
   const [filters, setFilters] = useState({
     search: '',
     type: '',
@@ -166,8 +168,9 @@ export default function CollateralsPage() {
     setEditingCollateral(null)
   }
 
-  const handleFiltersChange = (newFilters: typeof filters) => {
+    const handleFiltersChange = (newFilters: any) => {
     setFilters(newFilters)
+    setCurrentPage(1) // Reset to first page when filters change
   }
 
   if (loading) {
@@ -281,16 +284,67 @@ export default function CollateralsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredCollaterals.map((collateral) => (
-              <CollateralCard
-                key={collateral.collateral_id}
-                collateral={collateral}
-                onEdit={handleEditCollateral}
-                onDelete={handleDeleteCollateral}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredCollaterals
+                .slice((currentPage - 1) * collateralsPerPage, currentPage * collateralsPerPage)
+                .map((collateral) => (
+                  <CollateralCard
+                    key={collateral.collateral_id}
+                    collateral={collateral}
+                    onEdit={handleEditCollateral}
+                    onDelete={handleDeleteCollateral}
+                  />
+                ))}
+            </div>
+
+            {/* Pagination */}
+            {filteredCollaterals.length > collateralsPerPage && (
+              <div className="mt-8 flex justify-center">
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border ${
+                      currentPage === 1
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                    } text-sm font-medium`}
+                  >
+                    Trước
+                  </button>
+                  
+                  {[...Array(Math.ceil(filteredCollaterals.length / collateralsPerPage))].map((_, index) => (
+                    <button
+                      key={index + 1}
+                      onClick={() => setCurrentPage(index + 1)}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        currentPage === index + 1
+                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => 
+                      Math.min(prev + 1, Math.ceil(filteredCollaterals.length / collateralsPerPage))
+                    )}
+                    disabled={currentPage === Math.ceil(filteredCollaterals.length / collateralsPerPage)}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border ${
+                      currentPage === Math.ceil(filteredCollaterals.length / collateralsPerPage)
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                    } text-sm font-medium`}
+                  >
+                    Sau
+                  </button>
+                </nav>
+              </div>
+            )}
+          </>
         )}
 
         {/* Collateral Form Modal */}
