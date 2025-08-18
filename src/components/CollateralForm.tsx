@@ -211,62 +211,58 @@ export default function CollateralForm({
             Ngày định giá
           </label>
           <div className="relative">
-            <input
-              type="text"
-              name="valuation_date"
-              value={formatDateForDisplay(formState.valuation_date)}
-              onChange={(e) => {
-                let inputValue = e.target.value;
-                
-                // Only allow digits and slashes
-                inputValue = inputValue.replace(/[^\d/]/g, '');
-                
-                // Don't process if longer than 10 characters
-                if (inputValue.length > 10) return;
-                
-                // Auto-format as user types
-                const digits = inputValue.replace(/\D/g, '');
-                
-                // Format with slashes
-                if (digits.length > 4) {
-                  inputValue = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-                } else if (digits.length > 2) {
-                  inputValue = `${digits.slice(0, 2)}/${digits.slice(2)}`;
-                } else {
-                  inputValue = digits;
-                }
-                
-                // Update state with either formatted date or partial input
-                if (inputValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-                  const dbFormat = formatDateForDB(inputValue);
-                  if (dbFormat) {
+            <div className="flex gap-2 items-center">
+              <input
+                type="date"
+                name="valuation_date"
+                value={formState.valuation_date}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  if (!inputValue) return;
+
+                  try {
+                    // Validate the date using the built-in Date object
+                    const date = new Date(inputValue);
+                    if (date.toString() === 'Invalid Date') return;
+
                     setFormState(prev => ({
                       ...prev,
-                      valuation_date: dbFormat
+                      valuation_date: inputValue // Store in ISO format directly
                     }));
+                  } catch (error) {
+                    // Invalid date - do nothing
                   }
-                } else {
+                }}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, '0');
+                  const day = String(today.getDate()).padStart(2, '0');
+                  const isoDate = `${year}-${month}-${day}`;
+                  
                   setFormState(prev => ({
                     ...prev,
-                    valuation_date: inputValue
+                    valuation_date: isoDate
                   }));
-                }
-              }}
-              placeholder="dd/mm/yyyy"
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              maxLength={10}
-            />
-            {formState.valuation_date && !formState.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/) && (
-              <p className="mt-1 text-sm text-red-500">
-                Vui lòng nhập ngày theo định dạng dd/mm/yyyy (VD: 31/12/2025)
-              </p>
-            )}
-            {formState.valuation_date && formState.valuation_date.includes('/') && !formState.valuation_date.match(/^\d{2}\/\d{2}\/\d{4}$/) && (
-              <p className="mt-1 text-sm text-red-500">
-                Ngày chưa đúng định dạng, vui lòng nhập đầy đủ
-              </p>
-            )}
+                }}
+                className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Hôm nay
+              </button>
+              <div className="text-sm text-gray-500">
+                {formState.valuation_date && toVNDate(formState.valuation_date)}
+              </div>
+            </div>
           </div>
+          {formState.valuation_date && !formState.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/) && (
+            <p className="mt-1 text-sm text-red-500">
+              Vui lòng chọn ngày hợp lệ
+            </p>
+          )}
         </div>
 
         {/* Status */}
