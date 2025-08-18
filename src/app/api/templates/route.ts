@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import { put, list, del } from '@vercel/blob';
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 import { Template } from '@/types/templates';
+
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.REDIS_URL || '',
+  token: process.env.REDIS_TOKEN || ''
+});
 
 export async function GET() {
   try {
-    // Get templates metadata from KV store
-    const templates = await kv.get<Template[]>('document_templates') || [];
+    // Get templates metadata from Redis
+    const templates = await redis.get<Template[]>('document_templates') || [];
     return NextResponse.json(templates);
   } catch (error) {
     console.error('Error fetching templates:', error);
@@ -49,9 +55,9 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString()
     };
 
-    const templates = await kv.get<Template[]>('document_templates') || [];
+    const templates = await redis.get<Template[]>('document_templates') || [];
     templates.push(template as Template);
-    await kv.set('document_templates', templates);
+    await redis.set('document_templates', templates);
 
     return NextResponse.json(template);
   } catch (error) {
@@ -66,8 +72,8 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   try {
     const { id } = await req.json();
-    const templates = await kv.get<Template[]>('document_templates') || [];
-    const templateIndex = templates.findIndex(t => t.id === id);
+    const templates = await redis.get<Template[]>('document_templates') || [];
+    const templateIndex = templates.findIndex((t: Template) => t.id === id);
     
     if (templateIndex === -1) {
       return NextResponse.json(
@@ -81,9 +87,9 @@ export async function DELETE(req: Request) {
     // Delete from Vercel Blob
     await del(template.url);
     
-    // Remove from KV store
+    // Remove from Redis
     templates.splice(templateIndex, 1);
-    await kv.set('document_templates', templates);
+    await redis.set('document_templates', templates);
 
     return NextResponse.json({ message: 'Template deleted successfully' });
   } catch (error) {

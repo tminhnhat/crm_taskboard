@@ -6,7 +6,7 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import * as XLSX from 'xlsx';
 import nodemailer from 'nodemailer';
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 import { 
   Template, 
   TemplateWithData, 
@@ -14,6 +14,12 @@ import {
   XlsxTemplateData, 
   GeneratedFile 
 } from '@/types/templates';
+
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.REDIS_URL || '',
+  token: process.env.REDIS_TOKEN || ''
+});
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
@@ -46,8 +52,8 @@ export async function POST(req: Request) {
     for (const template of templates) {
       const { id, type, data: templateData } = template;
       
-      // Get template metadata from KV store
-      const allTemplates = await kv.get('document_templates') as any[] || [];
+      // Get template metadata from Redis
+      const allTemplates = await redis.get('document_templates') as any[] || [];
       const templateInfo = allTemplates.find(t => t.id === id);
       
       if (!templateInfo) {
