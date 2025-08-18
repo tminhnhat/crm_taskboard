@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useCollaterals } from '@/hooks/useCollaterals'
 import { Collateral } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/currency'
@@ -128,6 +128,30 @@ export default function CollateralsPage() {
       return matchesSearch && matchesType && matchesStatus && matchesCustomer && matchesValueRange && matchesDateRange
     })
   }, [collaterals, filters])
+
+  // Memoize pagination calculations
+  const pagination = useMemo(() => {
+    const totalItems = filteredCollaterals.length;
+    const totalPages = Math.ceil(totalItems / collateralsPerPage);
+    const startIndex = (currentPage - 1) * collateralsPerPage;
+    const endIndex = startIndex + collateralsPerPage;
+    const currentItems = filteredCollaterals.slice(startIndex, endIndex);
+    
+    return {
+      totalItems,
+      totalPages,
+      currentItems,
+      startIndex,
+      endIndex
+    };
+  }, [filteredCollaterals, currentPage, collateralsPerPage]);
+
+  // Ensure current page is valid
+  useEffect(() => {
+    if (currentPage > Math.ceil(filteredCollaterals.length / collateralsPerPage)) {
+      setCurrentPage(1);
+    }
+  }, [filteredCollaterals.length, collateralsPerPage, currentPage]);
 
   const handleNewCollateral = () => {
     setEditingCollateral(null)
@@ -286,23 +310,22 @@ export default function CollateralsPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredCollaterals
-                .slice((currentPage - 1) * collateralsPerPage, currentPage * collateralsPerPage)
-                .map((collateral) => (
-                  <CollateralCard
-                    key={collateral.collateral_id}
-                    collateral={collateral}
-                    onEdit={handleEditCollateral}
-                    onDelete={handleDeleteCollateral}
-                  />
-                ))}
+              {pagination.currentItems.map((collateral) => (
+                <CollateralCard
+                  key={collateral.collateral_id}
+                  collateral={collateral}
+                  onEdit={handleEditCollateral}
+                  onDelete={handleDeleteCollateral}
+                />
+              ))}
             </div>
 
             {/* Pagination */}
-            {filteredCollaterals.length > collateralsPerPage && (
+            {pagination.totalPages > 1 && (
               <div className="mt-8 flex justify-center">
                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                   <button
+                    type="button"
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
                     className={`relative inline-flex items-center px-2 py-2 rounded-l-md border ${
@@ -314,8 +337,9 @@ export default function CollateralsPage() {
                     Trước
                   </button>
                   
-                  {[...Array(Math.ceil(filteredCollaterals.length / collateralsPerPage))].map((_, index) => (
+                  {Array.from({ length: pagination.totalPages }, (_, index) => (
                     <button
+                      type="button"
                       key={index + 1}
                       onClick={() => setCurrentPage(index + 1)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
@@ -329,12 +353,11 @@ export default function CollateralsPage() {
                   ))}
                   
                   <button
-                    onClick={() => setCurrentPage(prev => 
-                      Math.min(prev + 1, Math.ceil(filteredCollaterals.length / collateralsPerPage))
-                    )}
-                    disabled={currentPage === Math.ceil(filteredCollaterals.length / collateralsPerPage)}
+                    type="button"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.totalPages))}
+                    disabled={currentPage === pagination.totalPages}
                     className={`relative inline-flex items-center px-2 py-2 rounded-r-md border ${
-                      currentPage === Math.ceil(filteredCollaterals.length / collateralsPerPage)
+                      currentPage === pagination.totalPages
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         : 'bg-white text-gray-500 hover:bg-gray-50'
                     } text-sm font-medium`}
