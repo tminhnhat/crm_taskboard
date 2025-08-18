@@ -12,14 +12,21 @@
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.51.0",
+    "@vercel/blob": "^1.1.1",
+    "docx": "^9.5.1",
+    "docxtemplater": "^3.65.3",
     "next": "15.3.5",
+    "nodemailer": "^7.0.5",
+    "pizzip": "^3.2.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.9",
+    "@types/nodemailer": "^7.0.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19",
     "eslint": "^9",

@@ -11,7 +11,8 @@ import {
   CubeIcon,
   UserIcon,
   DocumentTextIcon,
-  HomeIcon
+  HomeIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/react/24/outline'
 
 export default function Navigation() {
@@ -25,6 +26,7 @@ export default function Navigation() {
     { name: 'Nhân Viên', href: '/staff', icon: UserIcon },
     { name: 'Hợp Đồng', href: '/contracts', icon: DocumentTextIcon },
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: HomeIcon },
+    { name: 'Quản Lý Tài Liệu', href: '/documents', icon: DocumentDuplicateIcon },
   ]
 
   return (
