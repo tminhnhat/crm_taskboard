@@ -5,8 +5,8 @@ import { Template } from '@/types/templates';
 
 // Initialize Redis client
 const redis = new Redis({
-  url: process.env.REDIS_URL || '',
-  token: process.env.REDIS_TOKEN || ''
+  url: 'https://redis-12583.c295.ap-southeast-1-1.ec2.redns.redis-cloud.com:12583',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || ''
 });
 
 export async function GET() {
