@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react'
 import { Contract, Customer, Product, Staff } from '@/lib/supabase'
 import JsonInputHelper from './JsonInputHelper'
+import { Dialog } from '@headlessui/react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 interface ContractFormProps {
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (contractData: Partial<Contract>) => void
   contract?: Contract | null
-  onSave: (contractData: Partial<Contract>) => void
-  onCancel: () => void
   isLoading?: boolean
   checkContractNumberExists: (contractNumber: string, excludeId?: number) => Promise<boolean>
   fetchCustomers: () => Promise<Customer[]>
@@ -16,9 +19,10 @@ interface ContractFormProps {
 }
 
 export default function ContractForm({ 
+  isOpen,
+  onClose,
+  onSubmit,
   contract, 
-  onSave, 
-  onCancel, 
   isLoading,
   checkContractNumberExists,
   fetchCustomers,
@@ -202,7 +206,7 @@ export default function ContractForm({
       metadata: Object.keys(parsedMetadata).length > 0 ? parsedMetadata : null
     }
 
-    onSave(cleanedData)
+    onSubmit(cleanedData)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -249,12 +253,35 @@ export default function ContractForm({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            {contract ? 'Chỉnh Sửa Hợp Đồng' : 'Thêm Hợp Đồng Mới'}
-          </h2>
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      className="fixed inset-0 z-10 overflow-y-auto"
+    >
+      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+
+        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+          &#8203;
+        </span>
+
+        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6">
+          <div className="absolute top-0 right-0 pt-4 pr-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <span className="sr-only">Đóng</span>
+              <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+
+          <div className="sm:flex sm:items-start">
+            <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+              <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                {contract ? 'Chỉnh Sửa Hợp Đồng' : 'Thêm Hợp Đồng Mới'}
+              </Dialog.Title>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -488,15 +515,17 @@ export default function ContractForm({
               </button>
               <button
                 type="button"
-                onClick={onCancel}
+                onClick={onClose}
                 className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
                 Hủy
               </button>
             </div>
           </form>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Dialog>
   )
 }
