@@ -5,19 +5,23 @@ import { Collateral, Customer } from '@/lib/supabase'
 import MetadataForm from './MetadataForm'
 import JsonInputHelper from './JsonInputHelper'
 import { toVNDate } from '@/lib/date'
+import { Dialog } from '@headlessui/react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 interface CollateralFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (collateralData: Partial<Collateral>) => void;
   collateral?: Collateral | null;
-  onSave: (collateralData: Partial<Collateral>) => void;
-  onCancel: () => void;
   isLoading?: boolean;
   fetchCustomers: () => Promise<Customer[]>;
 }
 
 export default function CollateralForm({
+  isOpen,
+  onClose,
+  onSubmit,
   collateral,
-  onSave,
-  onCancel,
   isLoading,
   fetchCustomers
 }: CollateralFormProps) {
@@ -80,7 +84,7 @@ export default function CollateralForm({
       metadata: formState.metadata
     }
 
-    onSave(collateralData)
+    onSubmit(collateralData)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -108,8 +112,38 @@ export default function CollateralForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      className="fixed inset-0 z-10 overflow-y-auto"
+    >
+      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+
+        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+          &#8203;
+        </span>
+
+        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6">
+          <div className="absolute top-0 right-0 pt-4 pr-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <span className="sr-only">Đóng</span>
+              <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+
+          <div className="sm:flex sm:items-start">
+            <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+              <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                {collateral ? 'Cập Nhật Tài Sản' : 'Thêm Tài Sản Mới'}
+              </Dialog.Title>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Customer Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -471,24 +505,29 @@ export default function CollateralForm({
         </div>
       </div>
 
-      {/* Form Actions */}
-      <div className="flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isLoading}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Hủy
-        </button>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          {isLoading ? 'Đang lưu...' : collateral ? 'Cập nhật' : 'Tạo mới'}
-        </button>
+                {/* Form Actions */}
+                <div className="flex justify-end space-x-4">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={isLoading}
+                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    {isLoading ? 'Đang lưu...' : collateral ? 'Cập nhật' : 'Tạo mới'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
-    </form>
+    </Dialog>
   )
 }

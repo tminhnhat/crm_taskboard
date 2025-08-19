@@ -130,10 +130,15 @@ export default function CollateralsPage() {
 
 
 
-  const handleNewCollateral = useCallback(() => {
-    setEditingCollateral(null);
-    setShowForm(true);
-  }, []);
+    const handleCloseForm = () => {
+    setShowForm(false)
+    setEditingCollateral(null)
+  }
+
+  const handleNewCollateral = () => {
+    setEditingCollateral(null)
+    setShowForm(true)
+  }
 
   const handleEditCollateral = useCallback((collateral: Collateral) => {
     setEditingCollateral(collateral);
@@ -299,15 +304,14 @@ export default function CollateralsPage() {
         )}
 
         {/* Collateral Form Modal */}
-        {showForm && (
-          <CollateralForm
-            collateral={editingCollateral}
-            onSave={handleSaveCollateral}
-            onCancel={handleCancelForm}
-            isLoading={loading}
-            fetchCustomers={fetchCustomers}
-          />
-        )}
+        <CollateralForm
+          isOpen={showForm}
+          onClose={handleCloseForm}
+          onSubmit={handleSaveCollateral}
+          collateral={editingCollateral}
+          isLoading={loading}
+          fetchCustomers={fetchCustomers}
+        />
       </div>
     </div>
   )
