@@ -435,18 +435,17 @@ export default function ContractsPage() {
         )}
 
         {/* Contract Form Modal */}
-        {showForm && (
-          <ContractForm
-            contract={editingContract}
-            onSave={handleSaveContract}
-            onCancel={handleCancelForm}
-            isLoading={loading}
-            checkContractNumberExists={checkContractNumberExists}
-            fetchCustomers={fetchCustomers}
-            fetchProducts={fetchProducts}
-            fetchStaff={fetchStaff}
-          />
-        )}
+        <ContractForm
+          isOpen={showForm}
+          onClose={handleCancelForm}
+          onSubmit={handleSaveContract}
+          contract={editingContract}
+          isLoading={loading}
+          checkContractNumberExists={checkContractNumberExists}
+          fetchCustomers={fetchCustomers}
+          fetchProducts={fetchProducts}
+          fetchStaff={fetchStaff}
+        />
       </div>
     </div>
   )
