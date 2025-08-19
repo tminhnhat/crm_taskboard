@@ -6,9 +6,9 @@ import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import CreditAssessmentCard from '@/components/CreditAssessmentCard'
 import CreditAssessmentForm from '@/components/CreditAssessmentForm'
 import useCreditAssessments from '@/hooks/useCreditAssessments'
-import useCustomers from '@/hooks/useCustomers'
-import useStaff from '@/hooks/useStaff'
-import useProducts from '@/hooks/useProducts'
+import { useCustomers } from '@/hooks/useCustomers'
+import { useStaff } from '@/hooks/useStaff'
+import { useProducts } from '@/hooks/useProducts'
 
 export default function AssessmentsPage() {
   const [showForm, setShowForm] = useState(false)
@@ -25,9 +25,9 @@ export default function AssessmentsPage() {
     deleteAssessment
   } = useCreditAssessments()
 
-  const { fetchCustomers } = useCustomers()
-  const { fetchStaff } = useStaff()
-  const { fetchProducts } = useProducts()
+  const { customers } = useCustomers()
+  const { staff } = useStaff()
+  const { products } = useProducts()
 
   const [assessments, setAssessments] = useState<any[]>([])
 
@@ -146,9 +146,9 @@ export default function AssessmentsPage() {
           onSubmit={selectedAssessment ? handleUpdateAssessment : handleCreateAssessment}
           assessment={selectedAssessment}
           isLoading={isLoading}
-          fetchCustomers={fetchCustomers}
-          fetchStaff={fetchStaff}
-          fetchProducts={fetchProducts}
+          customers={customers}
+          staff={staff}
+          products={products}
         />
       )}
 

@@ -14,9 +14,9 @@ interface CreditAssessmentFormProps {
   onSubmit: (data: any) => void;
   assessment?: any;
   isLoading?: boolean;
-  fetchCustomers: () => Promise<any[]>;
-  fetchStaff: () => Promise<any[]>;
-  fetchProducts: () => Promise<any[]>;
+  customers: any[];
+  staff: any[];
+  products: any[];
 }
 
 export default function CreditAssessmentForm({
@@ -25,9 +25,9 @@ export default function CreditAssessmentForm({
   onSubmit,
   assessment,
   isLoading,
-  fetchCustomers,
-  fetchStaff,
-  fetchProducts
+  customers,
+  staff,
+  products
 }: CreditAssessmentFormProps) {
 
   const [formState, setFormState] = useState({
@@ -46,27 +46,7 @@ export default function CreditAssessmentForm({
     metadata: assessment?.metadata || {}
   })
 
-  const [customers, setCustomers] = useState<any[]>([])
-  const [staff, setStaff] = useState<any[]>([])
-  const [products, setProducts] = useState<any[]>([])
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [customersData, staffData, productsData] = await Promise.all([
-          fetchCustomers(),
-          fetchStaff(),
-          fetchProducts()
-        ])
-        setCustomers(customersData)
-        setStaff(staffData)
-        setProducts(productsData)
-      } catch (error) {
-        console.error('Error loading data:', error)
-      }
-    }
-    loadData()
-  }, [fetchCustomers, fetchStaff, fetchProducts])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
