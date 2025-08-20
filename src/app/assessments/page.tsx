@@ -5,6 +5,7 @@ import { Dialog } from '@headlessui/react'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import CreditAssessmentCard from '@/components/CreditAssessmentCard'
 import CreditAssessmentForm from '@/components/CreditAssessmentForm'
+import Navigation from '@/components/Navigation'
 import useCreditAssessments from '@/hooks/useCreditAssessments'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useStaff } from '@/hooks/useStaff'
@@ -75,47 +76,51 @@ export default function AssessmentsPage() {
   })
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Thẩm định tín dụng</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Quản lý các thẩm định tín dụng cho khách hàng
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Thẩm định tín dụng</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Quản lý các thẩm định tín dụng cho khách hàng
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              setSelectedAssessment(null)
+              setShowForm(true)
+            }}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+          >
+            Thẩm định mới
+          </button>
         </div>
 
-        <button
-          onClick={() => {
-            setSelectedAssessment(null)
-            setShowForm(true)
-          }}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
-        >
-          Thẩm định mới
-        </button>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="flex items-center max-w-lg">
-          <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="flex items-center max-w-lg">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Tìm kiếm thẩm định..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
             </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm kiếm thẩm định..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
           </div>
         </div>
-      </div>
 
-      {/* Assessment List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredAssessments.map(assessment => (
+        {/* Assessment List */}
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredAssessments.map(assessment => (
           <CreditAssessmentCard
             key={assessment.assessment_id}
             assessment={assessment}
@@ -132,8 +137,10 @@ export default function AssessmentsPage() {
               setShowDeleteDialog(true)
             }}
           />
-        ))}
-      </div>
+            ))}
+          </div>
+        </div>
+      </main>
 
       {/* Assessment Form Dialog */}
       {showForm && (
