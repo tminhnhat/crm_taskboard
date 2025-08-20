@@ -1,11 +1,35 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import DocumentGenerator from '@/components/DocumentGenerator'
 import TemplateManager from '@/components/TemplateManager'
 import Navigation from '@/components/Navigation'
 import { DocumentTextIcon } from '@heroicons/react/24/outline'
+import { TemplateWithData } from '@/types/templates'
 
 export default function DocumentsPage() {
+  const [templates, setTemplates] = useState<TemplateWithData[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await fetch('/api/templates')
+        if (!response.ok) {
+          throw new Error('Failed to fetch templates')
+        }
+        const data = await response.json()
+        setTemplates(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load templates')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTemplates()
+  }, [])
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -32,9 +56,17 @@ export default function DocumentsPage() {
         <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Tạo Tài Liệu Mới</h2>
           <div className="space-y-4">
-            <DocumentGenerator
-              templates={[]} // Templates will be loaded dynamically from the API
-            />
+            {isLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 text-red-700 p-4 rounded-md">
+                {error}
+              </div>
+            ) : (
+              <DocumentGenerator templates={templates} />
+            )}
           </div>
         </div>
 
