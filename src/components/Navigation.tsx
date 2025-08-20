@@ -12,7 +12,6 @@ import {
   UserIcon,
   DocumentTextIcon,
   HomeIcon,
-  DocumentDuplicateIcon,
   DocumentMagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 
@@ -28,7 +27,6 @@ export default function Navigation() {
     { name: 'Hợp Đồng', href: '/contracts', icon: DocumentTextIcon },
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: HomeIcon },
     { name: 'Thẩm Định', href: '/assessments', icon: DocumentMagnifyingGlassIcon },
-    { name: 'Quản Lý Tài Liệu', href: '/documents', icon: DocumentDuplicateIcon },
   ]
 
   return (
