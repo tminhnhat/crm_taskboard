@@ -6,10 +6,35 @@ import { put, list, del } from '@vercel/blob';
  * @returns Buffer nội dung file
  */
 export async function fetchTemplateFromVercelBlob(path: string): Promise<Buffer> {
-  const response = await fetch(`https://blob.vercel-storage.com/${path}`);
-  if (!response.ok) throw new Error('Không thể tải template từ blob');
-  const arrayBuffer = await response.arrayBuffer();
-  return Buffer.from(arrayBuffer);
+  try {
+    // Lấy danh sách blob để tìm URL chính xác
+    const { blobs } = await list({
+      prefix: path.split('/')[0], // Lấy folder prefix (vd: 'maubieu')
+      limit: 100
+    });
+    
+    // Tìm blob có pathname khớp
+    const targetBlob = blobs.find((blob: any) => blob.pathname === path);
+    
+    if (!targetBlob) {
+      console.error(`Template không tìm thấy: ${path}`);
+      console.error('Available templates:', blobs.map((b: any) => b.pathname));
+      throw new Error(`Template không tìm thấy: ${path}`);
+    }
+    
+    // Sử dụng URL chính xác từ blob metadata
+    const response = await fetch(targetBlob.url);
+    
+    if (!response.ok) {
+      throw new Error(`Không thể tải template: ${response.status} ${response.statusText}`);
+    }
+    
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch (error) {
+    console.error('Error fetching template from blob:', error);
+    throw new Error(`Không thể tải template từ blob: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**
@@ -65,7 +90,7 @@ export async function fetchTemplatesListFromVercelBlob(folderPath: string): Prom
 }
 
 /**
- * Upload template lên Vercel Blob Storage
+ * Upload template lên Vercel Blob Storage từ browser
  * @param file File object (browser)
  * @param blobPath Đường dẫn blob (ví dụ: 'maubieu/hop_dong_tin_dung.docx')
  * @returns url blob
@@ -74,6 +99,19 @@ export async function uploadTemplateToVercelBlob(file: File, blobPath: string): 
   // Chỉ hỗ trợ upload từ browser (File)
   // put(path, file, { access: 'public' })
   const { url } = await put(blobPath, file, { access: 'public' });
+  return url;
+}
+
+/**
+ * Upload template lên Vercel Blob Storage từ server (Node.js)
+ * @param filePath Đường dẫn file trên server
+ * @param blobPath Đường dẫn blob (ví dụ: 'maubieu/hop_dong_tin_dung.docx')
+ * @returns url blob
+ */
+export async function uploadTemplateFromServerToVercelBlob(filePath: string, blobPath: string): Promise<string> {
+  const fs = await import('fs');
+  const fileBuffer = fs.readFileSync(filePath);
+  const { url } = await put(blobPath, fileBuffer, { access: 'public' });
   return url;
 }
 

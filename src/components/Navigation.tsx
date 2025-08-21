@@ -28,6 +28,8 @@ export default function Navigation() {
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: HomeIcon },
     { name: 'Thẩm Định', href: '/assessments', icon: DocumentMagnifyingGlassIcon },
     { name: 'Tài liệu', href: '/dashboard/documents', icon: DocumentTextIcon },
+    { name: 'Templates', href: '/dashboard/templates', icon: DocumentTextIcon },
+    { name: 'Debug', href: '/debug', icon: DocumentMagnifyingGlassIcon },
   ]
 
   return (
