@@ -1,16 +1,51 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yufuxgibfmkqtvvlprmv.supabase.co'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || 'sb_publishable_dhy8sr7DbQ1hIxx2H6Nd-Q_HWYH4Xe0'
 
-// Create Supabase client with schema configuration
-// This configures the client to use the 'dulieu_congviec' schema by default
-// so all table references like .from('tasks') will automatically point to dulieu_congviec.tasks
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  db: {
-    schema: 'dulieu_congviec'
+// Create client with error handling for invalid keys
+let supabase: any;
+
+try {
+  // Only create real client if we have valid credentials
+  if (supabaseUrl.includes('demo') || supabaseKey.includes('demo') || supabaseKey.includes('sb_publishable')) {
+    console.log('Using mock Supabase client (demo credentials detected)');
+    // Create a mock client that returns empty results
+    supabase = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single: () => Promise.resolve({ data: null, error: new Error('Mock client - no data') })
+          }),
+          order: () => Promise.resolve({ data: [], error: null })
+        })
+      })
+    };
+  } else {
+    // This configures the client to use the 'dulieu_congviec' schema by default
+    // so all table references like .from('tasks') will automatically point to dulieu_congviec.tasks
+    supabase = createClient(supabaseUrl, supabaseKey, {
+      db: {
+        schema: 'dulieu_congviec'
+      }
+    });
   }
-})
+} catch (error) {
+  console.error('Failed to create Supabase client:', error);
+  // Create mock client as fallback
+  supabase = {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: null, error: new Error('Supabase client error') })
+        }),
+        order: () => Promise.resolve({ data: [], error: null })
+      })
+    })
+  };
+}
+
+export { supabase }
 
 // TypeScript types for our database schema based on your SQL
 export type TaskStatusEnum = 'needsAction' | 'inProgress' | 'onHold' | 'completed' | 'cancelled' | 'deleted'

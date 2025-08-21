@@ -5,6 +5,7 @@ import PizZip from 'pizzip';
 import { fetchTemplateFromVercelBlob } from '@/lib/vercelBlob';
 import { ensureTemplatesExist } from '@/lib/templateSeeder';
 import { getMockCustomer, getMockCollateral, getMockCreditAssessment } from '@/lib/mockData';
+import { isSupabaseConfigured } from '@/lib/config';
 import fs from 'fs';
 import path from 'path';
 
@@ -30,6 +31,47 @@ function createFallbackTemplate(
   collateral: any, 
   creditAssessment: any
 ): Buffer {
+  // Create a simple Word document structure
+  const content = getFallbackContent(documentType);
+  
+  // Create minimal DOCX structure
+  const zip = new PizZip();
+  
+  // Add document.xml with template placeholders
+  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:t>${content}</w:t>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>`;
+
+  zip.file('word/document.xml', documentXml);
+  
+  // Add required DOCX structure files
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`);
+
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`);
+
+  zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`);
+
+  return zip.generate({ type: 'nodebuffer' });
+}
+
+function getFallbackContent(documentType: DocumentType): string {
   const templates = {
     hop_dong_tin_dung: `
 HỢP ĐỒNG TÍN DỤNG
@@ -116,7 +158,7 @@ Ngày lập: ${format(new Date(), 'dd/MM/yyyy')}
   };
 
   const content = templates[documentType] || templates.hop_dong_tin_dung;
-  return Buffer.from(content);
+  return content;
 }
 
 export interface GenerateDocumentResult {
@@ -138,36 +180,48 @@ export async function generateCreditDocument({
   // 1. Lấy dữ liệu từ database hoặc sử dụng mock data
   let customer, collateral = null, creditAssessment = null;
   
-  try {
-    // Try to get data from Supabase
-    const { data: customerData } = await supabase
-      .from('customers')
-      .select('*')
-      .eq('customer_id', customerId)
-      .single();
-    customer = customerData;
-    
-    if (collateralId) {
-      const { data } = await supabase
-        .from('collaterals')
+  if (isSupabaseConfigured()) {
+    try {
+      // Try to get data from Supabase
+      const { data: customerData } = await supabase
+        .from('customers')
         .select('*')
-        .eq('collateral_id', collateralId)
+        .eq('customer_id', customerId)
         .single();
-      collateral = data;
+      customer = customerData;
+      
+      if (collateralId) {
+        const { data } = await supabase
+          .from('collaterals')
+          .select('*')
+          .eq('collateral_id', collateralId)
+          .single();
+        collateral = data;
+      }
+      
+      if (creditAssessmentId) {
+        const { data } = await supabase
+          .from('credit_assessments')
+          .select('*')
+          .eq('assessment_id', creditAssessmentId)
+          .single();
+        creditAssessment = data;
+      }
+    } catch (error) {
+      console.log('Supabase query failed, using mock data:', error instanceof Error ? error.message : 'Unknown error');
+      
+      // Fallback to mock data
+      customer = getMockCustomer(customerId);
+      if (collateralId) {
+        collateral = getMockCollateral(collateralId);
+      }
+      if (creditAssessmentId) {
+        creditAssessment = getMockCreditAssessment(creditAssessmentId);
+      }
     }
-    
-    if (creditAssessmentId) {
-      const { data } = await supabase
-        .from('credit_assessments')
-        .select('*')
-        .eq('assessment_id', creditAssessmentId)
-        .single();
-      creditAssessment = data;
-    }
-  } catch (error) {
-    console.log('Supabase not available, using mock data:', error instanceof Error ? error.message : 'Unknown error');
-    
-    // Fallback to mock data
+  } else {
+    console.log('Supabase not configured, using mock data');
+    // Use mock data directly
     customer = getMockCustomer(customerId);
     if (collateralId) {
       collateral = getMockCollateral(collateralId);
@@ -175,9 +229,11 @@ export async function generateCreditDocument({
     if (creditAssessmentId) {
       creditAssessment = getMockCreditAssessment(creditAssessmentId);
     }
+    console.log('Mock customer found:', customer ? customer.full_name : 'null');
   }
 
   if (!customer) {
+    console.error('Customer not found for ID:', customerId);
     throw new Error('Customer not found');
   }
 
@@ -193,28 +249,46 @@ export async function generateCreditDocument({
     
     // Fallback: Tạo template cơ bản nếu không tìm thấy
     console.log(`Creating fallback template for ${documentType}`);
-    const basicTemplate = createFallbackTemplate(documentType, customer, collateral, creditAssessment);
-    templateBuffer = basicTemplate;
+    try {
+      const basicTemplate = createFallbackTemplate(documentType, customer, collateral, creditAssessment);
+      templateBuffer = basicTemplate;
+    } catch (fallbackError) {
+      console.error('Error creating fallback template:', fallbackError);
+      throw new Error(`Không thể tạo template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   // 3. Render template với dữ liệu
-  const zip = new PizZip(templateBuffer);
-  const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-  doc.render({ customer, collateral, creditAssessment });
-  const outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
+  try {
+    const zip = new PizZip(templateBuffer);
+    const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+    
+    // Prepare data for template
+    const templateData = {
+      customer: customer || {},
+      collateral: collateral || {},
+      creditAssessment: creditAssessment || {}
+    };
+    
+    doc.render(templateData);
+    const outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
 
-  // 4. Tạo filename và return buffer
-  const dateStr = format(new Date(), 'yyyyMMdd');
-  const fileName = `${documentType}_${customerId}_${dateStr}.${exportType}`;
-  
-  // 5. Return buffer thay vì lưu file
-  return {
-    buffer: outBuffer,
-    filename: fileName,
-    contentType: exportType === 'docx' 
-      ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      : 'application/pdf'
-  };
+    // 4. Tạo filename và return buffer
+    const dateStr = format(new Date(), 'yyyyMMdd');
+    const fileName = `${documentType}_${customerId}_${dateStr}.${exportType}`;
+    
+    // 5. Return buffer thay vì lưu file
+    return {
+      buffer: outBuffer,
+      filename: fileName,
+      contentType: exportType === 'docx' 
+        ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        : 'application/pdf'
+    };
+  } catch (renderError) {
+    console.error('Error rendering document:', renderError);
+    throw new Error(`Lỗi tạo tài liệu: ${renderError instanceof Error ? renderError.message : 'Unknown render error'}`);
+  }
 }
 
 // Hàm tìm kiếm & lọc tài liệu

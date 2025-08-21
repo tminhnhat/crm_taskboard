@@ -1,4 +1,5 @@
 import { uploadTemplateFromServerToVercelBlob, uploadBufferToVercelBlob } from '@/lib/vercelBlob';
+import { isBlobConfigured } from '@/lib/config';
 import fs from 'fs';
 import path from 'path';
 import PizZip from 'pizzip';
@@ -43,6 +44,12 @@ function createWordTemplate(content: string): Buffer {
  * Tạo các template mẫu cơ bản cho hệ thống
  */
 export async function seedBasicTemplates(): Promise<void> {
+  // Check if BLOB is configured
+  if (!isBlobConfigured()) {
+    console.log('Blob storage not configured. Skipping template upload.');
+    throw new Error('BLOB_READ_WRITE_TOKEN not configured. Cannot upload templates to Vercel Blob.');
+  }
+
   const templates = [
     {
       type: 'hop_dong_tin_dung',

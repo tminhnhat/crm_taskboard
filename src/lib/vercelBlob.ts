@@ -7,6 +7,11 @@ import { put, list, del } from '@vercel/blob';
  */
 export async function fetchTemplateFromVercelBlob(path: string): Promise<Buffer> {
   try {
+    // Check if BLOB_READ_WRITE_TOKEN exists
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error('BLOB_READ_WRITE_TOKEN not configured');
+    }
+    
     // Lấy danh sách blob để tìm URL chính xác
     const { blobs } = await list({
       prefix: path.split('/')[0], // Lấy folder prefix (vd: 'maubieu')
@@ -122,7 +127,10 @@ export async function uploadTemplateFromServerToVercelBlob(filePath: string, blo
  * @returns url blob
  */
 export async function uploadBufferToVercelBlob(buffer: Buffer, blobPath: string): Promise<string> {
-  const { url } = await put(blobPath, buffer, { access: 'public' });
+  const { url } = await put(blobPath, buffer, { 
+    access: 'public',
+    allowOverwrite: true 
+  });
   return url;
 }
 
