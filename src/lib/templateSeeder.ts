@@ -1,4 +1,4 @@
-import { uploadTemplateFromServerToVercelBlob } from '@/lib/vercelBlob';
+import { uploadTemplateFromServerToVercelBlob, uploadBufferToVercelBlob } from '@/lib/vercelBlob';
 import fs from 'fs';
 import path from 'path';
 import PizZip from 'pizzip';
@@ -123,37 +123,119 @@ Cán bộ thẩm định                     Trưởng phòng tín dụng
 
 __________________                   __________________
 `
+    },
+    {
+      type: 'giay_de_nghi_vay_von',
+      name: 'Giấy đề nghị vay vốn',
+      content: `
+GIẤY ĐỀ NGHỊ VAY VỐN
+
+THÔNG TIN KHÁCH HÀNG:
+- Họ và tên: {customer.full_name}
+- Số CCCD/CMND: {customer.id_number}
+- Số điện thoại: {customer.phone}
+- Email: {customer.email}
+- Địa chỉ: {customer.address}
+- Nghề nghiệp: {customer.occupation}
+
+{#creditAssessment}
+THÔNG TIN VAY VỐN:
+- Số tiền đề nghị vay: {creditAssessment.approved_amount} VNĐ
+- Mục đích sử dụng vốn: {creditAssessment.purpose}
+- Thời hạn vay: {creditAssessment.loan_term} tháng
+- Lãi suất mong muốn: {creditAssessment.interest_rate}%/năm
+{/creditAssessment}
+
+Ngày nộp đơn: ${new Date().toLocaleDateString('vi-VN')}
+
+Chữ ký người đề nghị
+
+
+__________________
+{customer.full_name}
+`
+    },
+    {
+      type: 'bien_ban_dinh_gia',
+      name: 'Biên bản định giá tài sản',
+      content: `
+BIÊN BẢN ĐỊNH GIÁ TÀI SẢN
+
+CHỦ TÀI SẢN: {customer.full_name}
+CCCD: {customer.id_number}
+Địa chỉ: {customer.address}
+
+{#collateral}
+THÔNG TIN TÀI SẢN:
+- Tên tài sản: {collateral.asset_name}
+- Loại tài sản: {collateral.asset_type}
+- Địa chỉ tài sản: {collateral.location}
+- Diện tích: {collateral.area} m²
+- Tình trạng pháp lý: {collateral.legal_status}
+- Giá trị định giá: {collateral.value} VNĐ
+- Ghi chú: {collateral.notes}
+{/collateral}
+
+Ngày định giá: ${new Date().toLocaleDateString('vi-VN')}
+
+Cán bộ định giá                      Trưởng phòng
+
+
+__________________                   __________________
+`
+    },
+    {
+      type: 'hop_dong_the_chap',
+      name: 'Hợp đồng thế chấp',
+      content: `
+HỢP ĐỒNG THẾ CHẤP TÀI SẢN
+
+BÊN THẾ CHẤP (Bên A): {customer.full_name}
+CCCD: {customer.id_number}
+Địa chỉ: {customer.address}
+Điện thoại: {customer.phone}
+
+BÊN NHẬN THẾ CHẤP (Bên B): NGÂN HÀNG
+
+{#collateral}
+TÀI SẢN THẾ CHẤP:
+- Tên tài sản: {collateral.asset_name}
+- Loại tài sản: {collateral.asset_type}
+- Địa chỉ: {collateral.location}
+- Giá trị thế chấp: {collateral.value} VNĐ
+- Tình trạng pháp lý: {collateral.legal_status}
+{/collateral}
+
+{#creditAssessment}
+NGHĨA VỤ THẾ CHẤP:
+- Số tiền bảo đảm: {creditAssessment.approved_amount} VNĐ
+- Thời hạn bảo đảm: {creditAssessment.loan_term} tháng
+{/creditAssessment}
+
+Ngày lập hợp đồng: ${new Date().toLocaleDateString('vi-VN')}
+
+Bên A                               Bên B
+
+
+__________________                  __________________
+{customer.full_name}                Đại diện Ngân hàng
+`
     }
   ];
 
-  const tempDir = path.join(process.cwd(), 'temp_templates');
-  if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true });
-  }
-
   for (const template of templates) {
     try {
-      // Tạo file Word template
+      // Tạo file Word buffer trực tiếp không cần file tạm thời
       const wordBuffer = createWordTemplate(template.content);
-      
-      // Lưu tạm thời
-      const tempFilePath = path.join(tempDir, `${template.type}.docx`);
-      fs.writeFileSync(tempFilePath, wordBuffer);
 
-      // Upload lên Vercel Blob
-      await uploadTemplateFromServerToVercelBlob(tempFilePath, `maubieu/${template.type}.docx`);
-      
-      // Xóa file tạm
-      fs.unlinkSync(tempFilePath);
+      // Upload trực tiếp buffer lên Vercel Blob
+      await uploadBufferToVercelBlob(wordBuffer, `maubieu/${template.type}.docx`);
       
       console.log(`✓ Đã tạo template: ${template.name}`);
     } catch (error) {
       console.error(`✗ Lỗi tạo template ${template.name}:`, error);
     }
   }
-
-  // Xóa thư mục tạm
-  fs.rmSync(tempDir, { recursive: true, force: true });
 }
 
 /**

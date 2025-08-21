@@ -98,15 +98,32 @@ export default function DocumentsDashboard() {
         }),
       });
 
-      const data = await response.json();
+      if (response.ok) {
+        // Lấy filename từ Content-Disposition header hoặc tạo default
+        const contentDisposition = response.headers.get('content-disposition');
+        const filename = contentDisposition
+          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+          : `${form.documentType}_${form.customerId}_${new Date().getTime()}.${form.exportType}`;
 
-      if (response.ok && data.filePath) {
-        const fileName = data.filePath.split('/').pop();
+        // Tải file xuống
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        // Update documents list
         setDocuments(prevDocs => [
-          { name: fileName, filePath: data.filePath },
+          { name: filename, filePath: filename },
           ...prevDocs,
         ]);
         setShowCreate(false);
+        
         // Reset form
         setForm({
           documentType: 'hop_dong_tin_dung',
@@ -115,8 +132,16 @@ export default function DocumentsDashboard() {
           creditAssessmentId: '',
           exportType: 'docx',
         });
+        
+        alert('Tài liệu đã được tạo và tải xuống thành công!');
       } else {
-        alert(data.error || 'Tạo tài liệu thất bại');
+        const errorText = await response.text();
+        try {
+          const errorData = JSON.parse(errorText);
+          alert(errorData.error || 'Tạo tài liệu thất bại');
+        } catch {
+          alert('Tạo tài liệu thất bại: ' + errorText);
+        }
       }
     } catch (error) {
       console.error('API Error:', error);

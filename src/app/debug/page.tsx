@@ -48,13 +48,36 @@ export default function DebugPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           documentType: 'hop_dong_tin_dung',
-          customerId: 'test-customer',
+          customerId: 'test-customer-123',
           exportType: 'docx'
         }),
       });
       
-      const data = await response.json();
-      setResult(`✓ Document generation: ${JSON.stringify(data, null, 2)}`);
+      if (response.ok) {
+        const contentLength = response.headers.get('content-length');
+        const contentType = response.headers.get('content-type');
+        const filename = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'document.docx';
+        
+        // Actually download the file for testing
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        setResult(`✓ Document generated and downloaded successfully!
+File: ${filename}
+Size: ${contentLength} bytes
+Type: ${contentType}`);
+      } else {
+        const errorData = await response.json();
+        setResult(`✗ Document generation failed: ${JSON.stringify(errorData, null, 2)}`);
+      }
     } catch (error) {
       setResult(`✗ Error: ${error}`);
     }

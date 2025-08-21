@@ -4,6 +4,7 @@ import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { fetchTemplateFromVercelBlob } from '@/lib/vercelBlob';
 import { ensureTemplatesExist } from '@/lib/templateSeeder';
+import { getMockCustomer, getMockCollateral, getMockCreditAssessment } from '@/lib/mockData';
 import fs from 'fs';
 import path from 'path';
 
@@ -118,39 +119,66 @@ Ngày lập: ${format(new Date(), 'dd/MM/yyyy')}
   return Buffer.from(content);
 }
 
+export interface GenerateDocumentResult {
+  buffer: Buffer;
+  filename: string;
+  contentType: string;
+}
+
 export async function generateCreditDocument({
   documentType,
   customerId,
   collateralId,
   creditAssessmentId,
   exportType,
-}: GenerateDocumentOptions): Promise<string> {
+}: GenerateDocumentOptions): Promise<GenerateDocumentResult> {
   // 0. Đảm bảo templates tồn tại
   await ensureTemplatesExist();
   
-  // 1. Lấy dữ liệu từ database trực tiếp qua supabase
-  const { data: customer } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('customer_id', customerId)
-    .single();
-  let collateral = null;
-  if (collateralId) {
-    const { data } = await supabase
-      .from('collaterals')
+  // 1. Lấy dữ liệu từ database hoặc sử dụng mock data
+  let customer, collateral = null, creditAssessment = null;
+  
+  try {
+    // Try to get data from Supabase
+    const { data: customerData } = await supabase
+      .from('customers')
       .select('*')
-      .eq('collateral_id', collateralId)
+      .eq('customer_id', customerId)
       .single();
-    collateral = data;
+    customer = customerData;
+    
+    if (collateralId) {
+      const { data } = await supabase
+        .from('collaterals')
+        .select('*')
+        .eq('collateral_id', collateralId)
+        .single();
+      collateral = data;
+    }
+    
+    if (creditAssessmentId) {
+      const { data } = await supabase
+        .from('credit_assessments')
+        .select('*')
+        .eq('assessment_id', creditAssessmentId)
+        .single();
+      creditAssessment = data;
+    }
+  } catch (error) {
+    console.log('Supabase not available, using mock data:', error instanceof Error ? error.message : 'Unknown error');
+    
+    // Fallback to mock data
+    customer = getMockCustomer(customerId);
+    if (collateralId) {
+      collateral = getMockCollateral(collateralId);
+    }
+    if (creditAssessmentId) {
+      creditAssessment = getMockCreditAssessment(creditAssessmentId);
+    }
   }
-  let creditAssessment = null;
-  if (creditAssessmentId) {
-    const { data } = await supabase
-      .from('credit_assessments')
-      .select('*')
-      .eq('assessment_id', creditAssessmentId)
-      .single();
-    creditAssessment = data;
+
+  if (!customer) {
+    throw new Error('Customer not found');
   }
 
   // 2. Lấy template từ Vercel Blob
@@ -175,17 +203,18 @@ export async function generateCreditDocument({
   doc.render({ customer, collateral, creditAssessment });
   const outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
 
-  // 4. Lưu file vào folder ketqua
+  // 4. Tạo filename và return buffer
   const dateStr = format(new Date(), 'yyyyMMdd');
   const fileName = `${documentType}_${customerId}_${dateStr}.${exportType}`;
-  const outputPath = path.join(process.cwd(), 'ketqua', fileName);
-  fs.writeFileSync(outputPath, outBuffer);
-
-  // 5. Nếu exportType là pdf, chuyển đổi docx sang pdf (cần thêm thư viện chuyển đổi)
-  // (Có thể dùng libreoffice hoặc mammoth + pdfkit, hoặc dịch vụ cloud)
-  // Ở đây chỉ xử lý docx, pdf sẽ bổ sung sau
-
-  return outputPath;
+  
+  // 5. Return buffer thay vì lưu file
+  return {
+    buffer: outBuffer,
+    filename: fileName,
+    contentType: exportType === 'docx' 
+      ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      : 'application/pdf'
+  };
 }
 
 // Hàm tìm kiếm & lọc tài liệu

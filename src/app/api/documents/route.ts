@@ -9,15 +9,26 @@ export async function POST(req: NextRequest) {
     if (!documentType || !customerId || !exportType) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    const filePath = await generateCreditDocument({
+    
+    const result = await generateCreditDocument({
       documentType,
       customerId,
       collateralId,
       creditAssessmentId,
       exportType,
     });
-    return NextResponse.json({ filePath });
+
+    // Return file as download response
+    return new NextResponse(new Uint8Array(result.buffer), {
+      status: 200,
+      headers: {
+        'Content-Type': result.contentType,
+        'Content-Disposition': `attachment; filename="${result.filename}"`,
+        'Content-Length': result.buffer.length.toString(),
+      },
+    });
   } catch (err: any) {
+    console.error('Document generation error:', err);
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
   }
 }

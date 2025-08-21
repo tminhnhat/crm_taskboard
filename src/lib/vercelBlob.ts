@@ -116,6 +116,17 @@ export async function uploadTemplateFromServerToVercelBlob(filePath: string, blo
 }
 
 /**
+ * Upload buffer lên Vercel Blob Storage
+ * @param buffer Buffer data to upload
+ * @param blobPath Đường dẫn blob (ví dụ: 'maubieu/hop_dong_tin_dung.docx')
+ * @returns url blob
+ */
+export async function uploadBufferToVercelBlob(buffer: Buffer, blobPath: string): Promise<string> {
+  const { url } = await put(blobPath, buffer, { access: 'public' });
+  return url;
+}
+
+/**
  * Xóa template khỏi Vercel Blob Storage
  * @param blobPath Đường dẫn blob (ví dụ: 'maubieu/hop_dong_tin_dung.docx')
  */
