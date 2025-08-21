@@ -139,10 +139,24 @@ export default function ContractForm({
     loadOptions()
   }, [fetchCustomers, fetchProducts, fetchStaff])
 
-  // Initialize metadata input when component mounts or contract changes
+  // Initialize form data and metadata input when component mounts or contract changes
   useEffect(() => {
-    if (contract?.metadata) {
-      setMetadataInput(JSON.stringify(contract.metadata, null, 2))
+    if (contract) {
+      setFormData({
+        customer_id: contract.customer_id?.toString() || '',
+        product_id: contract.product_id?.toString() || '',
+        contract_number: contract.contract_number || '',
+        contract_credit_limit: contract.contract_credit_limit?.toString() || '0',
+        start_date: formatDateForDisplay(contract.start_date || null),
+        end_date: formatDateForDisplay(contract.end_date || null),
+        status: contract.status || 'draft',
+        signed_by: contract.signed_by?.toString() || '',
+        metadata: contract.metadata || {}
+      })
+      
+      if (contract.metadata) {
+        setMetadataInput(JSON.stringify(contract.metadata, null, 2))
+      }
     }
   }, [contract])
 
