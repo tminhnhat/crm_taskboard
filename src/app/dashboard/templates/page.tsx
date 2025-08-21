@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
-import { uploadTemplateToVercelBlob } from '@/lib/vercelBlob';
 
 export default function TemplatesDashboard() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -34,22 +33,45 @@ export default function TemplatesDashboard() {
     const form = e.currentTarget;
     const file = fileRef.current?.files?.[0];
     const documentType = (form.elements.namedItem('documentType') as HTMLSelectElement).value;
-    if (!file) return;
+    
+    if (!file) {
+      alert('Vui lòng chọn file template');
+      return;
+    }
+    
     setUploading(true);
     try {
-      await uploadTemplateToVercelBlob(file, `maubieu/${documentType}.docx`);
-      // Refetch list từ API
-      const response = await fetch('/api/templates');
+      // Tạo FormData để upload file
+      const formData = new FormData();
+      formData.append('template', file);
+      formData.append('documentType', documentType);
+
+      const response = await fetch('/api/templates/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
       const data = await response.json();
+
       if (response.ok) {
-        setTemplates(data.templates || []);
+        alert('Upload template thành công!');
+        // Refetch list từ API
+        const listResponse = await fetch('/api/templates');
+        const listData = await listResponse.json();
+        if (listResponse.ok) {
+          setTemplates(listData.templates || []);
+        }
+        // Clear form
+        if (fileRef.current) fileRef.current.value = '';
+      } else {
+        throw new Error(data.error || 'Upload failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      alert('Upload thất bại');
+      alert(`Upload thất bại: ${error.message || 'Unknown error'}`);
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
-    if (fileRef.current) fileRef.current.value = '';
   }
 
   return (
@@ -57,15 +79,33 @@ export default function TemplatesDashboard() {
       <h1 className="text-xl font-bold mb-4">Quản lý Template</h1>
       <div className="mb-6">
         <form className="flex gap-2 items-center" onSubmit={handleUpload}>
-          <input ref={fileRef} type="file" name="template" accept=".docx" className="border p-2 rounded" />
-          <select name="documentType" className="border p-2 rounded">
+          <input 
+            ref={fileRef} 
+            type="file" 
+            name="template" 
+            accept=".docx,.doc" 
+            className="border p-2 rounded" 
+            required
+          />
+          <select 
+            name="documentType" 
+            className="border p-2 rounded"
+            required
+          >
+            <option value="">-- Chọn loại tài liệu --</option>
             <option value="hop_dong_tin_dung">Hợp đồng tín dụng</option>
             <option value="to_trinh_tham_dinh">Tờ trình thẩm định</option>
             <option value="giay_de_nghi_vay_von">Giấy đề nghị vay vốn</option>
             <option value="bien_ban_dinh_gia">Biên bản định giá</option>
             <option value="hop_dong_the_chap">Hợp đồng thế chấp</option>
           </select>
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={uploading}>{uploading ? 'Đang upload...' : 'Upload'}</button>
+          <button 
+            type="submit" 
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50" 
+            disabled={uploading}
+          >
+            {uploading ? 'Đang upload...' : 'Upload Template'}
+          </button>
         </form>
       </div>
       <div>
