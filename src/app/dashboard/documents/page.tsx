@@ -1,4 +1,6 @@
+
 "use client";
+import Navigation from '@/components/Navigation';
 
 import { useState } from 'react';
 
@@ -14,6 +16,7 @@ const DUMMY_ASSESSMENTS = [
   { assessment_id: '1', name: 'Thẩm định 1' },
   { assessment_id: '2', name: 'Thẩm định 2' },
 ];
+
 
 export default function DocumentsDashboard() {
   const [documents, setDocuments] = useState<any[]>([]);
@@ -62,6 +65,17 @@ export default function DocumentsDashboard() {
     }
     setCreating(false);
   }
+
+  return (
+    <>
+      <Navigation />
+      {/* ...existing code... */}
+      <div className="p-8 max-w-3xl mx-auto">
+        {/* ...existing code... */}
+      </div>
+    </>
+  );
+// ...existing code...
 
   return (
     <div className="p-8 max-w-3xl mx-auto">

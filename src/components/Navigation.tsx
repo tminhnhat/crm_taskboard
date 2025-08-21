@@ -27,6 +27,7 @@ export default function Navigation() {
     { name: 'Hợp Đồng', href: '/contracts', icon: DocumentTextIcon },
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: HomeIcon },
     { name: 'Thẩm Định', href: '/assessments', icon: DocumentMagnifyingGlassIcon },
+    { name: 'Tài liệu', href: '/dashboard/documents', icon: DocumentTextIcon },
   ]
 
   return (
