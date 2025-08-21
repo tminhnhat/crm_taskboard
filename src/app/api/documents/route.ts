@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateCreditDocument } from '@/lib/documentService';
+import { generateCreditDocument, deleteDocument } from '@/lib/documentService';
 
 // POST /api/documents
 export async function POST(req: NextRequest) {
@@ -49,6 +49,22 @@ export async function GET(req: NextRequest) {
         'Content-Disposition': `attachment; filename="${file}"`,
       },
     });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+  }
+}
+
+// DELETE /api/documents?file=filename
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const file = searchParams.get('file');
+  if (!file) {
+    return NextResponse.json({ error: 'Missing file param' }, { status: 400 });
+  }
+  try {
+    const ok = await deleteDocument(file);
+    if (!ok) return NextResponse.json({ error: 'File not found' }, { status: 404 });
+    return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
   }

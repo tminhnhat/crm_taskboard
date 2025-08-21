@@ -1,27 +1,37 @@
 
 "use client";
+
 import Navigation from '@/components/Navigation';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
-import { useState } from 'react';
+interface Customer {
+  customer_id: number;
+  full_name: string;
+}
 
-const DUMMY_CUSTOMERS = [
-  { customer_id: '1', full_name: 'Nguyễn Văn A' },
-  { customer_id: '2', full_name: 'Trần Thị B' },
-];
-const DUMMY_COLLATERALS = [
-  { collateral_id: '1', name: 'Nhà đất Q1' },
-  { collateral_id: '2', name: 'Xe ô tô' },
-];
-const DUMMY_ASSESSMENTS = [
-  { assessment_id: '1', name: 'Thẩm định 1' },
-  { assessment_id: '2', name: 'Thẩm định 2' },
-];
+interface Collateral {
+  collateral_id: number;
+  description: string;
+}
 
+interface Assessment {
+  assessment_id: number;
+  department: string;
+}
+
+interface Document {
+  name: string;
+  filePath: string;
+}
 
 export default function DocumentsDashboard() {
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [collaterals, setCollaterals] = useState<Collateral[]>([]);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [form, setForm] = useState({
     documentType: 'hop_dong_tin_dung',
     customerId: '',
@@ -30,15 +40,53 @@ export default function DocumentsDashboard() {
     exportType: 'docx',
   });
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-  }
+  const fetchData = async () => {
+    try {
+      const [customersRes, collateralsRes, assessmentsRes] = await Promise.all([
+        supabase
+          .from('customers')
+          .select('customer_id, full_name')
+          .eq('status', 'active')
+          .order('full_name')
+          .limit(100),
+        supabase
+          .from('collaterals')
+          .select('collateral_id, description')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(100),
+        supabase
+          .from('credit_assessments')
+          .select('assessment_id, department')
+          .order('created_at', { ascending: false })
+          .limit(100)
+      ]);
+      
+      if (customersRes.data) setCustomers(customersRes.data);
+      if (collateralsRes.data) setCollaterals(collateralsRes.data);
+      if (assessmentsRes.data) setAssessments(assessmentsRes.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-  async function handleCreate(e: React.FormEvent) {
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm(prevForm => ({ 
+      ...prevForm, 
+      [e.target.name]: e.target.value 
+    }));
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
+
     try {
-      const res = await fetch('/api/documents', {
+      const response = await fetch('/api/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,33 +97,78 @@ export default function DocumentsDashboard() {
           exportType: form.exportType,
         }),
       });
-      const data = await res.json();
-      if (res.ok && data.filePath) {
+
+      const data = await response.json();
+
+      if (response.ok && data.filePath) {
         const fileName = data.filePath.split('/').pop();
-        setDocuments(docs => [
+        setDocuments(prevDocs => [
           { name: fileName, filePath: data.filePath },
-          ...docs,
+          ...prevDocs,
         ]);
         setShowCreate(false);
+        // Reset form
+        setForm({
+          documentType: 'hop_dong_tin_dung',
+          customerId: '',
+          collateralId: '',
+          creditAssessmentId: '',
+          exportType: 'docx',
+        });
       } else {
         alert(data.error || 'Tạo tài liệu thất bại');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('API Error:', error);
       alert('Lỗi kết nối API');
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
-  }
+  };
 
-  return (
-    <>
-      <Navigation />
-      {/* ...existing code... */}
-      <div className="p-8 max-w-3xl mx-auto">
-        {/* ...existing code... */}
-      </div>
-    </>
-  );
-// ...existing code...
+  const handleSendEmail = async (fileName: string) => {
+    const email = prompt('Nhập email người nhận:');
+    if (!email) return;
+
+    try {
+      const response = await fetch('/api/documents/sendmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName, email }),
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert('Đã gửi mail thành công!');
+      } else {
+        alert(data.error || 'Gửi mail thất bại');
+      }
+    } catch (error) {
+      console.error('Email Error:', error);
+      alert('Lỗi gửi mail');
+    }
+  };
+
+  const handleDeleteDocument = async (fileName: string) => {
+    if (!window.confirm('Bạn chắc chắn muốn xóa tài liệu này?')) return;
+
+    try {
+      const response = await fetch(`/api/documents?file=${encodeURIComponent(fileName)}`, { 
+        method: 'DELETE' 
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        setDocuments(prevDocs => prevDocs.filter(doc => doc.name !== fileName));
+        alert('Đã xóa tài liệu!');
+      } else {
+        alert(data.error || 'Xóa thất bại');
+      }
+    } catch (error) {
+      console.error('Delete Error:', error);
+      alert('Lỗi xóa tài liệu');
+    }
+  };
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
@@ -86,12 +179,29 @@ export default function DocumentsDashboard() {
         </button>
         {showCreate && (
           <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <form className="bg-white p-6 rounded shadow w-full max-w-md space-y-4 relative" onSubmit={handleCreate}>
-              <button type="button" className="absolute top-2 right-2 text-gray-500" onClick={() => setShowCreate(false)}>&times;</button>
-              <h2 className="text-lg font-semibold mb-2">Tạo tài liệu từ template</h2>
+            <form 
+              className="bg-white p-6 rounded shadow w-full max-w-md space-y-4 relative" 
+              onSubmit={handleCreate}
+            >
+              <button 
+                type="button" 
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
+                onClick={() => setShowCreate(false)}
+              >
+                &times;
+              </button>
+              
+              <h2 className="text-lg font-semibold mb-4">Tạo tài liệu từ template</h2>
+              
               <div>
-                <label className="block mb-1">Loại tài liệu</label>
-                <select name="documentType" className="border p-2 rounded w-full" value={form.documentType} onChange={handleChange}>
+                <label className="block mb-1 font-medium">Loại tài liệu</label>
+                <select 
+                  name="documentType" 
+                  className="border p-2 rounded w-full" 
+                  value={form.documentType} 
+                  onChange={handleChange}
+                  required
+                >
                   <option value="hop_dong_tin_dung">Hợp đồng tín dụng</option>
                   <option value="to_trinh_tham_dinh">Tờ trình thẩm định</option>
                   <option value="giay_de_nghi_vay_von">Giấy đề nghị vay vốn</option>
@@ -99,41 +209,78 @@ export default function DocumentsDashboard() {
                   <option value="hop_dong_the_chap">Hợp đồng thế chấp</option>
                 </select>
               </div>
+              
               <div>
-                <label className="block mb-1">Khách hàng</label>
-                <select name="customerId" className="border p-2 rounded w-full" value={form.customerId} onChange={handleChange} required>
+                <label className="block mb-1 font-medium">Khách hàng</label>
+                <select 
+                  name="customerId" 
+                  className="border p-2 rounded w-full" 
+                  value={form.customerId} 
+                  onChange={handleChange} 
+                  required
+                >
                   <option value="">-- Chọn khách hàng --</option>
-                  {DUMMY_CUSTOMERS.map(c => (
-                    <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
+                  {customers.map(customer => (
+                    <option key={customer.customer_id} value={customer.customer_id}>
+                      {customer.full_name}
+                    </option>
                   ))}
                 </select>
               </div>
+              
               <div>
-                <label className="block mb-1">Tài sản đảm bảo</label>
-                <select name="collateralId" className="border p-2 rounded w-full" value={form.collateralId} onChange={handleChange}>
+                <label className="block mb-1 font-medium">Tài sản đảm bảo</label>
+                <select 
+                  name="collateralId" 
+                  className="border p-2 rounded w-full" 
+                  value={form.collateralId} 
+                  onChange={handleChange}
+                >
                   <option value="">-- Không chọn --</option>
-                  {DUMMY_COLLATERALS.map(c => (
-                    <option key={c.collateral_id} value={c.collateral_id}>{c.name}</option>
+                  {collaterals.map(collateral => (
+                    <option key={collateral.collateral_id} value={collateral.collateral_id}>
+                      {collateral.description || `Tài sản ${collateral.collateral_id}`}
+                    </option>
                   ))}
                 </select>
               </div>
+              
               <div>
-                <label className="block mb-1">Tờ trình thẩm định</label>
-                <select name="creditAssessmentId" className="border p-2 rounded w-full" value={form.creditAssessmentId} onChange={handleChange}>
+                <label className="block mb-1 font-medium">Tờ trình thẩm định</label>
+                <select 
+                  name="creditAssessmentId" 
+                  className="border p-2 rounded w-full" 
+                  value={form.creditAssessmentId} 
+                  onChange={handleChange}
+                >
                   <option value="">-- Không chọn --</option>
-                  {DUMMY_ASSESSMENTS.map(a => (
-                    <option key={a.assessment_id} value={a.assessment_id}>{a.name}</option>
+                  {assessments.map(assessment => (
+                    <option key={assessment.assessment_id} value={assessment.assessment_id}>
+                      {assessment.department || `Thẩm định ${assessment.assessment_id}`}
+                    </option>
                   ))}
                 </select>
               </div>
+              
               <div>
-                <label className="block mb-1">Định dạng xuất</label>
-                <select name="exportType" className="border p-2 rounded w-full" value={form.exportType} onChange={handleChange}>
+                <label className="block mb-1 font-medium">Định dạng xuất</label>
+                <select 
+                  name="exportType" 
+                  className="border p-2 rounded w-full" 
+                  value={form.exportType} 
+                  onChange={handleChange}
+                  required
+                >
                   <option value="docx">Word (.docx)</option>
                   <option value="pdf">PDF (.pdf)</option>
                 </select>
               </div>
-              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded w-full" disabled={creating}>
+              
+              <button 
+                type="submit" 
+                className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700 disabled:opacity-50" 
+                disabled={creating}
+              >
                 {creating ? 'Đang tạo...' : 'Tạo tài liệu'}
               </button>
             </form>
@@ -150,28 +297,13 @@ export default function DocumentsDashboard() {
               <div className="flex gap-2">
                 <button
                   className="text-blue-600 hover:underline"
-                  onClick={async () => {
-                    const email = prompt('Nhập email người nhận:');
-                    if (!email) return;
-                    try {
-                      const res = await fetch('/api/documents/sendmail', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ fileName: doc.name, email }),
-                      });
-                      const data = await res.json();
-                      if (res.ok) alert('Đã gửi mail thành công!');
-                      else alert(data.error || 'Gửi mail thất bại');
-                    } catch {
-                      alert('Lỗi gửi mail');
-                    }
-                  }}
+                  onClick={() => handleSendEmail(doc.name)}
                 >
                   Gửi mail
                 </button>
                 <a
                   className="text-green-600 hover:underline"
-                  href={doc.name ? `/api/documents?file=${encodeURIComponent(doc.name)}` : '#'}
+                  href={`/api/documents?file=${encodeURIComponent(doc.name)}`}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
@@ -180,21 +312,7 @@ export default function DocumentsDashboard() {
                 </a>
                 <button
                   className="text-red-500 hover:underline"
-                  onClick={async () => {
-                    if (!window.confirm('Bạn chắc chắn muốn xóa tài liệu này?')) return;
-                    try {
-                      const res = await fetch(`/api/documents?file=${encodeURIComponent(doc.name)}`, { method: 'DELETE' });
-                      const data = await res.json();
-                      if (res.ok) {
-                        setDocuments(docs => docs.filter(d => d.name !== doc.name));
-                        alert('Đã xóa tài liệu!');
-                      } else {
-                        alert(data.error || 'Xóa thất bại');
-                      }
-                    } catch {
-                      alert('Lỗi xóa tài liệu');
-                    }
-                  }}
+                  onClick={() => handleDeleteDocument(doc.name)}
                 >
                   Xóa
                 </button>

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
-import { uploadTemplateToVercelBlob, fetchTemplatesListFromVercelBlob } from '@/lib/vercelBlob';
+import { uploadTemplateToVercelBlob } from '@/lib/vercelBlob';
 
 export default function TemplatesDashboard() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -11,8 +11,19 @@ export default function TemplatesDashboard() {
   useEffect(() => {
     async function fetchTemplates() {
       setLoading(true);
-      const list = await fetchTemplatesListFromVercelBlob('maubieu/');
-      setTemplates(list);
+      try {
+        const response = await fetch('/api/templates');
+        const data = await response.json();
+        if (response.ok) {
+          setTemplates(data.templates || []);
+        } else {
+          console.error('Error fetching templates:', data.error);
+          setTemplates([]);
+        }
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+        setTemplates([]);
+      }
       setLoading(false);
     }
     fetchTemplates();
@@ -25,10 +36,18 @@ export default function TemplatesDashboard() {
     const documentType = (form.elements.namedItem('documentType') as HTMLSelectElement).value;
     if (!file) return;
     setUploading(true);
-    await uploadTemplateToVercelBlob(file, `maubieu/${documentType}.docx`);
-    // Refetch list
-    const list = await fetchTemplatesListFromVercelBlob('maubieu/');
-    setTemplates(list);
+    try {
+      await uploadTemplateToVercelBlob(file, `maubieu/${documentType}.docx`);
+      // Refetch list từ API
+      const response = await fetch('/api/templates');
+      const data = await response.json();
+      if (response.ok) {
+        setTemplates(data.templates || []);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Upload thất bại');
+    }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = '';
   }
@@ -62,10 +81,15 @@ export default function TemplatesDashboard() {
                   onClick={async () => {
                     if (!window.confirm('Bạn chắc chắn muốn xóa template này?')) return;
                     try {
-                      const res = await fetch(`/api/templates?file=maubieu/${tpl}`, { method: 'DELETE' });
+                      const res = await fetch(`/api/templates?file=maubieu/${encodeURIComponent(tpl)}`, { method: 'DELETE' });
                       const data = await res.json();
                       if (res.ok) {
-                        setTemplates(list => list.filter(t => t !== tpl));
+                        // Refetch list từ API
+                        const response = await fetch('/api/templates');
+                        const refreshData = await response.json();
+                        if (response.ok) {
+                          setTemplates(refreshData.templates || []);
+                        }
                         alert('Đã xóa template!');
                       } else {
                         alert(data.error || 'Xóa thất bại');

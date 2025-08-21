@@ -12,15 +12,37 @@ export async function deleteTemplateFromVercelBlob(blobPath: string): Promise<vo
  * @returns Danh sách file (tên file)
  */
 export async function fetchTemplatesListFromVercelBlob(folderPath: string): Promise<string[]> {
-  // Vercel Blob không có API liệt kê file public, cần backend hoặc lưu metadata, hoặc hardcode demo
-  // Ở đây trả về demo static, thực tế cần backend API hoặc lưu metadata
-  return [
-    'hop_dong_tin_dung.docx',
-    'to_trinh_tham_dinh.docx',
-    'giay_de_nghi_vay_von.docx',
-    'bien_ban_dinh_gia.docx',
-    'hop_dong_the_chap.docx',
-  ];
+  try {
+    // Vercel Blob API không hỗ trợ list files trực tiếp
+    // Thay vào đó, thử fetch các template phổ biến và trả về những file tồn tại
+    const possibleTemplates = [
+      'hop_dong_tin_dung.docx',
+      'to_trinh_tham_dinh.docx',
+      'giay_de_nghi_vay_von.docx',
+      'bien_ban_dinh_gia.docx',
+      'hop_dong_the_chap.docx',
+    ];
+    
+    const existingTemplates: string[] = [];
+    
+    // Kiểm tra từng template xem có tồn tại không
+    for (const template of possibleTemplates) {
+      try {
+        const url = await getDownloadUrl(`${folderPath}${template}`);
+        const response = await fetch(url, { method: 'HEAD' });
+        if (response.ok) {
+          existingTemplates.push(template);
+        }
+      } catch {
+        // Template không tồn tại, bỏ qua
+      }
+    }
+    
+    return existingTemplates;
+  } catch (error) {
+    console.error('Error fetching templates list:', error);
+    return [];
+  }
 }
 import { getDownloadUrl, put } from '@vercel/blob';
 
