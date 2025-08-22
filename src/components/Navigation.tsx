@@ -20,16 +20,20 @@ export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigation = [
+    // Main features
     { name: 'Công Việc', href: '/', icon: ClipboardDocumentListIcon },
     { name: 'Khách Hàng', href: '/customers', icon: UsersIcon },
     { name: 'Sản Phẩm', href: '/products', icon: CubeIcon },
     { name: 'Nhân Viên', href: '/staff', icon: UserIcon },
+    
+    // Credit process
     { name: 'Hợp Đồng', href: '/contracts', icon: DocumentTextIcon },
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: HomeIcon },
     { name: 'Thẩm Định', href: '/assessments', icon: DocumentMagnifyingGlassIcon },
-    { name: 'Tài liệu', href: '/dashboard/documents', icon: DocumentTextIcon },
-    { name: 'Templates', href: '/dashboard/templates', icon: DocumentTextIcon },
-    { name: 'Debug', href: '/debug', icon: DocumentMagnifyingGlassIcon },
+    
+    // Document management
+    { name: 'Tài Liệu', href: '/dashboard/documents', icon: DocumentTextIcon },
+    { name: 'Mẫu Tài Liệu', href: '/dashboard/templates', icon: DocumentMagnifyingGlassIcon }
   ]
 
   return (
