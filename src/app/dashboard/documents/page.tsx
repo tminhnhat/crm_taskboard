@@ -32,6 +32,7 @@ export default function DocumentsDashboard() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [collaterals, setCollaterals] = useState<Collateral[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     documentType: 'hop_dong_tin_dung',
     customerId: '',
@@ -47,26 +48,30 @@ export default function DocumentsDashboard() {
           .from('customers')
           .select('customer_id, full_name')
           .eq('status', 'active')
-          .order('full_name')
-          .limit(100),
+          .order('full_name'),
         supabase
           .from('collaterals')
           .select('collateral_id, description')
           .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(100),
+          .order('created_at', { ascending: false }),
         supabase
           .from('credit_assessments')
           .select('assessment_id, department')
+          .eq('status', 'active')
           .order('created_at', { ascending: false })
-          .limit(100)
       ]);
+
+      // Check for errors
+      if (customersRes.error) throw new Error(`Error loading customers: ${customersRes.error.message}`);
+      if (collateralsRes.error) throw new Error(`Error loading collaterals: ${collateralsRes.error.message}`);
+      if (assessmentsRes.error) throw new Error(`Error loading assessments: ${assessmentsRes.error.message}`);
       
-      if (customersRes.data) setCustomers(customersRes.data);
-      if (collateralsRes.data) setCollaterals(collateralsRes.data);
-      if (assessmentsRes.data) setAssessments(assessmentsRes.data);
+      setCustomers(customersRes.data || []);
+      setCollaterals(collateralsRes.data || []);
+      setAssessments(assessmentsRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError(error instanceof Error ? error.message : 'Error loading data');
     }
   };
 
@@ -75,6 +80,7 @@ export default function DocumentsDashboard() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setError(null); // Clear any previous errors
     setForm(prevForm => ({ 
       ...prevForm, 
       [e.target.name]: e.target.value 
@@ -84,6 +90,20 @@ export default function DocumentsDashboard() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
+    setError(null);
+
+    // Validate required fields
+    if (!form.customerId) {
+      setError('Please select a customer');
+      setCreating(false);
+      return;
+    }
+
+    if (!form.documentType) {
+      setError('Please select a document type');
+      setCreating(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/documents', {
