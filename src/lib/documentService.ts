@@ -1,26 +1,120 @@
 import { supabase } from '@/lib/supabase';
-import { format } from 'date-fns';
+import { format, addMonths } from 'date-fns';
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { fetchTemplateFromVercelBlob } from '@/lib/vercelBlob';
 import { ensureTemplatesExist } from '@/lib/templateSeeder';
+import * as XLSX from 'xlsx';
 
 export type DocumentType =
   | 'hop_dong_tin_dung'
   | 'to_trinh_tham_dinh'
   | 'giay_de_nghi_vay_von'
   | 'bien_ban_dinh_gia'
-  | 'hop_dong_the_chap';
+  | 'hop_dong_the_chap'
+  | 'bang_tinh_lai'
+  | 'lich_tra_no';
+
+export type ExportType = 'docx' | 'pdf' | 'xlsx';
 
 export interface GenerateDocumentOptions {
   documentType: DocumentType;
   customerId: string;
   collateralId?: string;
   creditAssessmentId?: string;
-  exportType: 'docx' | 'pdf';
+  exportType: 'docx' | 'pdf' | 'xlsx';
 }
 
 
+
+function generateExcelBuffer(documentType: DocumentType, data: any): Buffer {
+  const workbook = XLSX.utils.book_new();
+  let worksheet;
+
+  switch (documentType) {
+    case 'bang_tinh_lai': {
+      const { creditAssessment, customer } = data;
+      const rows = [];
+      
+      // Header row
+      rows.push(['BẢNG TÍNH LÃI VAY', '', '', '', '']);
+      rows.push(['Khách hàng:', customer.full_name, '', 'CCCD:', customer.id_number]);
+      rows.push(['Số tiền vay:', creditAssessment.approved_amount, 'VNĐ', '', '']);
+      rows.push(['Lãi suất:', creditAssessment.interest_rate, '%/năm', '', '']);
+      rows.push(['Kỳ hạn:', creditAssessment.loan_term, 'tháng', '', '']);
+      rows.push(['', '', '', '', '']);
+      rows.push(['Kỳ', 'Ngày', 'Dư nợ gốc', 'Lãi phải trả', 'Tổng phải trả']);
+
+      const startDate = new Date();
+      const monthlyRate = creditAssessment.interest_rate / 12 / 100;
+      const monthlyPayment = (creditAssessment.approved_amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -creditAssessment.loan_term));
+      let balance = creditAssessment.approved_amount;
+
+      for (let month = 1; month <= creditAssessment.loan_term; month++) {
+        const date = addMonths(startDate, month - 1);
+        const interest = balance * monthlyRate;
+        const principal = monthlyPayment - interest;
+        
+        rows.push([
+          month,
+          format(date, 'dd/MM/yyyy'),
+          Math.round(balance),
+          Math.round(interest),
+          Math.round(monthlyPayment)
+        ]);
+        
+        balance -= principal;
+      }
+
+      worksheet = XLSX.utils.aoa_to_sheet(rows);
+      break;
+    }
+    
+    case 'lich_tra_no': {
+      const { creditAssessment, customer } = data;
+      const rows = [];
+      
+      // Header
+      rows.push(['LỊCH TRẢ NỢ', '', '', '']);
+      rows.push(['Khách hàng:', customer.full_name, 'CCCD:', customer.id_number]);
+      rows.push(['Số tiền vay:', creditAssessment.approved_amount, 'VNĐ', '']);
+      rows.push(['', '', '', '']);
+      rows.push(['Kỳ', 'Ngày đến hạn', 'Số tiền', 'Trạng thái']);
+
+      const startDate = new Date();
+      const monthlyPayment = creditAssessment.approved_amount / creditAssessment.loan_term;
+
+      for (let month = 1; month <= creditAssessment.loan_term; month++) {
+        const dueDate = addMonths(startDate, month);
+        rows.push([
+          month,
+          format(dueDate, 'dd/MM/yyyy'),
+          Math.round(monthlyPayment),
+          ''  // Status will be updated manually
+        ]);
+      }
+
+      worksheet = XLSX.utils.aoa_to_sheet(rows);
+      break;
+    }
+
+    default:
+      throw new Error(`Excel generation not supported for document type: ${documentType}`);
+  }
+
+  // Apply some styling
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  worksheet['!cols'] = [
+    { wch: 8 },   // Column A
+    { wch: 15 },  // Column B
+    { wch: 15 },  // Column C
+    { wch: 15 },  // Column D
+    { wch: 15 }   // Column E
+  ];
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+}
 
 export interface GenerateDocumentResult {
   buffer: Buffer;
@@ -36,7 +130,9 @@ export async function generateCreditDocument({
   exportType,
 }: GenerateDocumentOptions): Promise<GenerateDocumentResult> {
   // 0. Đảm bảo templates tồn tại
-  await ensureTemplatesExist();
+  if (exportType !== 'xlsx') {
+    await ensureTemplatesExist();
+  }
   
   // 1. Lấy dữ liệu từ database
   let customer, collateral = null, creditAssessment = null;
@@ -96,32 +192,47 @@ export async function generateCreditDocument({
     throw new Error(`Could not load template "${documentType}": ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
-  // 3. Render template với dữ liệu
+  // 3. Generate document based on type
   try {
-    const zip = new PizZip(templateBuffer);
-    const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-    
-    // Prepare data for template
     const templateData = {
       customer: customer || {},
       collateral: collateral || {},
       creditAssessment: creditAssessment || {}
     };
-    
-    doc.render(templateData);
-    const outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
 
-    // 4. Tạo filename và return buffer
+    let outBuffer: Buffer;
+    let contentType: string;
+
+    // Handle Excel files
+    if (exportType === 'xlsx' && (documentType === 'bang_tinh_lai' || documentType === 'lich_tra_no')) {
+      outBuffer = generateExcelBuffer(documentType, templateData);
+      contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    } 
+    // Handle Word documents
+    else if (exportType === 'docx') {
+      const zip = new PizZip(templateBuffer);
+      const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+      doc.render(templateData);
+      outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
+      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    }
+    // Handle PDF (if implemented)
+    else if (exportType === 'pdf') {
+      throw new Error('PDF export not yet implemented');
+    }
+    else {
+      throw new Error(`Unsupported export type: ${exportType}`);
+    }
+
+    // 4. Create filename and return buffer
     const dateStr = format(new Date(), 'yyyyMMdd');
     const fileName = `${documentType}_${customerId}_${dateStr}.${exportType}`;
     
-    // 5. Return buffer thay vì lưu file
+    // 5. Return buffer
     return {
-      buffer: outBuffer,
+      buffer: outBuffer!,
       filename: fileName,
-      contentType: exportType === 'docx' 
-        ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        : 'application/pdf'
+      contentType
     };
   } catch (renderError) {
     console.error('Error rendering document:', renderError);

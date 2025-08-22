@@ -33,6 +33,16 @@ export default function DocumentsDashboard() {
   const [collaterals, setCollaterals] = useState<Collateral[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const documentTypes = [
+    { id: 'hop_dong_tin_dung', name: 'Hợp đồng tín dụng', formats: ['docx'] },
+    { id: 'to_trinh_tham_dinh', name: 'Tờ trình thẩm định', formats: ['docx'] },
+    { id: 'giay_de_nghi_vay_von', name: 'Giấy đề nghị vay vốn', formats: ['docx'] },
+    { id: 'bien_ban_dinh_gia', name: 'Biên bản định giá', formats: ['docx'] },
+    { id: 'hop_dong_the_chap', name: 'Hợp đồng thế chấp', formats: ['docx'] },
+    { id: 'bang_tinh_lai', name: 'Bảng tính lãi', formats: ['xlsx'] },
+    { id: 'lich_tra_no', name: 'Lịch trả nợ', formats: ['xlsx'] },
+  ];
+
   const [form, setForm] = useState({
     documentType: 'hop_dong_tin_dung',
     customerId: '',
@@ -244,14 +254,41 @@ export default function DocumentsDashboard() {
                   name="documentType" 
                   className="border p-2 rounded w-full" 
                   value={form.documentType} 
+                  onChange={(e) => {
+                    const selectedType = documentTypes.find(t => t.id === e.target.value);
+                    setForm(prev => ({
+                      ...prev,
+                      documentType: e.target.value,
+                      exportType: selectedType?.formats[0] || 'docx'
+                    }));
+                  }}
+                  required
+                >
+                  {documentTypes.map(type => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block mb-1 font-medium">Định dạng</label>
+                <select 
+                  name="exportType" 
+                  className="border p-2 rounded w-full" 
+                  value={form.exportType} 
                   onChange={handleChange}
                   required
                 >
-                  <option value="hop_dong_tin_dung">Hợp đồng tín dụng</option>
-                  <option value="to_trinh_tham_dinh">Tờ trình thẩm định</option>
-                  <option value="giay_de_nghi_vay_von">Giấy đề nghị vay vốn</option>
-                  <option value="bien_ban_dinh_gia">Biên bản định giá</option>
-                  <option value="hop_dong_the_chap">Hợp đồng thế chấp</option>
+                  {documentTypes
+                    .find(t => t.id === form.documentType)
+                    ?.formats.map(format => (
+                      <option key={format} value={format}>
+                        {format.toUpperCase()}
+                      </option>
+                    ))
+                  }
                 </select>
               </div>
               
