@@ -8,16 +8,31 @@ import { supabase } from '@/lib/supabase';
 interface Customer {
   customer_id: number;
   full_name: string;
+  id_number: string;
+  phone: string;
+  email: string;
+  address: string;
+  occupation: string;
 }
 
 interface Collateral {
   collateral_id: number;
   description: string;
+  asset_name: string;
+  asset_type: string;
+  value: number;
+  location: string;
 }
 
 interface Assessment {
   assessment_id: number;
   department: string;
+  approved_amount: number;
+  interest_rate: number;
+  loan_term: number;
+  assessment_result: string;
+  purpose: string;
+  status: string;
 }
 
 interface Document {
@@ -56,17 +71,41 @@ export default function DocumentsDashboard() {
       const [customersRes, collateralsRes, assessmentsRes] = await Promise.all([
         supabase
           .from('customers')
-          .select('customer_id, full_name')
+          .select(`
+            customer_id,
+            full_name,
+            id_number,
+            phone,
+            email,
+            address,
+            occupation
+          `)
           .eq('status', 'active')
           .order('full_name'),
         supabase
           .from('collaterals')
-          .select('collateral_id, description')
+          .select(`
+            collateral_id,
+            description,
+            asset_name,
+            asset_type,
+            value,
+            location
+          `)
           .eq('status', 'active')
           .order('created_at', { ascending: false }),
         supabase
           .from('credit_assessments')
-          .select('assessment_id, department')
+          .select(`
+            assessment_id,
+            department,
+            approved_amount,
+            interest_rate,
+            loan_term,
+            assessment_result,
+            purpose,
+            status
+          `)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
       ]);
@@ -97,25 +136,47 @@ export default function DocumentsDashboard() {
     }));
   };
 
+  const validateForm = () => {
+    // Basic validations
+    if (!form.customerId) {
+      throw new Error('Vui lòng chọn khách hàng');
+    }
+
+    if (!form.documentType) {
+      throw new Error('Vui lòng chọn loại tài liệu');
+    }
+
+    // Document-specific validations
+    switch (form.documentType) {
+      case 'hop_dong_tin_dung':
+      case 'to_trinh_tham_dinh':
+      case 'giay_de_nghi_vay_von':
+      case 'bang_tinh_lai':
+      case 'lich_tra_no':
+        if (!form.creditAssessmentId) {
+          throw new Error('Vui lòng chọn thông tin thẩm định tín dụng');
+        }
+        break;
+
+      case 'bien_ban_dinh_gia':
+      case 'hop_dong_the_chap':
+        if (!form.collateralId) {
+          throw new Error('Vui lòng chọn tài sản thế chấp');
+        }
+        break;
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
     setError(null);
 
-    // Validate required fields
-    if (!form.customerId) {
-      setError('Please select a customer');
-      setCreating(false);
-      return;
-    }
-
-    if (!form.documentType) {
-      setError('Please select a document type');
-      setCreating(false);
-      return;
-    }
-
     try {
+      // Validate form data
+      validateForm();
+
+      // If validation passes, continue with document creation
       const response = await fetch('/api/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -304,44 +365,58 @@ export default function DocumentsDashboard() {
                   <option value="">-- Chọn khách hàng --</option>
                   {customers.map(customer => (
                     <option key={customer.customer_id} value={customer.customer_id}>
-                      {customer.full_name}
+                      {customer.full_name} - {customer.id_number}
                     </option>
                   ))}
                 </select>
               </div>
               
               <div>
-                <label className="block mb-1 font-medium">Tài sản đảm bảo</label>
+                <label className="block mb-1 font-medium">
+                  Tài sản đảm bảo 
+                  {(form.documentType === 'bien_ban_dinh_gia' || form.documentType === 'hop_dong_the_chap') && 
+                    <span className="text-red-500">*</span>
+                  }
+                </label>
                 <select 
                   name="collateralId" 
                   className="border p-2 rounded w-full" 
                   value={form.collateralId} 
                   onChange={handleChange}
+                  required={form.documentType === 'bien_ban_dinh_gia' || form.documentType === 'hop_dong_the_chap'}
                 >
-                  <option value="">-- Không chọn --</option>
+                  <option value="">-- Chọn tài sản --</option>
                   {collaterals.map(collateral => (
                     <option key={collateral.collateral_id} value={collateral.collateral_id}>
-                      {collateral.description || `Tài sản ${collateral.collateral_id}`}
+                      {collateral.asset_name} - {new Intl.NumberFormat('vi-VN').format(collateral.value)} VNĐ
                     </option>
                   ))}
                 </select>
               </div>
               
               <div>
-                <label className="block mb-1 font-medium">Tờ trình thẩm định</label>
+                <label className="block mb-1 font-medium">
+                  Thông tin thẩm định 
+                  {['hop_dong_tin_dung', 'to_trinh_tham_dinh', 'giay_de_nghi_vay_von', 'bang_tinh_lai', 'lich_tra_no'].includes(form.documentType) && 
+                    <span className="text-red-500">*</span>
+                  }
+                </label>
                 <select 
                   name="creditAssessmentId" 
                   className="border p-2 rounded w-full" 
                   value={form.creditAssessmentId} 
                   onChange={handleChange}
+                  required={['hop_dong_tin_dung', 'to_trinh_tham_dinh', 'giay_de_nghi_vay_von', 'bang_tinh_lai', 'lich_tra_no'].includes(form.documentType)}
                 >
-                  <option value="">-- Không chọn --</option>
+                  <option value="">-- Chọn thẩm định --</option>
                   {assessments.map(assessment => (
                     <option key={assessment.assessment_id} value={assessment.assessment_id}>
-                      {assessment.department || `Thẩm định ${assessment.assessment_id}`}
+                      {new Intl.NumberFormat('vi-VN').format(assessment.approved_amount)} VNĐ - 
+                      {assessment.interest_rate}%/{assessment.loan_term} tháng
                     </option>
                   ))}
                 </select>
+                {error && <p className="text-red-500 mt-4">{error}</p>}
               </div>
               
               <div>
