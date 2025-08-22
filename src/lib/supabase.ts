@@ -1,18 +1,21 @@
 import { createClient } from '@supabase/supabase-js'
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY) {
-  throw new Error('Missing Supabase environment variables')
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
-  {
-    db: {
-      schema: 'dulieu_congviec'
-    }
-  }
-)
+// Create a conditional client that works during build time and runtime
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey, {
+      db: {
+        schema: 'dulieu_congviec'
+      }
+    })
+  : null
+
+if (!supabase && typeof window !== 'undefined') {
+  // Only throw error on client side when actually needed
+  console.error('Missing Supabase environment variables')
+}
 
 export { supabase }
 

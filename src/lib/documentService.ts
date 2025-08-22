@@ -194,6 +194,11 @@ export async function generateCreditDocument({
       throw new Error('Missing required parameters: documentType, customerId, exportType');
     }
 
+    // Check if supabase client is available
+    if (!supabase) {
+      throw new Error('Database connection not available. Please check environment configuration.');
+    }
+
     // Fetch data from database
     const [customerResult, collateralResult, creditAssessmentResult] = await Promise.all([
       // Always fetch customer
@@ -247,13 +252,22 @@ export async function generateCreditDocument({
       contentType = CONTENT_TYPE_MAP[exportType];
     } else if (exportType === 'docx') {
       // Handle Word documents - fetch template from Vercel Blob
-      const templateBuffer = await fetchTemplateFromVercelBlob(`maubieu/${documentType}.docx`);
-      
-      const zip = new PizZip(templateBuffer);
-      const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-      doc.render(documentData);
-      outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
-      contentType = CONTENT_TYPE_MAP[exportType];
+      try {
+        const templateBuffer = await fetchTemplateFromVercelBlob(`maubieu/${documentType}.docx`);
+        
+        const zip = new PizZip(templateBuffer);
+        const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+        doc.render(documentData);
+        outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
+        contentType = CONTENT_TYPE_MAP[exportType];
+      } catch (templateError) {
+        // Provide a more user-friendly error message
+        const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
+        if (errorMessage.includes('Template không tìm thấy') || errorMessage.includes('not found')) {
+          throw new Error(`Template file missing: Please upload a template for document type "${documentType}" in the Templates dashboard before generating documents.`);
+        }
+        throw new Error(`Template loading failed: ${errorMessage}`);
+      }
     } else if (exportType === 'pdf') {
       throw new Error('PDF export not yet implemented');
     } else {
