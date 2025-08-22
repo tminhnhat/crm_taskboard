@@ -34,7 +34,12 @@ export function useDocuments(): UseDocumentsReturn {
       
       const { data, error } = await supabase
         .from('documents')
-        .select('*, customer:customers!inner(*), collateral:collaterals(*), assessment:credit_assessments(*)')
+        .select(`
+          *,
+          customer:customers(customer_id, full_name, phone, email),
+          collateral:collaterals(collateral_id, collateral_type, description),
+          assessment:credit_assessments(assessment_id, status, approval_decision)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -102,7 +107,12 @@ export function useDocuments(): UseDocumentsReturn {
           file_name: filename,
           file_url: fileUrl // Store blob URL or fallback path
         }])
-        .select('*, customer:customers!inner(*), collateral:collaterals(*), assessment:credit_assessments(*)');
+        .select(`
+          *,
+          customer:customers(customer_id, full_name, phone, email),
+          collateral:collaterals(collateral_id, collateral_type, description),
+          assessment:credit_assessments(assessment_id, status, approval_decision)
+        `);
 
       if (saveError) {
         console.warn('Failed to save document record to database:', saveError);
