@@ -9,13 +9,11 @@ const compat = new FlatCompat({
 });
 
 export default [
+  ...compat.extends("next/core-web-vitals"),
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
-    ...compat.config({
-      extends: ["next/core-web-vitals"],
-      parserOptions: {
-        project: "./tsconfig.json"
-      }
-    })
+    rules: {
+      // Add any custom rules here
+    }
   }
 ];

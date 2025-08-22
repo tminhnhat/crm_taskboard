@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import TaskForm from '@/components/TaskForm';
 import TaskCard from '@/components/TaskCard';
 import TaskFilters from '@/components/TaskFilters';
 import { useSearchParams } from 'next/navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
-export default function DocumentsPage() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function DocumentsContent() {
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
 
@@ -38,5 +39,13 @@ export default function DocumentsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function DocumentsPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner message="Loading documents..." />}>
+      <DocumentsContent />
+    </Suspense>
   );
 }
