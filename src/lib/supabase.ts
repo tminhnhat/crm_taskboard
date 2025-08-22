@@ -16,6 +16,42 @@ const supabase = createClient(
 
 export { supabase }
 
+// Document types
+export type DocumentType =
+  | 'hop_dong_tin_dung'
+  | 'to_trinh_tham_dinh'
+  | 'giay_de_nghi_vay_von'
+  | 'bien_ban_dinh_gia'
+  | 'hop_dong_the_chap'
+  | 'bang_tinh_lai'
+  | 'lich_tra_no'
+
+export type DocumentExportType = 'docx' | 'pdf' | 'xlsx'
+
+export interface DocumentTemplate {
+  template_id: number
+  document_type: DocumentType
+  template_name: string
+  template_url: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Document {
+  document_id: number
+  document_type: DocumentType
+  customer_id: number
+  collateral_id?: number
+  assessment_id?: number
+  file_name: string
+  file_url: string
+  created_at: string
+  updated_at: string
+  customer?: Customer
+  collateral?: Collateral
+  assessment?: CreditAssessment
+}
+
 // TypeScript types for our database schema based on your SQL
 export type TaskStatusEnum = 'needsAction' | 'inProgress' | 'onHold' | 'completed' | 'cancelled' | 'deleted'
 
