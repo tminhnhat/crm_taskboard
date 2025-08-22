@@ -66,19 +66,23 @@ function generateInterestCalculationSheet(creditAssessment: any, customer: any):
   // Header section
   rows.push(['INTEREST CALCULATION TABLE', '', '', '', '']);
   rows.push(['Customer:', customer.full_name || 'N/A', '', 'ID Number:', customer.id_number || 'N/A']);
-  rows.push(['Loan Amount:', creditAssessment.approved_amount, 'VND', '', '']);
-  rows.push(['Interest Rate:', creditAssessment.interest_rate, '%/year', '', '']);
-  rows.push(['Loan Term:', creditAssessment.loan_term, 'months', '', '']);
+  rows.push(['Loan Amount:', creditAssessment.loan_info?.amount?.approved || 0, 'VND', '', '']);
+  rows.push(['Interest Rate:', creditAssessment.loan_info?.interest?.final_rate || 0, '%/year', '', '']);
+  rows.push(['Loan Term:', creditAssessment.loan_info?.term?.approved_months || 0, 'months', '', '']);
   rows.push(['', '', '', '', '']);
   rows.push(['Period', 'Date', 'Principal Balance', 'Interest Due', 'Total Payment']);
 
   const startDate = new Date();
-  const monthlyRate = creditAssessment.interest_rate / 12 / 100;
-  const monthlyPayment = (creditAssessment.approved_amount * monthlyRate) / 
-                        (1 - Math.pow(1 + monthlyRate, -creditAssessment.loan_term));
-  let balance = creditAssessment.approved_amount;
+  const loanAmount = creditAssessment.loan_info?.amount?.approved || 0;
+  const annualRate = creditAssessment.loan_info?.interest?.final_rate || 0;
+  const termInMonths = creditAssessment.loan_info?.term?.approved_months || 0;
+  
+  const monthlyRate = annualRate / 12 / 100;
+  const monthlyPayment = (loanAmount * monthlyRate) / 
+                        (1 - Math.pow(1 + monthlyRate, -termInMonths));
+  let balance = loanAmount;
 
-  for (let month = 1; month <= creditAssessment.loan_term; month++) {
+  for (let month = 1; month <= termInMonths; month++) {
     const date = addMonths(startDate, month - 1);
     const interest = balance * monthlyRate;
     const principal = monthlyPayment - interest;
@@ -101,21 +105,24 @@ function generateRepaymentScheduleSheet(creditAssessment: any, customer: any): a
   const rows: any[][] = [];
   
   // Validate required data
-  if (!creditAssessment?.approved_amount || !creditAssessment?.loan_term) {
+  const loanAmount = creditAssessment?.loan_info?.amount?.approved || 0;
+  const termInMonths = creditAssessment?.loan_info?.term?.approved_months || 0;
+  
+  if (!loanAmount || !termInMonths) {
     throw new Error('Missing required credit assessment data for repayment schedule');
   }
 
   // Header section
   rows.push(['REPAYMENT SCHEDULE', '', '', '']);
   rows.push(['Customer:', customer.full_name || 'N/A', 'ID Number:', customer.id_number || 'N/A']);
-  rows.push(['Loan Amount:', creditAssessment.approved_amount, 'VND', '']);
+  rows.push(['Loan Amount:', loanAmount, 'VND', '']);
   rows.push(['', '', '', '']);
   rows.push(['Period', 'Due Date', 'Amount', 'Status']);
 
   const startDate = new Date();
-  const monthlyPayment = creditAssessment.approved_amount / creditAssessment.loan_term;
+  const monthlyPayment = loanAmount / termInMonths;
 
-  for (let month = 1; month <= creditAssessment.loan_term; month++) {
+  for (let month = 1; month <= termInMonths; month++) {
     const dueDate = addMonths(startDate, month);
     rows.push([
       month,

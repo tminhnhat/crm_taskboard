@@ -73,10 +73,10 @@ THÔNG TIN TÀI SAN ĐẢM BẢO:
 
 {#creditAssessment}
 KẾT QUẢ THẨM ĐỊNH:
-- Mức tín dụng được duyệt: {creditAssessment.approved_amount} VNĐ
-- Lãi suất: {creditAssessment.interest_rate}%/năm
-- Thời hạn vay: {creditAssessment.loan_term} tháng
-- Kết quả thẩm định: {creditAssessment.assessment_result}
+- Mức tín dụng được duyệt: {creditAssessment.loan_info.amount.approved} VNĐ
+- Lãi suất: {creditAssessment.loan_info.interest.final_rate}%/năm
+- Thời hạn vay: {creditAssessment.loan_info.term.approved_months} tháng
+- Kết quả thẩm định: {creditAssessment.approval_decision}
 {/creditAssessment}
 
 Ngày lập hợp đồng: ${new Date().toLocaleDateString('vi-VN')}
@@ -114,13 +114,13 @@ THÔNG TIN TÀI SAN ĐẢM BẢO:
 
 {#creditAssessment}
 KẾT QUẢ THẨM ĐỊNH:
-- Mức tín dụng đề xuất: {creditAssessment.approved_amount} VNĐ
-- Lãi suất đề xuất: {creditAssessment.interest_rate}%/năm
-- Thời hạn vay: {creditAssessment.loan_term} tháng
-- Mục đích sử dụng vốn: {creditAssessment.purpose}
-- Đánh giá rủi ro: {creditAssessment.risk_level}
-- Kết quả thẩm định: {creditAssessment.assessment_result}
-- Ghi chú: {creditAssessment.notes}
+- Mức tín dụng đề xuất: {creditAssessment.loan_info.amount.approved} VNĐ
+- Lãi suất đề xuất: {creditAssessment.loan_info.interest.final_rate}%/năm
+- Thời hạn vay: {creditAssessment.loan_info.term.approved_months} tháng
+- Mục đích sử dụng vốn: {creditAssessment.loan_info.purpose.main_purpose}
+- Đánh giá rủi ro: {creditAssessment.risk_assessment.overall_rating}
+- Kết quả thẩm định: {creditAssessment.approval_decision}
+- Ghi chú: {creditAssessment.decision_info.notes}
 {/creditAssessment}
 
 Ngày lập tờ trình: ${new Date().toLocaleDateString('vi-VN')}
@@ -147,10 +147,10 @@ THÔNG TIN KHÁCH HÀNG:
 
 {#creditAssessment}
 THÔNG TIN VAY VỐN:
-- Số tiền đề nghị vay: {creditAssessment.approved_amount} VNĐ
-- Mục đích sử dụng vốn: {creditAssessment.purpose}
-- Thời hạn vay: {creditAssessment.loan_term} tháng
-- Lãi suất mong muốn: {creditAssessment.interest_rate}%/năm
+- Số tiền đề nghị vay: {creditAssessment.loan_info.amount.requested} VNĐ
+- Mục đích sử dụng vốn: {creditAssessment.loan_info.purpose.main_purpose}
+- Thời hạn vay: {creditAssessment.loan_info.term.requested_months} tháng
+- Lãi suất mong muốn: {creditAssessment.loan_info.interest.final_rate}%/năm
 {/creditAssessment}
 
 Ngày nộp đơn: ${new Date().toLocaleDateString('vi-VN')}
@@ -215,8 +215,8 @@ TÀI SẢN THẾ CHẤP:
 
 {#creditAssessment}
 NGHĨA VỤ THẾ CHẤP:
-- Số tiền bảo đảm: {creditAssessment.approved_amount} VNĐ
-- Thời hạn bảo đảm: {creditAssessment.loan_term} tháng
+- Số tiền bảo đảm: {creditAssessment.loan_info.amount.approved} VNĐ
+- Thời hạn bảo đảm: {creditAssessment.loan_info.term.approved_months} tháng
 {/creditAssessment}
 
 Ngày lập hợp đồng: ${new Date().toLocaleDateString('vi-VN')}
