@@ -4,7 +4,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
 
 // Create a conditional client that works during build time and runtime
-const supabase = supabaseUrl && supabaseKey 
+const supabaseClient = supabaseUrl && supabaseKey 
   ? createClient(supabaseUrl, supabaseKey, {
       db: {
         schema: 'dulieu_congviec'
@@ -12,12 +12,19 @@ const supabase = supabaseUrl && supabaseKey
     })
   : null
 
-if (!supabase && typeof window !== 'undefined') {
-  // Only throw error on client side when actually needed
-  console.error('Missing Supabase environment variables')
-}
-
-export { supabase }
+// Create a safe supabase export that throws a descriptive error when null
+export const supabase = new Proxy({} as NonNullable<typeof supabaseClient>, {
+  get(target, prop) {
+    if (!supabaseClient) {
+      if (typeof window !== 'undefined') {
+        throw new Error('Database connection not available. Please check your environment configuration.');
+      }
+      // During build time, return a mock to prevent errors
+      return () => Promise.reject(new Error('Database not available during build'));
+    }
+    return (supabaseClient as any)[prop];
+  }
+});
 
 // Document types
 export type DocumentType =

@@ -194,11 +194,6 @@ export async function generateCreditDocument({
       throw new Error('Missing required parameters: documentType, customerId, exportType');
     }
 
-    // Check if supabase client is available
-    if (!supabase) {
-      throw new Error('Database connection not available. Please check environment configuration.');
-    }
-
     // Fetch data from database
     const [customerResult, collateralResult, creditAssessmentResult] = await Promise.all([
       // Always fetch customer
