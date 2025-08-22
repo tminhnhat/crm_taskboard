@@ -141,3 +141,47 @@ export async function uploadBufferToVercelBlob(buffer: Buffer, blobPath: string)
 export async function deleteTemplateFromVercelBlob(blobPath: string): Promise<void> {
   await del(blobPath);
 }
+
+/**
+ * Lấy danh sách documents từ Vercel Blob Storage (từ folder ketqua)
+ * @param folderPath Đường dẫn folder (ví dụ: 'ketqua/')
+ * @returns Danh sách file documents với metadata
+ */
+export async function fetchDocumentsListFromVercelBlob(folderPath: string = 'ketqua/'): Promise<Array<{
+  pathname: string;
+  url: string;
+  size: number;
+  uploadedAt: Date;
+}>> {
+  try {
+    // Sử dụng list API để lấy danh sách files
+    const { blobs } = await list({
+      prefix: folderPath,
+      limit: 1000 // Increase limit for documents
+    });
+    
+    // Trích xuất thông tin file documents
+    const documents = blobs
+      .filter((blob: any) => blob.pathname.startsWith(folderPath))
+      .map((blob: any) => ({
+        pathname: blob.pathname,
+        url: blob.url,
+        size: blob.size,
+        uploadedAt: new Date(blob.uploadedAt)
+      }))
+      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime()); // Sort by newest first
+    
+    return documents;
+  } catch (error) {
+    console.error('Error fetching documents list from blob:', error);
+    return [];
+  }
+}
+
+/**
+ * Xóa document khỏi Vercel Blob Storage
+ * @param blobPath Đường dẫn blob (ví dụ: 'ketqua/document.docx')
+ */
+export async function deleteDocumentFromVercelBlob(blobPath: string): Promise<void> {
+  await del(blobPath);
+}

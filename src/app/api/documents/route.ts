@@ -9,6 +9,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { documentType, customerId, collateralId, creditAssessmentId, exportType } = body;
     
+    // Check if response should be JSON (for saving) or binary (for download)
+    const returnJson = req.nextUrl.searchParams.get('return') === 'json';
+    
     // Validate required fields
     if (!documentType || !customerId || !exportType) {
       return NextResponse.json({ 
@@ -24,6 +27,17 @@ export async function POST(req: NextRequest) {
       exportType,
     });
 
+    // Return JSON response with blob URL if requested
+    if (returnJson) {
+      return NextResponse.json({
+        filename: result.filename,
+        contentType: result.contentType,
+        blobUrl: result.blobUrl,
+        size: result.buffer.length
+      });
+    }
+
+    // Otherwise return the document for direct download
     return new NextResponse(new Uint8Array(result.buffer), {
       status: 200,
       headers: {

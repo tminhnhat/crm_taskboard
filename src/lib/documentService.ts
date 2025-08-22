@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { format, addMonths } from 'date-fns';
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
-import { fetchTemplateFromVercelBlob } from '@/lib/vercelBlob';
+import { fetchTemplateFromVercelBlob, uploadBufferToVercelBlob, deleteDocumentFromVercelBlob } from '@/lib/vercelBlob';
 import * as XLSX from 'xlsx';
 import { existsSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
@@ -32,6 +32,7 @@ export interface GenerateDocumentResult {
   buffer: Buffer;
   filename: string;
   contentType: string;
+  blobUrl?: string; // URL to document stored in Vercel Blob
 }
 
 export interface DocumentData {
@@ -273,10 +274,22 @@ export async function generateCreditDocument({
     const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
     const filename = `${documentType}_${customerId}_${timestamp}.${exportType}`;
 
+    // Save document to Vercel Blob in ketqua folder
+    let blobUrl: string | undefined = undefined;
+    try {
+      const blobPath = `ketqua/${filename}`;
+      blobUrl = await uploadBufferToVercelBlob(outBuffer, blobPath);
+      console.log(`Document saved to Vercel Blob: ${blobPath}`);
+    } catch (blobError) {
+      console.warn('Failed to save document to Vercel Blob:', blobError);
+      // Continue without blob storage if it fails
+    }
+
     return {
       buffer: outBuffer,
       filename,
       contentType,
+      blobUrl, // Add blob URL to response
     };
 
   } catch (error) {
@@ -369,11 +382,23 @@ export async function deleteDocument(fileName: string): Promise<boolean> {
       throw new Error('Invalid characters in filename');
     }
 
-    const filePath = join(process.cwd(), 'ketqua', sanitizedFileName);
-    
-    if (existsSync(filePath)) {
-      unlinkSync(filePath);
+    try {
+      // Try to delete from Vercel Blob first
+      const blobPath = `ketqua/${sanitizedFileName}`;
+      await deleteDocumentFromVercelBlob(blobPath);
+      console.log(`Document deleted from Vercel Blob: ${blobPath}`);
       return true;
+    } catch (blobError) {
+      console.warn('Failed to delete from Vercel Blob:', blobError);
+      
+      // Fallback to local file system deletion
+      const filePath = join(process.cwd(), 'ketqua', sanitizedFileName);
+      
+      if (existsSync(filePath)) {
+        unlinkSync(filePath);
+        console.log(`Document deleted from local storage: ${filePath}`);
+        return true;
+      }
     }
     
     return false;
