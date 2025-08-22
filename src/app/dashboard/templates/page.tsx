@@ -5,7 +5,6 @@ export default function TemplatesDashboard() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [seeding, setSeeding] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -75,36 +74,6 @@ export default function TemplatesDashboard() {
     }
   }
 
-  async function handleSeedTemplates() {
-    setSeeding(true);
-    try {
-      const response = await fetch('/api/templates/seed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'seed' }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert('Templates cơ bản đã được tạo thành công!');
-        // Refetch templates
-        const listResponse = await fetch('/api/templates');
-        const listData = await listResponse.json();
-        if (listResponse.ok) {
-          setTemplates(listData.templates || []);
-        }
-      } else {
-        throw new Error(data.message || 'Seed failed');
-      }
-    } catch (error: any) {
-      console.error('Seed error:', error);
-      alert(`Tạo templates thất bại: ${error.message || 'Unknown error'}`);
-    } finally {
-      setSeeding(false);
-    }
-  }
-
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <h1 className="text-xl font-bold mb-4">Quản lý Template</h1>
@@ -138,21 +107,6 @@ export default function TemplatesDashboard() {
             {uploading ? 'Đang upload...' : 'Upload Template'}
           </button>
         </form>
-      </div>
-
-      {/* Seed Templates Section */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <h3 className="font-semibold mb-2">Tạo Templates Cơ Bản</h3>
-        <p className="text-sm text-gray-600 mb-3">
-          Nếu chưa có templates, bạn có thể tạo các templates cơ bản để bắt đầu sử dụng hệ thống.
-        </p>
-        <button 
-          onClick={handleSeedTemplates}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50" 
-          disabled={seeding}
-        >
-          {seeding ? 'Đang tạo templates...' : 'Tạo Templates Cơ Bản'}
-        </button>
       </div>
 
       <div>

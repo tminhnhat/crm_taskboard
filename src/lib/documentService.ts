@@ -3,7 +3,6 @@ import { format, addMonths } from 'date-fns';
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { fetchTemplateFromVercelBlob } from '@/lib/vercelBlob';
-import { ensureTemplatesExist } from '@/lib/templateSeeder';
 import * as XLSX from 'xlsx';
 import { existsSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
@@ -195,11 +194,6 @@ export async function generateCreditDocument({
       throw new Error('Missing required parameters: documentType, customerId, exportType');
     }
 
-    // Ensure templates exist for non-Excel documents
-    if (exportType !== 'xlsx') {
-      await ensureTemplatesExist();
-    }
-    
     // Fetch data from database
     const [customerResult, collateralResult, creditAssessmentResult] = await Promise.all([
       // Always fetch customer
