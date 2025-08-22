@@ -1,40 +1,50 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import type { Document, DocumentType, DocumentExportType } from '@/lib/supabase'
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import type { Document, DocumentType, DocumentExportType } from '@/lib/supabase';
 
 export interface GenerateDocumentParams {
-  documentType: DocumentType
-  customerId: number
-  collateralId?: number
-  assessmentId?: number
-  exportType: DocumentExportType
+  documentType: DocumentType;
+  customerId: number;
+  collateralId?: number;
+  assessmentId?: number;
+  exportType: DocumentExportType;
 }
 
-export function useDocuments() {
-  const [documents, setDocuments] = useState<Document[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export interface UseDocumentsReturn {
+  documents: Document[];
+  loading: boolean;
+  error: string | null;
+  generateDocument: (params: GenerateDocumentParams) => Promise<{ filename: string; url: string }>;
+  deleteDocument: (documentId: number) => Promise<void>;
+  fetchDocuments: () => Promise<void>;
+  sendDocumentByEmail: (filename: string, email: string) => Promise<void>;
+}
+
+export function useDocuments(): UseDocumentsReturn {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch all documents with related data
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       
       const { data, error } = await supabase
         .from('documents')
         .select('*, customer:customers!inner(*), collateral:collaterals(*), assessment:credit_assessments(*)')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false });
 
-      if (error) throw error
-      setDocuments(data || [])
+      if (error) throw error;
+      setDocuments(data || []);
     } catch (err) {
-      console.error('Error fetching documents:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch documents')
+      console.error('Error fetching documents:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch documents');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, []);
 
   // Generate and save a new document
   const generateDocument = async ({
@@ -43,40 +53,16 @@ export function useDocuments() {
     collateralId,
     assessmentId,
     exportType
-  }: GenerateDocumentParams) => {
+  }: GenerateDocumentParams): Promise<{ filename: string; url: string }> => {
     try {
-      setError(null)
+      setError(null);
 
-      // First, fetch all required data
-      const [customerRes, collateralRes, assessmentRes] = await Promise.all([
-        // Always fetch customer
-        supabase
-          .from('customers')
-          .select('*')
-          .eq('customer_id', customerId)
-          .single(),
+      // Validate required parameters
+      if (!documentType || !customerId || !exportType) {
+        throw new Error('Missing required parameters: documentType, customerId, exportType');
+      }
 
-        // Only fetch collateral if provided
-        collateralId ? supabase
-          .from('collaterals')
-          .select('*')
-          .eq('collateral_id', collateralId)
-          .single() : null,
-
-        // Only fetch assessment if provided
-        assessmentId ? supabase
-          .from('credit_assessments')
-          .select('*')
-          .eq('assessment_id', assessmentId)
-          .single() : null
-      ])
-
-      // Check for errors
-      if (customerRes.error) throw new Error(`Error fetching customer: ${customerRes.error.message}`)
-      if (collateralId && collateralRes?.error) throw new Error(`Error fetching collateral: ${collateralRes.error.message}`)
-      if (assessmentId && assessmentRes?.error) throw new Error(`Error fetching assessment: ${assessmentRes.error.message}`)
-
-      // Prepare the request to the API
+      // Generate document via API
       const response = await fetch('/api/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,30 +73,37 @@ export function useDocuments() {
           creditAssessmentId: assessmentId,
           exportType,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Error generating document')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `Document generation failed with status ${response.status}`);
       }
 
-      // Get filename from Content-Disposition header
-      const contentDisposition = response.headers.get('content-disposition')
+      // Extract filename from Content-Disposition header
+      const contentDisposition = response.headers.get('content-disposition');
       const filename = contentDisposition
-        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
-        : `${documentType}_${customerId}_${new Date().getTime()}.${exportType}`
+        ? contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)?.[1]?.replace(/['"]/g, '')
+        : `${documentType}_${customerId}_${Date.now()}.${exportType}`;
 
-      // Download the file
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.style.display = 'none'
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      if (!filename) {
+        throw new Error('Could not determine filename from response');
+      }
+
+      // Create download blob and trigger download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const downloadLink = document.createElement('a');
+      downloadLink.style.display = 'none';
+      downloadLink.href = url;
+      downloadLink.download = filename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(downloadLink);
 
       // Record the document in the database
       const { data: newDoc, error: saveError } = await supabase
@@ -121,56 +114,79 @@ export function useDocuments() {
           collateral_id: collateralId,
           assessment_id: assessmentId,
           file_name: filename,
-          file_url: url // You might want to store this in a more permanent location
+          file_url: `/ketqua/${filename}` // Store relative path to the file
         }])
-        .select('*, customer:customers!inner(*), collateral:collaterals(*), assessment:credit_assessments(*)')
+        .select('*, customer:customers!inner(*), collateral:collaterals(*), assessment:credit_assessments(*)');
 
-      if (saveError) throw saveError
-
-      // Update the documents list with the new document
-      if (newDoc) {
-        setDocuments(prevDocs => [...newDoc, ...prevDocs])
+      if (saveError) {
+        console.warn('Failed to save document record to database:', saveError);
+      } else if (newDoc) {
+        setDocuments(prevDocs => [...newDoc, ...prevDocs]);
       }
 
-      return { filename, url }
+      return { filename, url };
     } catch (err) {
-      console.error('Error generating document:', err)
-      setError(err instanceof Error ? err.message : 'Failed to generate document')
-      throw err
+      console.error('Error generating document:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate document');
+      throw err;
     }
-  }
+  };
 
   // Delete a document
-  const deleteDocument = async (documentId: number) => {
+  const deleteDocument = async (documentId: number): Promise<void> => {
     try {
-      setError(null)
+      setError(null);
 
-      // First, try to delete the file from storage (if implemented)
-      const document = documents.find(d => d.document_id === documentId)
-      if (document?.file_url) {
-        // You might want to add file deletion from storage here
-        // For example: await storage.deleteFile(document.file_url)
+      // First, try to delete the file from storage
+      const document = documents.find(d => d.document_id === documentId);
+      if (document?.file_name) {
+        // Delete the physical file
+        await fetch(`/api/documents?file=${encodeURIComponent(document.file_name)}`, {
+          method: 'DELETE',
+        });
       }
       
       const { error } = await supabase
         .from('documents')
         .delete()
-        .eq('document_id', documentId)
+        .eq('document_id', documentId);
 
-      if (error) throw error
+      if (error) throw error;
 
-      setDocuments(prevDocs => prevDocs.filter(doc => doc.document_id !== documentId))
+      setDocuments(prevDocs => prevDocs.filter(doc => doc.document_id !== documentId));
     } catch (err) {
-      console.error('Error deleting document:', err)
-      setError(err instanceof Error ? err.message : 'Failed to delete document')
-      throw err
+      console.error('Error deleting document:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete document');
+      throw err;
     }
-  }
+  };
+
+  // Send document by email
+  const sendDocumentByEmail = async (filename: string, email: string): Promise<void> => {
+    try {
+      setError(null);
+
+      const response = await fetch('/api/documents/sendmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: filename, email }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send email');
+      }
+    } catch (err) {
+      console.error('Error sending document by email:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send document by email');
+      throw err;
+    }
+  };
 
   // Effect to load documents on mount
   useEffect(() => {
-    fetchDocuments()
-  }, [])
+    fetchDocuments();
+  }, [fetchDocuments]);
 
   return {
     documents,
@@ -178,6 +194,7 @@ export function useDocuments() {
     error,
     generateDocument,
     deleteDocument,
-    fetchDocuments
-  }
+    fetchDocuments,
+    sendDocumentByEmail,
+  };
 }

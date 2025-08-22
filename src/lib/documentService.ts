@@ -5,7 +5,11 @@ import PizZip from 'pizzip';
 import { fetchTemplateFromVercelBlob } from '@/lib/vercelBlob';
 import { ensureTemplatesExist } from '@/lib/templateSeeder';
 import * as XLSX from 'xlsx';
+import { existsSync, readFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
+import nodemailer from 'nodemailer';
 
+// Type definitions
 export type DocumentType =
   | 'hop_dong_tin_dung'
   | 'to_trinh_tham_dinh'
@@ -22,98 +26,147 @@ export interface GenerateDocumentOptions {
   customerId: string;
   collateralId?: string;
   creditAssessmentId?: string;
-  exportType: 'docx' | 'pdf' | 'xlsx';
+  exportType: ExportType;
 }
 
+export interface GenerateDocumentResult {
+  buffer: Buffer;
+  filename: string;
+  contentType: string;
+}
+
+export interface DocumentData {
+  customer: any;
+  collateral?: any;
+  creditAssessment?: any;
+}
+
+export interface ExcelRow {
+  [key: string]: string | number | Date;
+}
+
+// Content type mapping
+const CONTENT_TYPE_MAP: Record<ExportType, string> = {
+  'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'pdf': 'application/pdf',
+  'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+};
 
 
-function generateExcelBuffer(documentType: DocumentType, data: any): Buffer {
-  const workbook = XLSX.utils.book_new();
-  let worksheet;
 
-  switch (documentType) {
-    case 'bang_tinh_lai': {
-      const { creditAssessment, customer } = data;
-      const rows = [];
-      
-      // Header row
-      rows.push(['BẢNG TÍNH LÃI VAY', '', '', '', '']);
-      rows.push(['Khách hàng:', customer.full_name, '', 'CCCD:', customer.id_number]);
-      rows.push(['Số tiền vay:', creditAssessment.approved_amount, 'VNĐ', '', '']);
-      rows.push(['Lãi suất:', creditAssessment.interest_rate, '%/năm', '', '']);
-      rows.push(['Kỳ hạn:', creditAssessment.loan_term, 'tháng', '', '']);
-      rows.push(['', '', '', '', '']);
-      rows.push(['Kỳ', 'Ngày', 'Dư nợ gốc', 'Lãi phải trả', 'Tổng phải trả']);
-
-      const startDate = new Date();
-      const monthlyRate = creditAssessment.interest_rate / 12 / 100;
-      const monthlyPayment = (creditAssessment.approved_amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -creditAssessment.loan_term));
-      let balance = creditAssessment.approved_amount;
-
-      for (let month = 1; month <= creditAssessment.loan_term; month++) {
-        const date = addMonths(startDate, month - 1);
-        const interest = balance * monthlyRate;
-        const principal = monthlyPayment - interest;
-        
-        rows.push([
-          month,
-          format(date, 'dd/MM/yyyy'),
-          Math.round(balance),
-          Math.round(interest),
-          Math.round(monthlyPayment)
-        ]);
-        
-        balance -= principal;
-      }
-
-      worksheet = XLSX.utils.aoa_to_sheet(rows);
-      break;
-    }
-    
-    case 'lich_tra_no': {
-      const { creditAssessment, customer } = data;
-      const rows = [];
-      
-      // Header
-      rows.push(['LỊCH TRẢ NỢ', '', '', '']);
-      rows.push(['Khách hàng:', customer.full_name, 'CCCD:', customer.id_number]);
-      rows.push(['Số tiền vay:', creditAssessment.approved_amount, 'VNĐ', '']);
-      rows.push(['', '', '', '']);
-      rows.push(['Kỳ', 'Ngày đến hạn', 'Số tiền', 'Trạng thái']);
-
-      const startDate = new Date();
-      const monthlyPayment = creditAssessment.approved_amount / creditAssessment.loan_term;
-
-      for (let month = 1; month <= creditAssessment.loan_term; month++) {
-        const dueDate = addMonths(startDate, month);
-        rows.push([
-          month,
-          format(dueDate, 'dd/MM/yyyy'),
-          Math.round(monthlyPayment),
-          ''  // Status will be updated manually
-        ]);
-      }
-
-      worksheet = XLSX.utils.aoa_to_sheet(rows);
-      break;
-    }
-
-    default:
-      throw new Error(`Excel generation not supported for document type: ${documentType}`);
+// Excel generation functions
+function generateInterestCalculationSheet(creditAssessment: any, customer: any): any[][] {
+  const rows: any[][] = [];
+  
+  // Validate required data
+  if (!creditAssessment?.approved_amount || !creditAssessment?.interest_rate || !creditAssessment?.loan_term) {
+    throw new Error('Missing required credit assessment data for interest calculation');
   }
 
-  // Apply some styling
-  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-  worksheet['!cols'] = [
-    { wch: 8 },   // Column A
-    { wch: 15 },  // Column B
-    { wch: 15 },  // Column C
-    { wch: 15 },  // Column D
-    { wch: 15 }   // Column E
-  ];
+  // Header section
+  rows.push(['INTEREST CALCULATION TABLE', '', '', '', '']);
+  rows.push(['Customer:', customer.full_name || 'N/A', '', 'ID Number:', customer.id_number || 'N/A']);
+  rows.push(['Loan Amount:', creditAssessment.approved_amount, 'VND', '', '']);
+  rows.push(['Interest Rate:', creditAssessment.interest_rate, '%/year', '', '']);
+  rows.push(['Loan Term:', creditAssessment.loan_term, 'months', '', '']);
+  rows.push(['', '', '', '', '']);
+  rows.push(['Period', 'Date', 'Principal Balance', 'Interest Due', 'Total Payment']);
 
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  const startDate = new Date();
+  const monthlyRate = creditAssessment.interest_rate / 12 / 100;
+  const monthlyPayment = (creditAssessment.approved_amount * monthlyRate) / 
+                        (1 - Math.pow(1 + monthlyRate, -creditAssessment.loan_term));
+  let balance = creditAssessment.approved_amount;
+
+  for (let month = 1; month <= creditAssessment.loan_term; month++) {
+    const date = addMonths(startDate, month - 1);
+    const interest = balance * monthlyRate;
+    const principal = monthlyPayment - interest;
+    
+    rows.push([
+      month,
+      format(date, 'dd/MM/yyyy'),
+      Math.round(balance),
+      Math.round(interest),
+      Math.round(monthlyPayment)
+    ]);
+    
+    balance -= principal;
+  }
+
+  return rows;
+}
+
+function generateRepaymentScheduleSheet(creditAssessment: any, customer: any): any[][] {
+  const rows: any[][] = [];
+  
+  // Validate required data
+  if (!creditAssessment?.approved_amount || !creditAssessment?.loan_term) {
+    throw new Error('Missing required credit assessment data for repayment schedule');
+  }
+
+  // Header section
+  rows.push(['REPAYMENT SCHEDULE', '', '', '']);
+  rows.push(['Customer:', customer.full_name || 'N/A', 'ID Number:', customer.id_number || 'N/A']);
+  rows.push(['Loan Amount:', creditAssessment.approved_amount, 'VND', '']);
+  rows.push(['', '', '', '']);
+  rows.push(['Period', 'Due Date', 'Amount', 'Status']);
+
+  const startDate = new Date();
+  const monthlyPayment = creditAssessment.approved_amount / creditAssessment.loan_term;
+
+  for (let month = 1; month <= creditAssessment.loan_term; month++) {
+    const dueDate = addMonths(startDate, month);
+    rows.push([
+      month,
+      format(dueDate, 'dd/MM/yyyy'),
+      Math.round(monthlyPayment),
+      'Pending' // Status will be updated manually
+    ]);
+  }
+
+  return rows;
+}
+
+function generateExcelBuffer(documentType: DocumentType, data: DocumentData): Buffer {
+  try {
+    const workbook = XLSX.utils.book_new();
+    let worksheet: XLSX.WorkSheet;
+    let rows: any[][];
+
+    switch (documentType) {
+      case 'bang_tinh_lai': {
+        rows = generateInterestCalculationSheet(data.creditAssessment, data.customer);
+        worksheet = XLSX.utils.aoa_to_sheet(rows);
+        break;
+      }
+      
+      case 'lich_tra_no': {
+        rows = generateRepaymentScheduleSheet(data.creditAssessment, data.customer);
+        worksheet = XLSX.utils.aoa_to_sheet(rows);
+        break;
+      }
+
+      default:
+        throw new Error(`Excel generation not supported for document type: ${documentType}`);
+    }
+
+    // Apply styling
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+    worksheet['!cols'] = [
+      { wch: 8 },   // Column A
+      { wch: 15 },  // Column B
+      { wch: 15 },  // Column C
+      { wch: 15 },  // Column D
+      { wch: 15 }   // Column E
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    
+  } catch (error) {
+    throw new Error(`Excel generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export interface GenerateDocumentResult {
@@ -129,137 +182,144 @@ export async function generateCreditDocument({
   creditAssessmentId,
   exportType,
 }: GenerateDocumentOptions): Promise<GenerateDocumentResult> {
-  // 0. Đảm bảo templates tồn tại
-  if (exportType !== 'xlsx') {
-    await ensureTemplatesExist();
-  }
-  
-  // 1. Lấy dữ liệu từ database
-  let customer, collateral = null, creditAssessment = null;
-  
-  // Get customer data
-  const { data: customerData, error: customerError } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('customer_id', customerId)
-    .single();
+  try {
+    // Validate inputs
+    if (!documentType || !customerId || !exportType) {
+      throw new Error('Missing required parameters: documentType, customerId, exportType');
+    }
+
+    // Ensure templates exist for non-Excel documents
+    if (exportType !== 'xlsx') {
+      await ensureTemplatesExist();
+    }
     
-  if (customerError || !customerData) {
-    throw new Error(`Could not find customer with ID ${customerId}: ${customerError?.message}`);
-  }
-  customer = customerData;
-  
-  // Get collateral data if requested
-  if (collateralId) {
-    const { data, error } = await supabase
-      .from('collaterals')
-      .select('*')
-      .eq('collateral_id', collateralId)
-      .single();
-    if (error) {
-      throw new Error(`Could not find collateral with ID ${collateralId}: ${error.message}`);
+    // Fetch data from database
+    const [customerResult, collateralResult, creditAssessmentResult] = await Promise.all([
+      // Always fetch customer
+      supabase
+        .from('customers')
+        .select('*')
+        .eq('customer_id', customerId)
+        .single(),
+      
+      // Conditionally fetch collateral
+      collateralId ? supabase
+        .from('collaterals')
+        .select('*')
+        .eq('collateral_id', collateralId)
+        .single() : Promise.resolve({ data: null, error: null }),
+      
+      // Conditionally fetch credit assessment
+      creditAssessmentId ? supabase
+        .from('credit_assessments')
+        .select('*')
+        .eq('assessment_id', creditAssessmentId)
+        .single() : Promise.resolve({ data: null, error: null }),
+    ]);
+
+    // Check for errors
+    if (customerResult.error || !customerResult.data) {
+      throw new Error(`Customer not found: ${customerResult.error?.message || 'Unknown error'}`);
     }
-    collateral = data;
-  }
-  
-  // Get credit assessment data if requested
-  if (creditAssessmentId) {
-    const { data, error } = await supabase
-      .from('credit_assessments')
-      .select('*')
-      .eq('assessment_id', creditAssessmentId)
-      .single();
-    if (error) {
-      throw new Error(`Could not find credit assessment with ID ${creditAssessmentId}: ${error.message}`);
+
+    if (collateralId && collateralResult.error) {
+      throw new Error(`Collateral not found: ${collateralResult.error.message}`);
     }
-    creditAssessment = data;
-  }
 
-  if (!customer) {
-    console.error('Customer not found for ID:', customerId);
-    throw new Error('Customer not found');
-  }
+    if (creditAssessmentId && creditAssessmentResult.error) {
+      throw new Error(`Credit assessment not found: ${creditAssessmentResult.error.message}`);
+    }
 
-  // 2. Lấy template từ Vercel Blob
-  let templateBuffer: Buffer;
-  try {
-    templateBuffer = await fetchTemplateFromVercelBlob(
-      `maubieu/${documentType}.docx`
-    );
-    console.log(`✓ Template ${documentType} loaded successfully`);
-  } catch (error) {
-    console.error('Error fetching template from blob:', error);
-    throw new Error(`Could not load template "${documentType}": ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-
-  // 3. Generate document based on type
-  try {
-    const templateData = {
-      customer: customer || {},
-      collateral: collateral || {},
-      creditAssessment: creditAssessment || {}
+    const documentData: DocumentData = {
+      customer: customerResult.data,
+      collateral: collateralResult.data,
+      creditAssessment: creditAssessmentResult.data,
     };
 
+    // Generate document based on export type
     let outBuffer: Buffer;
     let contentType: string;
 
-    // Handle Excel files
     if (exportType === 'xlsx' && (documentType === 'bang_tinh_lai' || documentType === 'lich_tra_no')) {
-      outBuffer = generateExcelBuffer(documentType, templateData);
-      contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    } 
-    // Handle Word documents
-    else if (exportType === 'docx') {
+      // Handle Excel files
+      outBuffer = generateExcelBuffer(documentType, documentData);
+      contentType = CONTENT_TYPE_MAP[exportType];
+    } else if (exportType === 'docx') {
+      // Handle Word documents - fetch template from Vercel Blob
+      const templateBuffer = await fetchTemplateFromVercelBlob(`maubieu/${documentType}.docx`);
+      
       const zip = new PizZip(templateBuffer);
       const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-      doc.render(templateData);
+      doc.render(documentData);
       outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
-      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    }
-    // Handle PDF (if implemented)
-    else if (exportType === 'pdf') {
+      contentType = CONTENT_TYPE_MAP[exportType];
+    } else if (exportType === 'pdf') {
       throw new Error('PDF export not yet implemented');
-    }
-    else {
+    } else {
       throw new Error(`Unsupported export type: ${exportType}`);
     }
 
-    // 4. Create filename and return buffer
-    const dateStr = format(new Date(), 'yyyyMMdd');
-    const fileName = `${documentType}_${customerId}_${dateStr}.${exportType}`;
-    
-    // 5. Return buffer
+    // Create filename with timestamp
+    const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
+    const filename = `${documentType}_${customerId}_${timestamp}.${exportType}`;
+
     return {
-      buffer: outBuffer!,
-      filename: fileName,
-      contentType
+      buffer: outBuffer,
+      filename,
+      contentType,
     };
-  } catch (renderError) {
-    console.error('Error rendering document:', renderError);
-    throw new Error(`Lỗi tạo tài liệu: ${renderError instanceof Error ? renderError.message : 'Unknown render error'}`);
+
+  } catch (error) {
+    console.error('Document generation error:', error);
+    throw new Error(`Document generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
-// Hàm tìm kiếm & lọc tài liệu
-export function searchDocuments({ customerId, loanId, status }: { customerId?: string; loanId?: string; status?: string }) {
-  // Đọc folder ketqua, lọc theo tên file hoặc metadata
-  // ...
+/**
+ * Search and filter documents (stub function for future implementation)
+ */
+export function searchDocuments({ 
+  customerId, 
+  loanId, 
+  status 
+}: { 
+  customerId?: string; 
+  loanId?: string; 
+  status?: string; 
+}): Promise<any[]> {
+  // TODO: Implement document search functionality
+  // This could read from ketqua folder and filter by filename patterns or metadata
+  console.warn('searchDocuments function not yet implemented');
+  return Promise.resolve([]);
 }
 
-// Hàm upload template lên Vercel Blob (dashboard sẽ gọi)
-export async function uploadTemplateToVercelBlob(file: File, documentType: DocumentType) {
-  // ...
+/**
+ * Upload template to Vercel Blob (stub function for future implementation)
+ */
+export async function uploadTemplateToVercelBlob(
+  file: File, 
+  documentType: DocumentType
+): Promise<void> {
+  // TODO: Implement template upload functionality
+  // This would upload the file to Vercel Blob Storage under maubieu/ folder
+  console.warn('uploadTemplateToVercelBlob function not yet implemented');
+  throw new Error('Template upload functionality not yet implemented');
 }
 
 // Hàm gửi mail tài liệu
-import nodemailer from 'nodemailer';
+export async function sendDocumentByEmail(documentPath: string, email: string): Promise<void> {
+  // Validate inputs
+  if (!documentPath || !email) {
+    throw new Error('Document path and email are required');
+  }
 
-export async function sendDocumentByEmail(documentPath: string, email: string) {
-  // Đọc file
-  const fs = require('fs');
-  const path = require('path');
-  const fileName = path.basename(documentPath);
-  const fileBuffer = fs.readFileSync(documentPath);
+  if (!existsSync(documentPath)) {
+    throw new Error(`Document not found: ${documentPath}`);
+  }
+
+  // Read file
+  const fileName = documentPath.split('/').pop() || 'document';
+  const fileBuffer = readFileSync(documentPath);
 
   // Cấu hình transporter (cần cấu hình biến môi trường thực tế)
   const transporter = nodemailer.createTransport({
@@ -287,12 +347,28 @@ export async function sendDocumentByEmail(documentPath: string, email: string) {
 }
 
 export async function deleteDocument(fileName: string): Promise<boolean> {
-  const fs = require('fs');
-  const path = require('path');
-  const filePath = path.join(process.cwd(), 'ketqua', fileName);
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
-    return true;
+  try {
+    // Validate input
+    if (!fileName || typeof fileName !== 'string') {
+      throw new Error('Invalid filename provided');
+    }
+
+    // Sanitize filename to prevent path traversal
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, '');
+    if (sanitizedFileName !== fileName) {
+      throw new Error('Invalid characters in filename');
+    }
+
+    const filePath = join(process.cwd(), 'ketqua', sanitizedFileName);
+    
+    if (existsSync(filePath)) {
+      unlinkSync(filePath);
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    throw new Error(`Failed to delete document: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  return false;
 }

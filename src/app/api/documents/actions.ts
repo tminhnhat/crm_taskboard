@@ -1,50 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendDocumentByEmail, deleteDocument } from '@/lib/documentService';
-import { deleteTemplateFromVercelBlob } from '@/lib/vercelBlob';
+import { sendDocumentByEmail } from '@/lib/documentService';
 
-// POST /api/documents/sendmail
+/**
+ * Send document by email
+ * POST /api/documents/actions - with action: 'sendEmail'
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { fileName, email } = body;
-    if (!fileName || !email) {
-      return NextResponse.json({ error: 'Missing fileName or email' }, { status: 400 });
+    const { action, fileName, email } = body;
+
+    if (action === 'sendEmail') {
+      // Validate required fields
+      if (!fileName || !email) {
+        return NextResponse.json({ 
+          error: 'Missing required fields: fileName, email' 
+        }, { status: 400 });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return NextResponse.json({ 
+          error: 'Invalid email format' 
+        }, { status: 400 });
+      }
+
+      const filePath = `${process.cwd()}/ketqua/${fileName}`;
+      await sendDocumentByEmail(filePath, email);
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Document sent successfully' 
+      });
     }
-    const filePath = `${process.cwd()}/ketqua/${fileName}`;
-    await sendDocumentByEmail(filePath, email);
-    return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
-  }
-}
 
-// DELETE /api/documents?file=filename
-export async function DELETE(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const file = searchParams.get('file');
-  if (!file) {
-    return NextResponse.json({ error: 'Missing file param' }, { status: 400 });
-  }
-  try {
-    const ok = await deleteDocument(file);
-    if (!ok) return NextResponse.json({ error: 'File not found' }, { status: 404 });
-    return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
-  }
-}
+    return NextResponse.json({ 
+      error: 'Invalid action. Supported actions: sendEmail' 
+    }, { status: 400 });
 
-// DELETE /api/templates?file=maubieu/filename
-export async function DELETE_TEMPLATE(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const file = searchParams.get('file');
-  if (!file) {
-    return NextResponse.json({ error: 'Missing file param' }, { status: 400 });
-  }
-  try {
-    await deleteTemplateFromVercelBlob(file);
-    return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+  } catch (error) {
+    console.error('Document action error:', error);
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'Action failed' 
+    }, { status: 500 });
   }
 }

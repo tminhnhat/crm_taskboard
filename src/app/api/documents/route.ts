@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateCreditDocument, deleteDocument } from '@/lib/documentService';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
-// POST /api/documents
+// POST /api/documents - Generate and download document
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { documentType, customerId, collateralId, creditAssessmentId, exportType } = body;
+    
+    // Validate required fields
     if (!documentType || !customerId || !exportType) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ 
+        error: 'Missing required fields: documentType, customerId, exportType' 
+      }, { status: 400 });
     }
     
     const result = await generateCreditDocument({
@@ -18,7 +24,6 @@ export async function POST(req: NextRequest) {
       exportType,
     });
 
-    // Return file as download response
     return new NextResponse(new Uint8Array(result.buffer), {
       status: 200,
       headers: {
@@ -27,56 +32,78 @@ export async function POST(req: NextRequest) {
         'Content-Length': result.buffer.length.toString(),
       },
     });
-  } catch (err: any) {
-    console.error('Document generation error:', err);
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+  } catch (error) {
+    console.error('Document generation error:', error);
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'Document generation failed' 
+    }, { status: 500 });
   }
 }
 
-// GET /api/documents?file=filename
+// GET /api/documents?file=filename - Download existing document
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const file = searchParams.get('file');
-  if (!file) {
-    return NextResponse.json({ error: 'Missing file param' }, { status: 400 });
-  }
   try {
-    // Đọc file từ ketqua
-    const fs = require('fs');
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'ketqua', file);
-    if (!fs.existsSync(filePath)) {
+    const { searchParams } = new URL(req.url);
+    const filename = searchParams.get('file');
+    
+    if (!filename) {
+      return NextResponse.json({ error: 'Missing file parameter' }, { status: 400 });
+    }
+
+    const filePath = join(process.cwd(), 'ketqua', filename);
+    
+    if (!existsSync(filePath)) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
-    const fileBuffer = fs.readFileSync(filePath);
-    const ext = file.split('.').pop();
-    let contentType = 'application/octet-stream';
-    if (ext === 'docx') contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    if (ext === 'pdf') contentType = 'application/pdf';
+
+    const fileBuffer = readFileSync(filePath);
+    const extension = filename.split('.').pop()?.toLowerCase();
+    
+    // Determine content type
+    const contentTypeMap: Record<string, string> = {
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'pdf': 'application/pdf',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    };
+    
+    const contentType = contentTypeMap[extension || ''] || 'application/octet-stream';
+
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${file}"`,
+        'Content-Disposition': `attachment; filename="${filename}"`,
       },
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+  } catch (error) {
+    console.error('File download error:', error);
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'File download failed' 
+    }, { status: 500 });
   }
 }
 
-// DELETE /api/documents?file=filename
+// DELETE /api/documents?file=filename - Delete document
 export async function DELETE(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const file = searchParams.get('file');
-  if (!file) {
-    return NextResponse.json({ error: 'Missing file param' }, { status: 400 });
-  }
   try {
-    const ok = await deleteDocument(file);
-    if (!ok) return NextResponse.json({ error: 'File not found' }, { status: 404 });
+    const { searchParams } = new URL(req.url);
+    const filename = searchParams.get('file');
+    
+    if (!filename) {
+      return NextResponse.json({ error: 'Missing file parameter' }, { status: 400 });
+    }
+
+    const success = await deleteDocument(filename);
+    
+    if (!success) {
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
+    }
+
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+  } catch (error) {
+    console.error('Document deletion error:', error);
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'Document deletion failed' 
+    }, { status: 500 });
   }
 }
