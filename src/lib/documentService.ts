@@ -252,15 +252,42 @@ export async function generateCreditDocument({
         const templateBuffer = await fetchTemplateFromVercelBlob(`maubieu/${documentType}.docx`);
         
         const zip = new PizZip(templateBuffer);
-        const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-        doc.render(documentData);
-        outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
-        contentType = CONTENT_TYPE_MAP[exportType];
+        const doc = new Docxtemplater(zip, { 
+          paragraphLoop: true, 
+          linebreaks: true,
+          nullGetter: function(part: any) {
+            // Return empty string for missing data instead of throwing error
+            if (part.module === 'rawxml') {
+              return '';
+            }
+            return '';
+          }
+        });
+        
+        // Add error handling for template rendering
+        try {
+          doc.render(documentData);
+          outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
+          contentType = CONTENT_TYPE_MAP[exportType];
+        } catch (renderError: any) {
+          // Handle Docxtemplater-specific errors
+          if (renderError.properties && renderError.properties.errors) {
+            const errorDetails = renderError.properties.errors.map((err: any) => 
+              `${err.message} at ${err.part || 'unknown location'}`
+            ).join('; ');
+            throw new Error(`Template rendering failed: ${errorDetails}`);
+          }
+          throw new Error(`Template rendering failed: ${renderError.message || 'Unknown rendering error'}`);
+        }
       } catch (templateError) {
         // Provide a more user-friendly error message
         const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
         if (errorMessage.includes('Template không tìm thấy') || errorMessage.includes('not found')) {
           throw new Error(`Template file missing: Please upload a template for document type "${documentType}" in the Templates dashboard before generating documents.`);
+        }
+        if (errorMessage.includes('Template rendering failed')) {
+          // Re-throw rendering errors as they already have good context
+          throw templateError;
         }
         throw new Error(`Template loading failed: ${errorMessage}`);
       }

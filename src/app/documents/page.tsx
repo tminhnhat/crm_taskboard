@@ -26,6 +26,7 @@ function DocumentsContent() {
   const [emailAddress, setEmailAddress] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [availableTemplates, setAvailableTemplates] = useState<string[]>([]);
   const [formData, setFormData] = useState<DocumentGenerationForm>({
     documentType: '',
     customerId: '',
@@ -75,6 +76,25 @@ function DocumentsContent() {
 
     loadData();
   }, []);
+
+  // Load available templates
+  useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        const response = await fetch('/api/templates');
+        const data = await response.json();
+        if (data.templates) {
+          // Extract template names without .docx extension
+          const templateNames = data.templates.map((t: string) => t.replace('.docx', ''));
+          setAvailableTemplates(templateNames);
+        }
+      } catch (error) {
+        console.error('Error loading templates:', error);
+      }
+    };
+
+    loadTemplates();
+  }, []);
   
   // Update local state when hook data changes
   useEffect(() => {
@@ -95,10 +115,26 @@ function DocumentsContent() {
     { value: 'lich_tra_no', label: 'Lịch trả nợ' }
   ];
 
+  const getDocumentTypeWithTemplate = (type: any) => {
+    const hasTemplate = availableTemplates.includes(type.value);
+    return {
+      ...type,
+      hasTemplate,
+      displayLabel: hasTemplate ? type.label : `${type.label} (Chưa có mẫu)`
+    };
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.documentType || !formData.customerId) {
       alert('Vui lòng chọn loại tài liệu và khách hàng');
+      return;
+    }
+
+    // Check if template is available for DOCX export
+    if (formData.exportType === 'docx' && !availableTemplates.includes(formData.documentType)) {
+      const selectedType = documentTypes.find(dt => dt.value === formData.documentType);
+      alert(`Không thể tạo tài liệu Word cho "${selectedType?.label || formData.documentType}" vì chưa có mẫu. Vui lòng tải lên mẫu trong trang Templates hoặc chọn xuất Excel.`);
       return;
     }
 
@@ -287,10 +323,40 @@ function DocumentsContent() {
                     required
                   >
                     <option value="">-- Chọn loại tài liệu --</option>
-                    {documentTypes.map(type => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
-                    ))}
+                    {documentTypes.map(type => {
+                      const typeWithTemplate = getDocumentTypeWithTemplate(type);
+                      return (
+                        <option 
+                          key={type.value} 
+                          value={type.value}
+                          style={{
+                            color: typeWithTemplate.hasTemplate ? 'inherit' : '#666'
+                          }}
+                        >
+                          {typeWithTemplate.displayLabel}
+                        </option>
+                      );
+                    })}
                   </select>
+                  {formData.documentType && formData.exportType === 'docx' && (
+                    <div className="mt-2">
+                      {availableTemplates.includes(formData.documentType) ? (
+                        <div className="flex items-center text-green-600 text-sm">
+                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Mẫu tài liệu có sẵn
+                        </div>
+                      ) : (
+                        <div className="flex items-center text-orange-600 text-sm">
+                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          Chưa có mẫu - Vui lòng tải lên trong <a href="/templates" className="underline hover:text-orange-800">trang Templates</a> hoặc chọn Excel
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
