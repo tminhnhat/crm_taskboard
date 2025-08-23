@@ -32,18 +32,48 @@ export function useDocuments(): UseDocumentsReturn {
       setLoading(true);
       setError(null);
       
-      const { data, error } = await supabase
+      // Use separate queries to avoid JOIN issues that cause 300 errors
+      const { data: documentsData, error: documentsError } = await supabase
         .from('documents')
-        .select(`
-          *,
-          customer:customers(customer_id, full_name, phone, email),
-          collateral:collaterals(collateral_id, collateral_type, description),
-          assessment:credit_assessments(assessment_id, status, approval_decision)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setDocuments(data || []);
+        
+      if (documentsError) throw documentsError;
+      
+      if (documentsData && documentsData.length > 0) {
+        // Get unique IDs for related data
+        const customerIds = [...new Set(documentsData.map(d => d.customer_id).filter(id => id))];
+        const collateralIds = [...new Set(documentsData.map(d => d.collateral_id).filter(id => id))];
+        const assessmentIds = [...new Set(documentsData.map(d => d.assessment_id).filter(id => id))];
+        
+        // Fetch related data in parallel
+        const [customersResult, collateralsResult, assessmentsResult] = await Promise.all([
+          customerIds.length > 0 ? supabase
+            .from('customers')
+            .select('customer_id, full_name, phone, email')
+            .in('customer_id', customerIds) : Promise.resolve({ data: [] }),
+          collateralIds.length > 0 ? supabase
+            .from('collaterals')
+            .select('collateral_id, collateral_type, description')
+            .in('collateral_id', collateralIds) : Promise.resolve({ data: [] }),
+          assessmentIds.length > 0 ? supabase
+            .from('credit_assessments')
+            .select('assessment_id, status, approval_decision')
+            .in('assessment_id', assessmentIds) : Promise.resolve({ data: [] })
+        ]);
+        
+        // Combine the data
+        const enrichedDocuments = documentsData.map(doc => ({
+          ...doc,
+          customer: customersResult.data?.find(c => c.customer_id === doc.customer_id),
+          collateral: collateralsResult.data?.find(c => c.collateral_id === doc.collateral_id),
+          assessment: assessmentsResult.data?.find(a => a.assessment_id === doc.assessment_id)
+        }));
+        
+        setDocuments(enrichedDocuments);
+      } else {
+        setDocuments([]);
+      }
     } catch (err) {
       console.error('Error fetching documents:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch documents');
@@ -107,17 +137,39 @@ export function useDocuments(): UseDocumentsReturn {
           file_name: filename,
           file_url: fileUrl // Store blob URL or fallback path
         }])
-        .select(`
-          *,
-          customer:customers(customer_id, full_name, phone, email),
-          collateral:collaterals(collateral_id, collateral_type, description),
-          assessment:credit_assessments(assessment_id, status, approval_decision)
-        `);
+        .select('*');
 
       if (saveError) {
         console.warn('Failed to save document record to database:', saveError);
-      } else if (newDoc) {
-        setDocuments(prevDocs => [...newDoc, ...prevDocs]);
+      } else if (newDoc && newDoc.length > 0) {
+        // Fetch related data for the new document
+        const doc = newDoc[0];
+        const [customerResult, collateralResult, assessmentResult] = await Promise.all([
+          doc.customer_id ? supabase
+            .from('customers')
+            .select('customer_id, full_name, phone, email')
+            .eq('customer_id', doc.customer_id)
+            .single() : Promise.resolve({ data: null }),
+          doc.collateral_id ? supabase
+            .from('collaterals')
+            .select('collateral_id, collateral_type, description')
+            .eq('collateral_id', doc.collateral_id)
+            .single() : Promise.resolve({ data: null }),
+          doc.assessment_id ? supabase
+            .from('credit_assessments')
+            .select('assessment_id, status, approval_decision')
+            .eq('assessment_id', doc.assessment_id)
+            .single() : Promise.resolve({ data: null })
+        ]);
+        
+        const enrichedDoc = {
+          ...doc,
+          customer: customerResult.data,
+          collateral: collateralResult.data,
+          assessment: assessmentResult.data
+        };
+        
+        setDocuments(prevDocs => [enrichedDoc, ...prevDocs]);
       }
 
       return { filename, url: fileUrl };
