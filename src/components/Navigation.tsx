@@ -32,8 +32,8 @@ export default function Navigation() {
     { name: 'Thẩm Định', href: '/assessments', icon: DocumentMagnifyingGlassIcon },
     
     // Document management
-    { name: 'Tài Liệu', href: '/dashboard/documents', icon: DocumentTextIcon },
-    { name: 'Mẫu Tài Liệu', href: '/dashboard/templates', icon: DocumentMagnifyingGlassIcon }
+    { name: 'Tài Liệu', href: '/documents', icon: DocumentTextIcon },
+    { name: 'Mẫu Tài Liệu', href: '/templates', icon: DocumentMagnifyingGlassIcon }
   ]
 
   return (
