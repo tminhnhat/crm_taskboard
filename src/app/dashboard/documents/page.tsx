@@ -14,18 +14,26 @@ interface DocumentGenerationForm {
   collateralId?: string;
   assessmentId?: string;
   exportType: 'docx' | 'xlsx';
+  sendViaEmail?: boolean;
+  emailAddress?: string;
 }
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function DocumentsContent() {
   const [showGenerateForm, setShowGenerateForm] = useState(false);
+  const [showSendmailModal, setShowSendmailModal] = useState(false);
+  const [selectedDocumentForEmail, setSelectedDocumentForEmail] = useState<any>(null);
+  const [emailAddress, setEmailAddress] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState<DocumentGenerationForm>({
     documentType: '',
     customerId: '',
     collateralId: '',
     assessmentId: '',
-    exportType: 'docx'
+    exportType: 'docx',
+    sendViaEmail: false,
+    emailAddress: ''
   });
 
   const { 
@@ -35,7 +43,8 @@ function DocumentsContent() {
     generateDocument, 
     downloadDocument,
     deleteDocument, 
-    fetchDocuments 
+    fetchDocuments,
+    sendDocumentByEmail
   } = useDocuments();
   
   const { customers, refetch: fetchCustomers } = useCustomers();
@@ -93,9 +102,14 @@ function DocumentsContent() {
       return;
     }
 
+    if (formData.sendViaEmail && !formData.emailAddress) {
+      alert('Vui lòng nhập địa chỉ email để gửi tài liệu');
+      return;
+    }
+
     setIsGenerating(true);
     try {
-      await generateDocument({
+      const result = await generateDocument({
         documentType: formData.documentType as any, // Cast to DocumentType
         customerId: parseInt(formData.customerId),
         collateralId: formData.collateralId ? parseInt(formData.collateralId) : undefined,
@@ -103,14 +117,27 @@ function DocumentsContent() {
         exportType: formData.exportType
       });
       
-      alert('Tạo tài liệu thành công!');
+      // If user wants to send via email, send it
+      if (formData.sendViaEmail && formData.emailAddress) {
+        try {
+          await sendDocumentByEmail(result.filename, formData.emailAddress);
+          alert('Tạo tài liệu và gửi email thành công!');
+        } catch (emailError) {
+          alert(`Tạo tài liệu thành công nhưng gửi email thất bại: ${emailError instanceof Error ? emailError.message : 'Unknown error'}`);
+        }
+      } else {
+        alert('Tạo tài liệu thành công!');
+      }
+      
       setShowGenerateForm(false);
       setFormData({
         documentType: '',
         customerId: '',
         collateralId: '',
         assessmentId: '',
-        exportType: 'docx'
+        exportType: 'docx',
+        sendViaEmail: false,
+        emailAddress: ''
       });
     } catch (error) {
       alert(`Lỗi tạo tài liệu: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -147,6 +174,35 @@ function DocumentsContent() {
       alert('Xóa tài liệu thành công!');
     } catch (error) {
       alert(`Lỗi xóa tài liệu: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleSendmail = (document: any) => {
+    setSelectedDocumentForEmail(document);
+    // Pre-fill email if customer has email
+    if (document.customer?.email) {
+      setEmailAddress(document.customer.email);
+    } else {
+      setEmailAddress('');
+    }
+    setShowSendmailModal(true);
+  };
+
+  const handleSendmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDocumentForEmail || !emailAddress) return;
+
+    setIsSending(true);
+    try {
+      await sendDocumentByEmail(selectedDocumentForEmail.file_name, emailAddress);
+      alert('Gửi email thành công!');
+      setShowSendmailModal(false);
+      setSelectedDocumentForEmail(null);
+      setEmailAddress('');
+    } catch (error) {
+      alert(`Lỗi gửi email: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -305,6 +361,47 @@ function DocumentsContent() {
                     <option value="xlsx">Excel (.xlsx)</option>
                   </select>
                 </div>
+
+                {/* Email Options */}
+                <div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.sendViaEmail}
+                      onChange={(e) => {
+                        const sendViaEmail = e.target.checked;
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          sendViaEmail,
+                          emailAddress: sendViaEmail ? (
+                            customersList.find(c => c.customer_id === parseInt(formData.customerId))?.email || ''
+                          ) : ''
+                        }));
+                      }}
+                      className="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm font-medium text-gray-700">Gửi tài liệu qua email</span>
+                  </label>
+                </div>
+
+                {formData.sendViaEmail && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Địa chỉ email người nhận *
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.emailAddress}
+                      onChange={(e) => setFormData(prev => ({ ...prev, emailAddress: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="example@email.com"
+                      required={formData.sendViaEmail}
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Email sẽ được gửi sau khi tạo tài liệu thành công
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 mt-6">
@@ -320,7 +417,102 @@ function DocumentsContent() {
                   disabled={isGenerating}
                   className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isGenerating ? 'Đang tạo...' : 'Tạo Tài liệu'}
+                  {isGenerating ? 'Đang tạo...' : (formData.sendViaEmail ? 'Tạo & Gửi Email' : 'Tạo Tài liệu')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Send Email Modal */}
+      {showSendmailModal && selectedDocumentForEmail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">Gửi Tài liệu qua Email</h3>
+              <button
+                onClick={() => {
+                  setShowSendmailModal(false);
+                  setSelectedDocumentForEmail(null);
+                  setEmailAddress('');
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleSendmailSubmit} className="p-6">
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Thông tin tài liệu:</h4>
+                  <p className="text-sm text-gray-600">
+                    <strong>Loại:</strong> {getDocumentTypeLabel(selectedDocumentForEmail.document_type)}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Tên file:</strong> {selectedDocumentForEmail.file_name}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Khách hàng:</strong> {selectedDocumentForEmail.customer?.full_name}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Địa chỉ email người nhận *
+                  </label>
+                  <input
+                    type="email"
+                    value={emailAddress}
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                    placeholder="example@email.com"
+                    required
+                  />
+                  {selectedDocumentForEmail.customer?.email && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Email mặc định từ thông tin khách hàng
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSendmailModal(false);
+                    setSelectedDocumentForEmail(null);
+                    setEmailAddress('');
+                  }}
+                  className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 font-medium"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSending || !emailAddress}
+                  className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSending ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Đang gửi...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Gửi Email
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -408,6 +600,7 @@ function DocumentsContent() {
                         <button
                           onClick={() => handleDownload(doc)}
                           className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                          title="Tải xuống tài liệu"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -415,8 +608,19 @@ function DocumentsContent() {
                           Tải xuống
                         </button>
                         <button
+                          onClick={() => handleSendmail(doc)}
+                          className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                          title="Gửi qua email"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Gửi email
+                        </button>
+                        <button
                           onClick={() => handleDelete(doc.document_id)}
                           className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                          title="Xóa tài liệu"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
