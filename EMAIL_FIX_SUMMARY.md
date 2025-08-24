@@ -55,23 +55,26 @@ SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=your-email@example.com
 SMTP_PASSWORD=your-password
+EMAIL_USE_SSL=false
 
 # Required (real SMTP server)
 SMTP_HOST=smtp.gmail.com  # or your SMTP server
 SMTP_PORT=587
 SMTP_USER=your-actual-email@gmail.com
 SMTP_PASSWORD=your-app-password  # Gmail App Password
+EMAIL_USE_SSL=true  # Use SSL/TLS for secure connection
 ```
 
 ### For Gmail:
 1. Enable 2-factor authentication
 2. Generate an App Password
 3. Use the App Password as `SMTP_PASSWORD`
+4. Set `EMAIL_USE_SSL=true` for secure connection
 
 ### For other providers:
-- **Outlook/Hotmail**: `smtp-mail.outlook.com:587`
-- **Yahoo**: `smtp.mail.yahoo.com:587`
-- **Custom SMTP**: Your provider's settings
+- **Outlook/Hotmail**: `smtp-mail.outlook.com:587` with `EMAIL_USE_SSL=true`
+- **Yahoo**: `smtp.mail.yahoo.com:587` with `EMAIL_USE_SSL=true`
+- **Custom SMTP**: Your provider's settings with appropriate SSL configuration
 
 ## 🧪 **Testing:**
 

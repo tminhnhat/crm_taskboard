@@ -645,10 +645,11 @@ export async function sendDocumentByEmail(documentPath: string, email: string): 
   const fileBuffer = readFileSync(documentPath);
 
   // Cấu hình transporter (cần cấu hình biến môi trường thực tế)
+  const useSSL = process.env.EMAIL_USE_SSL === 'true' || process.env.EMAIL_USE_SSL === 'True';
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT),
-    secure: false,
+    secure: useSSL,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASSWORD,
@@ -696,8 +697,15 @@ export async function sendDocumentByEmailFromBlob(fileName: string, email: strin
     
     // Check SMTP configuration
     if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-      throw new Error('SMTP configuration is not properly set up. Please configure SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables.');
+      throw new Error('SMTP configuration is not properly set up. Please configure SMTP_HOST, SMTP_USER, SMTP_PASSWORD, and optionally EMAIL_USE_SSL environment variables.');
     }
+
+    console.log('SMTP Configuration:', {
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      user: process.env.SMTP_USER,
+      ssl: process.env.EMAIL_USE_SSL
+    });
 
     // Fetch document from Vercel Blob
     let fileBuffer: Buffer;
@@ -711,10 +719,11 @@ export async function sendDocumentByEmailFromBlob(fileName: string, email: strin
     }
 
     // Configure transporter
+    const useSSL = process.env.EMAIL_USE_SSL === 'true' || process.env.EMAIL_USE_SSL === 'True';
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: false,
+      secure: useSSL,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
