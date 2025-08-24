@@ -14,40 +14,73 @@ export async function POST(req: NextRequest) {
   
   try {
     console.log('Document generation request started');
+    console.log('Request URL:', req.url);
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
-    const body = await req.json();
-    ({ documentType, customerId, collateralId, creditAssessmentId, exportType } = body);
-    
-    console.log('Request params:', { documentType, customerId, collateralId, creditAssessmentId, exportType });
-    
-    // Check if response should be JSON (for saving) or binary (for download)
-    const returnJson = req.nextUrl.searchParams.get('return') === 'json';
-    
-    // Validate required fields
-    if (!documentType || !customerId || !exportType) {
-      console.error('Missing required fields:', { documentType, customerId, exportType });
+    let body;
+    try {
+      body = await req.json();
+      console.log('Parsed request body:', body);
+    } catch (jsonError) {
+      console.error('JSON parsing error:', jsonError);
       return NextResponse.json({ 
-        error: 'Missing required fields: documentType, customerId, exportType' 
+        error: 'Invalid JSON in request body',
+        details: jsonError instanceof Error ? jsonError.message : 'Unknown JSON parsing error'
       }, { status: 400 });
     }
     
-    // Validate document type and export type
+    ({ documentType, customerId, collateralId, creditAssessmentId, exportType } = body);
+    
+    console.log('Extracted params:', { documentType, customerId, collateralId, creditAssessmentId, exportType });
+    
+    // Check if response should be JSON (for saving) or binary (for download)
+    const returnJson = req.nextUrl.searchParams.get('return') === 'json';
+    console.log('Return type:', returnJson ? 'JSON' : 'binary');
+    
+    // Validate required fields with detailed logging
+    const missingFields = [];
+    if (!documentType) missingFields.push('documentType');
+    if (!customerId) missingFields.push('customerId'); 
+    if (!exportType) missingFields.push('exportType');
+    
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      console.error('Received values:', { documentType, customerId, exportType });
+      return NextResponse.json({ 
+        error: 'Missing required fields: ' + missingFields.join(', '),
+        received: { documentType, customerId, exportType },
+        required: ['documentType', 'customerId', 'exportType']
+      }, { status: 400 });
+    }
+    
+    // Validate document type and export type with enhanced error messages
     const validDocumentTypes = ['hop_dong_tin_dung', 'to_trinh_tham_dinh', 'giay_de_nghi_vay_von', 'bien_ban_dinh_gia', 'hop_dong_the_chap', 'bang_tinh_lai', 'lich_tra_no'];
     const validExportTypes = ['docx', 'xlsx'];
     
     if (!validDocumentTypes.includes(documentType)) {
       console.error('Invalid document type:', documentType);
+      console.error('Valid document types:', validDocumentTypes);
       return NextResponse.json({ 
-        error: `Invalid document type: ${documentType}. Valid types: ${validDocumentTypes.join(', ')}` 
+        error: `Invalid document type: ${documentType}`,
+        received: documentType,
+        validTypes: validDocumentTypes,
+        suggestion: 'Use one of the valid document types listed in validTypes array'
       }, { status: 400 });
     }
     
     if (!validExportTypes.includes(exportType)) {
       console.error('Invalid export type:', exportType);
+      console.error('Valid export types:', validExportTypes);
       return NextResponse.json({ 
-        error: `Invalid export type: ${exportType}. Valid types: ${validExportTypes.join(', ')}` 
+        error: `Invalid export type: ${exportType}`,
+        received: exportType,
+        validTypes: validExportTypes,
+        suggestion: 'Use either "docx" for Word documents or "xlsx" for Excel files'
       }, { status: 400 });
     }
+    
+    console.log('✅ All validations passed, proceeding with document generation...');
     
     console.log('Calling generateCreditDocument...');
     const result = await generateCreditDocument({
