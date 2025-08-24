@@ -384,6 +384,21 @@ export async function generateCreditDocument({
         // Add comprehensive error handling for template rendering
         try {
           console.log('Rendering document with data keys:', Object.keys(documentData));
+          console.log('Document data sample:', {
+            customer: documentData.customer ? Object.keys(documentData.customer) : 'null',
+            collateral: documentData.collateral ? Object.keys(documentData.collateral) : 'null', 
+            creditAssessment: documentData.creditAssessment ? Object.keys(documentData.creditAssessment) : 'null'
+          });
+          
+          // Try to get template variables before rendering
+          try {
+            const templateText = doc.getFullText();
+            console.log('Template text length:', templateText.length);
+            console.log('Template contains placeholders:', templateText.includes('{'));
+          } catch (textError) {
+            console.log('Could not extract template text:', textError);
+          }
+
           doc.render(documentData);
           console.log('Document rendered successfully');
           
@@ -396,9 +411,13 @@ export async function generateCreditDocument({
           contentType = CONTENT_TYPE_MAP[exportType];
         } catch (renderError: any) {
           console.error('Template rendering error:', renderError);
+          console.error('Render error type:', typeof renderError);
+          console.error('Render error name:', renderError.name);
+          console.error('Render error properties:', renderError.properties);
           
           // Handle Docxtemplater-specific errors with detailed logging
           if (renderError.properties && renderError.properties.errors) {
+            console.error('Docxtemplater errors:', renderError.properties.errors);
             const errorDetails = renderError.properties.errors.map((err: any) => {
               console.error('Template error detail:', err);
               return `${err.message || 'Unknown error'} at ${err.part || 'unknown location'}`;
@@ -406,9 +425,16 @@ export async function generateCreditDocument({
             throw new Error(`Template rendering failed: ${errorDetails}`);
           }
           
-          // Handle multi errors specifically
-          if (renderError.name === 'TemplateError' || renderError.message?.includes('Multi error')) {
-            throw new Error(`Template format error: The template file may be corrupted or contain invalid syntax. Please re-upload the template file.`);
+          // Handle Multi error with more context
+          if (renderError.message && renderError.message.includes('Multi error')) {
+            console.error('Multi error detected, attempting to extract more details...');
+            
+            // Try to get more details about the multi error
+            if (renderError.properties) {
+              console.error('Error properties:', JSON.stringify(renderError.properties, null, 2));
+            }
+            
+            throw new Error(`Template processing failed. The template file may be corrupted or incompatible. Please re-upload the template. Error details: Multi error occurred during rendering - this usually indicates template variable issues or corrupted template structure.`);
           }
           
           throw new Error(`Template rendering failed: ${renderError.message || 'Unknown rendering error'}`);
