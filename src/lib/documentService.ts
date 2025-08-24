@@ -463,41 +463,72 @@ export async function generateCreditDocument({
             throw new Error(`Template has syntax errors: ${errorDetails}`);
           }
           
-          // Handle Multi error with more specific diagnosis
+          // Handle Multi error with enhanced debugging
           if (renderError.message && renderError.message.includes('Multi error')) {
-            console.error('Multi error detected, checking for common issues...');
+            console.error('Multi error detected, extracting detailed information...');
+            console.error('Full render error object:', JSON.stringify(renderError, null, 2));
             
-            // Common causes of Multi error:
-            let specificErrors = [];
+            // Try to extract detailed error information
+            let errorDetails = [];
             
-            // Check if it's a template syntax issue
+            // Check if error has properties with detailed errors
+            if (renderError.properties) {
+              console.error('Error properties:', JSON.stringify(renderError.properties, null, 2));
+              
+              if (renderError.properties.errors && Array.isArray(renderError.properties.errors)) {
+                errorDetails = renderError.properties.errors.map((err: any, index: number) => {
+                  console.error(`Error ${index + 1}:`, JSON.stringify(err, null, 2));
+                  
+                  let errorDesc = `Error ${index + 1}: `;
+                  if (err.name) errorDesc += `${err.name} - `;
+                  if (err.message) errorDesc += `${err.message} `;
+                  if (err.properties && err.properties.part) {
+                    errorDesc += `at "${err.properties.part.value || err.properties.part}" `;
+                  }
+                  if (err.properties && err.properties.offset !== undefined) {
+                    errorDesc += `(offset: ${err.properties.offset}) `;
+                  }
+                  
+                  return errorDesc.trim();
+                }).filter(Boolean);
+              }
+            }
+            
+            // Also check for common template issues
+            let diagnosticInfo = [];
             try {
               const fullText = doc.getFullText();
+              console.log('Template full text preview:', fullText.substring(0, 200));
+              
               if (fullText.includes('{') && fullText.includes('}')) {
-                // Count opening and closing brackets
                 const openBrackets = (fullText.match(/\{/g) || []).length;
                 const closeBrackets = (fullText.match(/\}/g) || []).length;
                 if (openBrackets !== closeBrackets) {
-                  specificErrors.push('Template has mismatched brackets { }');
+                  diagnosticInfo.push(`Bracket mismatch: ${openBrackets} opening, ${closeBrackets} closing`);
                 }
                 
-                // Check for common problematic patterns
                 if (fullText.includes('{{') || fullText.includes('}}')) {
-                  specificErrors.push('Template contains double brackets {{ }} which are not supported');
+                  diagnosticInfo.push('Double brackets detected {{ }}');
                 }
                 if (fullText.includes('{#') || fullText.includes('{/')) {
-                  specificErrors.push('Template uses complex loop syntax which may not be properly configured');
+                  diagnosticInfo.push('Loop syntax detected {# } {/ }');
                 }
               }
             } catch (textError) {
-              specificErrors.push('Cannot analyze template text structure');
+              diagnosticInfo.push('Cannot analyze template structure');
             }
             
-            const errorSummary = specificErrors.length > 0 ? 
-              `Specific issues found: ${specificErrors.join(', ')}` : 
-              'Template processing failed during rendering phase';
+            // Combine all error information
+            let finalError = 'Template Multi error details:\n';
+            if (errorDetails.length > 0) {
+              finalError += `Specific errors: ${errorDetails.join('; ')}\n`;
+            }
+            if (diagnosticInfo.length > 0) {
+              finalError += `Diagnostics: ${diagnosticInfo.join('; ')}\n`;
+            }
+            finalError += 'Please check template syntax and ensure all placeholders use simple {variable_name} format.';
             
-            throw new Error(`Template processing failed: ${errorSummary}. Please check template syntax - ensure all placeholders use simple {variable_name} format without nested structures.`);
+            throw new Error(finalError);
           }
           
           // Handle other specific Docxtemplater errors
