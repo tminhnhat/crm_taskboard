@@ -182,6 +182,62 @@ export interface GenerateDocumentResult {
   contentType: string;
 }
 
+/**
+ * Validates a DOCX template file for common corruption issues
+ */
+function validateDocxTemplate(buffer: Buffer): { isValid: boolean; error?: string } {
+  try {
+    // Check minimum file size (empty DOCX is around 6KB)
+    if (buffer.length < 1000) {
+      return { isValid: false, error: 'Template file is too small (likely corrupted)' };
+    }
+
+    // Check ZIP signature
+    const firstBytes = buffer.subarray(0, 4);
+    if (firstBytes[0] !== 0x50 || firstBytes[1] !== 0x4B) {
+      return { isValid: false, error: 'Not a valid ZIP/DOCX file (invalid signature)' };
+    }
+
+    // Try to read as ZIP
+    try {
+      const zip = new PizZip(buffer);
+      
+      // Check for required DOCX files
+      const requiredFiles = [
+        '[Content_Types].xml',
+        'word/document.xml',
+        '_rels/.rels'
+      ];
+
+      for (const file of requiredFiles) {
+        if (!zip.file(file)) {
+          return { isValid: false, error: `Missing required file: ${file}` };
+        }
+      }
+
+      // Try to read document.xml content
+      const documentXml = zip.file('word/document.xml');
+      if (documentXml) {
+        const content = documentXml.asText();
+        if (!content || content.length < 100) {
+          return { isValid: false, error: 'Document content is empty or too small' };
+        }
+        
+        // Check for basic XML structure
+        if (!content.includes('<w:document') || !content.includes('</w:document>')) {
+          return { isValid: false, error: 'Invalid document XML structure' };
+        }
+      }
+
+      return { isValid: true };
+    } catch (zipError) {
+      return { isValid: false, error: `ZIP parsing failed: ${zipError instanceof Error ? zipError.message : 'Unknown ZIP error'}` };
+    }
+  } catch (error) {
+    return { isValid: false, error: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
+  }
+}
+
 export async function generateCreditDocument({
   documentType,
   customerId,
@@ -254,15 +310,42 @@ export async function generateCreditDocument({
         
         console.log(`Template fetched successfully, size: ${templateBuffer.length} bytes`);
         
-        // Validate template buffer
-        if (!templateBuffer || templateBuffer.length === 0) {
-          throw new Error('Template file is empty or corrupted');
+        // Validate template using our comprehensive validation function
+        const validation = validateDocxTemplate(templateBuffer);
+        if (!validation.isValid) {
+          throw new Error(`Template file is corrupted or invalid: ${validation.error}. Please re-upload a valid DOCX template.`);
         }
-        
+        console.log('Template validation passed');
+
+        // Validate DOCX file signature (should start with PK for ZIP format)
+        const firstBytes = new Uint8Array(templateBuffer.slice(0, 4));
+        if (firstBytes[0] !== 0x50 || firstBytes[1] !== 0x4B) {
+          throw new Error('Template file is not a valid DOCX format (invalid ZIP signature)');
+        }
+
         // Initialize Docxtemplater with better error handling for serverless
         let doc: any;
         try {
+          console.log('Initializing PizZip with template buffer...');
           const zip = new PizZip(templateBuffer);
+          
+          // Validate that it's a proper DOCX by checking for required files
+          try {
+            const contentTypesFile = zip.file('[Content_Types].xml');
+            if (!contentTypesFile) {
+              throw new Error('Template file is corrupted: missing [Content_Types].xml');
+            }
+            
+            const documentFile = zip.file('word/document.xml');
+            if (!documentFile) {
+              throw new Error('Template file is corrupted: missing word/document.xml');
+            }
+            console.log('Template structure validation passed');
+          } catch (structureError) {
+            console.error('Template structure validation failed:', structureError);
+            throw new Error(`Template file is corrupted or invalid. Please re-upload a valid DOCX template. Details: ${structureError instanceof Error ? structureError.message : 'Unknown structure error'}`);
+          }
+
           doc = new Docxtemplater(zip, { 
             paragraphLoop: true, 
             linebreaks: true,
@@ -279,8 +362,23 @@ export async function generateCreditDocument({
           });
           console.log('Docxtemplater initialized successfully');
         } catch (initError: any) {
-          console.error('Docxtemplater initialization error:', initError);
-          throw new Error(`Template initialization failed: ${initError.message || 'Invalid template format'}`);
+          console.error('Template initialization error:', initError);
+          
+          // Handle specific PizZip errors
+          if (initError.message && initError.message.includes('Can\'t read the data')) {
+            throw new Error('Template file is corrupted or invalid. Please re-upload a valid DOCX template.');
+          }
+          
+          if (initError.message && initError.message.includes('corrupted')) {
+            throw new Error('Template file is corrupted or invalid. Please re-upload a valid DOCX template.');
+          }
+          
+          // Handle Docxtemplater initialization errors
+          if (initError.message && initError.message.includes('Missing template variable')) {
+            throw new Error(`Template has invalid structure: ${initError.message}`);
+          }
+          
+          throw new Error(`Template file is corrupted or invalid. Please re-upload a valid DOCX template. Details: ${initError.message || 'Unknown initialization error'}`);
         }
         
         // Add comprehensive error handling for template rendering
