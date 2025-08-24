@@ -7,16 +7,23 @@ import { put, list, del } from '@vercel/blob';
  */
 export async function fetchTemplateFromVercelBlob(path: string): Promise<Buffer> {
   try {
+    console.log(`Fetching template from path: ${path}`);
+    
     // Check if BLOB_READ_WRITE_TOKEN exists
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('BLOB_READ_WRITE_TOKEN not configured');
       throw new Error('BLOB_READ_WRITE_TOKEN not configured');
     }
     
     // Lấy danh sách blob để tìm URL chính xác
+    console.log('Listing blobs to find template...');
     const { blobs } = await list({
       prefix: path.split('/')[0], // Lấy folder prefix (vd: 'maubieu')
       limit: 100
     });
+    
+    console.log(`Found ${blobs.length} blobs in folder`);
+    console.log('Available blobs:', blobs.map((b: any) => b.pathname));
     
     // Tìm blob có pathname khớp
     const targetBlob = blobs.find((blob: any) => blob.pathname === path);
@@ -27,15 +34,74 @@ export async function fetchTemplateFromVercelBlob(path: string): Promise<Buffer>
       throw new Error(`Template không tìm thấy: ${path}`);
     }
     
-    // Sử dụng URL chính xác từ blob metadata
-    const response = await fetch(targetBlob.url);
+    console.log(`Found target blob: ${targetBlob.pathname}, URL: ${targetBlob.url}`);
     
-    if (!response.ok) {
-      throw new Error(`Không thể tải template: ${response.status} ${response.statusText}`);
+    // Sử dụng URL chính xác từ blob metadata với retry logic
+    let response: Response;
+    let attempt = 0;
+    const maxRetries = 3;
+    
+    while (attempt < maxRetries) {
+      try {
+        console.log(`Fetching template, attempt ${attempt + 1}/${maxRetries}`);
+        response = await fetch(targetBlob.url, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'Vercel-Function/1.0'
+          }
+        });
+        
+        if (response.ok) {
+          break;
+        } else {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+      } catch (fetchError) {
+        attempt++;
+        console.warn(`Fetch attempt ${attempt} failed:`, fetchError);
+        
+        if (attempt >= maxRetries) {
+          throw new Error(`Không thể tải template sau ${maxRetries} lần thử: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
     }
     
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+    console.log(`Template fetched successfully, status: ${response!.status}`);
+    
+    // Convert to buffer with proper error handling
+    try {
+      const arrayBuffer = await response!.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      console.log(`Template buffer created, size: ${buffer.length} bytes`);
+      
+      // Validate buffer is not empty and looks like a valid zip file (docx)
+      if (buffer.length === 0) {
+        throw new Error('Template file is empty');
+      }
+      
+      // Check for ZIP file signature (docx files are ZIP archives)
+      const zipSignature = buffer.subarray(0, 4);
+      const validZipSignatures = [
+        Buffer.from([0x50, 0x4B, 0x03, 0x04]), // Standard ZIP
+        Buffer.from([0x50, 0x4B, 0x05, 0x06]), // Empty ZIP
+        Buffer.from([0x50, 0x4B, 0x07, 0x08])  // Spanned ZIP
+      ];
+      
+      const isValidZip = validZipSignatures.some(sig => zipSignature.equals(sig));
+      if (!isValidZip) {
+        console.warn('Template file may not be a valid ZIP/DOCX file, signature:', zipSignature);
+      }
+      
+      return buffer;
+    } catch (bufferError) {
+      console.error('Error processing template buffer:', bufferError);
+      throw new Error(`Không thể xử lý template file: ${bufferError instanceof Error ? bufferError.message : 'Unknown buffer error'}`);
+    }
+    
   } catch (error) {
     console.error('Error fetching template from blob:', error);
     throw new Error(`Không thể tải template từ blob: ${error instanceof Error ? error.message : 'Unknown error'}`);

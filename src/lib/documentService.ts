@@ -249,46 +249,92 @@ export async function generateCreditDocument({
     } else if (exportType === 'docx') {
       // Handle Word documents - fetch template from Vercel Blob
       try {
+        console.log(`Fetching template for document type: ${documentType}`);
         const templateBuffer = await fetchTemplateFromVercelBlob(`maubieu/${documentType}.docx`);
         
-        const zip = new PizZip(templateBuffer);
-        const doc = new Docxtemplater(zip, { 
-          paragraphLoop: true, 
-          linebreaks: true,
-          nullGetter: function(part: any) {
-            // Return empty string for missing data instead of throwing error
-            if (part.module === 'rawxml') {
-              return '';
-            }
-            return '';
-          }
-        });
+        console.log(`Template fetched successfully, size: ${templateBuffer.length} bytes`);
         
-        // Add error handling for template rendering
+        // Validate template buffer
+        if (!templateBuffer || templateBuffer.length === 0) {
+          throw new Error('Template file is empty or corrupted');
+        }
+        
+        // Initialize Docxtemplater with better error handling for serverless
+        let doc: any;
         try {
+          const zip = new PizZip(templateBuffer);
+          doc = new Docxtemplater(zip, { 
+            paragraphLoop: true, 
+            linebreaks: true,
+            delimiters: {
+              start: '{',
+              end: '}'
+            },
+            nullGetter: function(part: any) {
+              // Return empty string for missing data instead of throwing error
+              console.log(`Missing template variable: ${part.value || 'unknown'}`);
+              return '';
+            },
+            errorLogging: true
+          });
+          console.log('Docxtemplater initialized successfully');
+        } catch (initError: any) {
+          console.error('Docxtemplater initialization error:', initError);
+          throw new Error(`Template initialization failed: ${initError.message || 'Invalid template format'}`);
+        }
+        
+        // Add comprehensive error handling for template rendering
+        try {
+          console.log('Rendering document with data keys:', Object.keys(documentData));
           doc.render(documentData);
-          outBuffer = doc.getZip().generate({ type: 'nodebuffer' });
+          console.log('Document rendered successfully');
+          
+          outBuffer = doc.getZip().generate({ 
+            type: 'nodebuffer',
+            compression: 'DEFLATE',
+            compressionOptions: { level: 6 }
+          });
+          console.log(`Generated document buffer size: ${outBuffer.length} bytes`);
           contentType = CONTENT_TYPE_MAP[exportType];
         } catch (renderError: any) {
-          // Handle Docxtemplater-specific errors
+          console.error('Template rendering error:', renderError);
+          
+          // Handle Docxtemplater-specific errors with detailed logging
           if (renderError.properties && renderError.properties.errors) {
-            const errorDetails = renderError.properties.errors.map((err: any) => 
-              `${err.message} at ${err.part || 'unknown location'}`
-            ).join('; ');
+            const errorDetails = renderError.properties.errors.map((err: any) => {
+              console.error('Template error detail:', err);
+              return `${err.message || 'Unknown error'} at ${err.part || 'unknown location'}`;
+            }).join('; ');
             throw new Error(`Template rendering failed: ${errorDetails}`);
           }
+          
+          // Handle multi errors specifically
+          if (renderError.name === 'TemplateError' || renderError.message?.includes('Multi error')) {
+            throw new Error(`Template format error: The template file may be corrupted or contain invalid syntax. Please re-upload the template file.`);
+          }
+          
           throw new Error(`Template rendering failed: ${renderError.message || 'Unknown rendering error'}`);
         }
       } catch (templateError) {
+        console.error('Template processing error:', templateError);
+        
         // Provide a more user-friendly error message
         const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
+        
         if (errorMessage.includes('Template không tìm thấy') || errorMessage.includes('not found')) {
           throw new Error(`Template file missing: Please upload a template for document type "${documentType}" in the Templates dashboard before generating documents.`);
         }
-        if (errorMessage.includes('Template rendering failed')) {
-          // Re-throw rendering errors as they already have good context
+        
+        if (errorMessage.includes('Template rendering failed') || errorMessage.includes('Template format error') || errorMessage.includes('Template initialization failed')) {
+          // Re-throw specific errors as they already have good context
           throw templateError;
         }
+        
+        // Handle generic "Multi error" from Docxtemplater
+        if (errorMessage.includes('Multi error')) {
+          throw new Error(`Template processing failed: The template file for "${documentType}" appears to be corrupted or incompatible. Please re-upload the template file with proper .docx format.`);
+        }
+        
         throw new Error(`Template loading failed: ${errorMessage}`);
       }
     } else if (exportType === 'pdf') {

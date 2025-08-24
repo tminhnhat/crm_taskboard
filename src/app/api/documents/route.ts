@@ -5,27 +5,60 @@ import { join } from 'path';
 
 // POST /api/documents - Generate and download document
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+  let documentType = '';
+  let customerId = '';
+  let collateralId = '';
+  let creditAssessmentId = '';
+  let exportType = '';
+  
   try {
+    console.log('Document generation request started');
+    
     const body = await req.json();
-    const { documentType, customerId, collateralId, creditAssessmentId, exportType } = body;
+    ({ documentType, customerId, collateralId, creditAssessmentId, exportType } = body);
+    
+    console.log('Request params:', { documentType, customerId, collateralId, creditAssessmentId, exportType });
     
     // Check if response should be JSON (for saving) or binary (for download)
     const returnJson = req.nextUrl.searchParams.get('return') === 'json';
     
     // Validate required fields
     if (!documentType || !customerId || !exportType) {
+      console.error('Missing required fields:', { documentType, customerId, exportType });
       return NextResponse.json({ 
         error: 'Missing required fields: documentType, customerId, exportType' 
       }, { status: 400 });
     }
     
+    // Validate document type and export type
+    const validDocumentTypes = ['hop_dong_tin_dung', 'to_trinh_tham_dinh', 'giay_de_nghi_vay_von', 'bien_ban_dinh_gia', 'hop_dong_the_chap', 'bang_tinh_lai', 'lich_tra_no'];
+    const validExportTypes = ['docx', 'xlsx'];
+    
+    if (!validDocumentTypes.includes(documentType)) {
+      console.error('Invalid document type:', documentType);
+      return NextResponse.json({ 
+        error: `Invalid document type: ${documentType}. Valid types: ${validDocumentTypes.join(', ')}` 
+      }, { status: 400 });
+    }
+    
+    if (!validExportTypes.includes(exportType)) {
+      console.error('Invalid export type:', exportType);
+      return NextResponse.json({ 
+        error: `Invalid export type: ${exportType}. Valid types: ${validExportTypes.join(', ')}` 
+      }, { status: 400 });
+    }
+    
+    console.log('Calling generateCreditDocument...');
     const result = await generateCreditDocument({
-      documentType,
+      documentType: documentType as any,
       customerId,
       collateralId,
       creditAssessmentId,
-      exportType,
+      exportType: exportType as any,
     });
+    
+    console.log(`Document generation completed in ${Date.now() - startTime}ms`);
 
     // Return JSON response with blob URL if requested
     if (returnJson) {
@@ -47,10 +80,65 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Document generation error:', error);
+    const duration = Date.now() - startTime;
+    console.error(`Document generation failed after ${duration}ms:`, error);
+    
+    // Log detailed error information for debugging in Vercel
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Log additional context for serverless debugging
+      console.error('Request context:', {
+        documentType: documentType || 'undefined',
+        exportType: exportType || 'undefined', 
+        customerId: customerId || 'undefined',
+        collateralId: collateralId || 'undefined',
+        creditAssessmentId: creditAssessmentId || 'undefined',
+        userAgent: req.headers.get('user-agent'),
+        runtime: process.env.VERCEL ? 'vercel-serverless' : 'local'
+      });
+    }
+    
+    // Provide user-friendly error messages based on error type
+    let userMessage = 'Document generation failed';
+    let statusCode = 500;
+    
+    if (error instanceof Error) {
+      const errorMsg = error.message.toLowerCase();
+      
+      if (errorMsg.includes('template không tìm thấy') || errorMsg.includes('template file missing')) {
+        userMessage = 'Template file not found. Please upload the required template in the Templates section.';
+        statusCode = 404;
+      } else if (errorMsg.includes('template format error') || errorMsg.includes('template initialization failed')) {
+        userMessage = 'Template file is corrupted or invalid. Please re-upload a valid DOCX template.';
+        statusCode = 400;
+      } else if (errorMsg.includes('multi error') || errorMsg.includes('template processing failed')) {
+        userMessage = 'Template processing failed. The template file may be corrupted or incompatible. Please re-upload the template.';
+        statusCode = 400;
+      } else if (errorMsg.includes('customer not found')) {
+        userMessage = 'Customer data not found. Please ensure the customer exists in the database.';
+        statusCode = 404;
+      } else if (errorMsg.includes('blob_read_write_token')) {
+        userMessage = 'File storage configuration error. Please contact support.';
+        statusCode = 500;
+      } else if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
+        userMessage = 'Request timeout or network error. Please try again.';
+        statusCode = 408;
+      } else {
+        userMessage = error.message;
+      }
+    }
+    
     return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Document generation failed' 
-    }, { status: 500 });
+      error: userMessage,
+      debug: process.env.NODE_ENV === 'development' ? {
+        originalError: error instanceof Error ? error.message : 'Unknown error',
+        duration: `${duration}ms`,
+        timestamp: new Date().toISOString()
+      } : undefined
+    }, { status: statusCode });
   }
 }
 
