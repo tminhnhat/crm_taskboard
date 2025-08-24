@@ -349,16 +349,11 @@ export async function generateCreditDocument({
           doc = new Docxtemplater(zip, { 
             paragraphLoop: true, 
             linebreaks: true,
-            delimiters: {
-              start: '{',
-              end: '}'
-            },
             nullGetter: function(part: any) {
               // Return empty string for missing data instead of throwing error
-              console.log(`Missing template variable: ${part.value || 'unknown'}`);
+              console.log(`Missing template variable: ${part.value || part.module || part.tag || 'unknown'}`);
               return '';
-            },
-            errorLogging: true
+            }
           });
           console.log('Docxtemplater initialized successfully');
         } catch (initError: any) {
@@ -384,10 +379,45 @@ export async function generateCreditDocument({
         // Add comprehensive error handling for template rendering
         try {
           console.log('Rendering document with data keys:', Object.keys(documentData));
-          console.log('Document data sample:', {
-            customer: documentData.customer ? Object.keys(documentData.customer) : 'null',
-            collateral: documentData.collateral ? Object.keys(documentData.collateral) : 'null', 
-            creditAssessment: documentData.creditAssessment ? Object.keys(documentData.creditAssessment) : 'null'
+          
+          // Prepare flattened template data for better compatibility
+          const templateData = {
+            // Customer data - flattened
+            customer_id: documentData.customer?.customer_id || '',
+            customer_name: documentData.customer?.full_name || documentData.customer?.customer_name || '',
+            full_name: documentData.customer?.full_name || '',
+            id_number: documentData.customer?.id_number || '',
+            phone: documentData.customer?.phone || '',
+            email: documentData.customer?.email || '',
+            address: documentData.customer?.address || '',
+            
+            // Collateral data - flattened  
+            collateral_id: documentData.collateral?.collateral_id || '',
+            collateral_type: documentData.collateral?.collateral_type || '',
+            collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
+            collateral_description: documentData.collateral?.description || '',
+            
+            // Credit assessment data - flattened
+            assessment_id: documentData.creditAssessment?.assessment_id || '',
+            loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
+            interest_rate: documentData.creditAssessment?.interest_rate || '',
+            loan_term: documentData.creditAssessment?.loan_term || '',
+            
+            // Date fields
+            current_date: format(new Date(), 'dd/MM/yyyy'),
+            current_year: format(new Date(), 'yyyy'),
+            
+            // Keep original nested structure as backup
+            customer: documentData.customer || {},
+            collateral: documentData.collateral || {},
+            creditAssessment: documentData.creditAssessment || {}
+          };
+          
+          console.log('Template data prepared with keys:', Object.keys(templateData));
+          console.log('Sample template data:', {
+            customer_name: templateData.customer_name,
+            customer_id: templateData.customer_id,
+            loan_amount: templateData.loan_amount
           });
           
           // Try to get template variables before rendering
@@ -399,7 +429,7 @@ export async function generateCreditDocument({
             console.log('Could not extract template text:', textError);
           }
 
-          doc.render(documentData);
+          doc.render(templateData);
           console.log('Document rendered successfully');
           
           outBuffer = doc.getZip().generate({ 
@@ -413,31 +443,73 @@ export async function generateCreditDocument({
           console.error('Template rendering error:', renderError);
           console.error('Render error type:', typeof renderError);
           console.error('Render error name:', renderError.name);
-          console.error('Render error properties:', renderError.properties);
           
           // Handle Docxtemplater-specific errors with detailed logging
           if (renderError.properties && renderError.properties.errors) {
             console.error('Docxtemplater errors:', renderError.properties.errors);
             const errorDetails = renderError.properties.errors.map((err: any) => {
               console.error('Template error detail:', err);
-              return `${err.message || 'Unknown error'} at ${err.part || 'unknown location'}`;
+              
+              // Handle specific error types
+              if (err.message && err.message.includes('Unclosed tag')) {
+                return `Unclosed template tag: {${err.part || 'unknown'}} - check template syntax`;
+              }
+              if (err.message && err.message.includes('Unopened tag')) {
+                return `Unopened template tag: ${err.part || 'unknown'} - check template syntax`;
+              }
+              
+              return `${err.message || err.name || 'Template syntax error'} at ${err.part || 'unknown location'}`;
             }).join('; ');
-            throw new Error(`Template rendering failed: ${errorDetails}`);
+            throw new Error(`Template has syntax errors: ${errorDetails}`);
           }
           
-          // Handle Multi error with more context
+          // Handle Multi error with more specific diagnosis
           if (renderError.message && renderError.message.includes('Multi error')) {
-            console.error('Multi error detected, attempting to extract more details...');
+            console.error('Multi error detected, checking for common issues...');
             
-            // Try to get more details about the multi error
-            if (renderError.properties) {
-              console.error('Error properties:', JSON.stringify(renderError.properties, null, 2));
+            // Common causes of Multi error:
+            let specificErrors = [];
+            
+            // Check if it's a template syntax issue
+            try {
+              const fullText = doc.getFullText();
+              if (fullText.includes('{') && fullText.includes('}')) {
+                // Count opening and closing brackets
+                const openBrackets = (fullText.match(/\{/g) || []).length;
+                const closeBrackets = (fullText.match(/\}/g) || []).length;
+                if (openBrackets !== closeBrackets) {
+                  specificErrors.push('Template has mismatched brackets { }');
+                }
+                
+                // Check for common problematic patterns
+                if (fullText.includes('{{') || fullText.includes('}}')) {
+                  specificErrors.push('Template contains double brackets {{ }} which are not supported');
+                }
+                if (fullText.includes('{#') || fullText.includes('{/')) {
+                  specificErrors.push('Template uses complex loop syntax which may not be properly configured');
+                }
+              }
+            } catch (textError) {
+              specificErrors.push('Cannot analyze template text structure');
             }
             
-            throw new Error(`Template processing failed. The template file may be corrupted or incompatible. Please re-upload the template. Error details: Multi error occurred during rendering - this usually indicates template variable issues or corrupted template structure.`);
+            const errorSummary = specificErrors.length > 0 ? 
+              `Specific issues found: ${specificErrors.join(', ')}` : 
+              'Template processing failed during rendering phase';
+            
+            throw new Error(`Template processing failed: ${errorSummary}. Please check template syntax - ensure all placeholders use simple {variable_name} format without nested structures.`);
           }
           
-          throw new Error(`Template rendering failed: ${renderError.message || 'Unknown rendering error'}`);
+          // Handle other specific Docxtemplater errors
+          if (renderError.message && renderError.message.includes('Unclosed tag')) {
+            throw new Error(`Template syntax error: Found unclosed template tag. Please check that all {placeholders} are properly closed.`);
+          }
+          
+          if (renderError.message && renderError.message.includes('Unopened tag')) {
+            throw new Error(`Template syntax error: Found unopened template tag. Please check that all }placeholders{ have matching opening brackets.`);
+          }
+          
+          throw new Error(`Template rendering failed: ${renderError.message || 'Unknown rendering error'}. Please verify template format and syntax.`);
         }
       } catch (templateError) {
         console.error('Template processing error:', templateError);
