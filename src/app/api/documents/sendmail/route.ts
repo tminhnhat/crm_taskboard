@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendDocumentByEmail } from '@/lib/documentService';
-import { existsSync } from 'fs';
-import { join } from 'path';
+import { sendDocumentByEmailFromBlob } from '@/lib/documentService';
 
 /**
  * Send document by email
@@ -27,15 +25,8 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Check if file exists
-    const filePath = join(process.cwd(), 'ketqua', fileName);
-    if (!existsSync(filePath)) {
-      return NextResponse.json({ 
-        error: 'Document not found' 
-      }, { status: 404 });
-    }
-
-    await sendDocumentByEmail(filePath, email);
+    // Send document from Vercel Blob storage
+    await sendDocumentByEmailFromBlob(fileName, email);
     
     return NextResponse.json({ 
       success: true, 

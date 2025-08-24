@@ -651,7 +651,7 @@ export async function sendDocumentByEmail(documentPath: string, email: string): 
     secure: false,
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      pass: process.env.SMTP_PASSWORD,
     },
   });
 
@@ -667,6 +667,96 @@ export async function sendDocumentByEmail(documentPath: string, email: string): 
       },
     ],
   });
+}
+
+// Send document by email from Vercel Blob storage
+export async function sendDocumentByEmailFromBlob(fileName: string, email: string): Promise<void> {
+  try {
+    // Validate inputs
+    if (!fileName || !email) {
+      throw new Error('File name and email are required');
+    }
+
+    console.log(`Attempting to send document: ${fileName} to ${email}`);
+
+    // Construct blob path - handle both full blob URLs and filenames
+    let blobPath: string;
+    if (fileName.startsWith('https://') && fileName.includes('vercel-blob')) {
+      // Extract filename from blob URL
+      const urlParts = fileName.split('/');
+      const actualFileName = urlParts[urlParts.length - 1];
+      blobPath = `ketqua/${actualFileName}`;
+      console.log(`Extracted filename from URL: ${actualFileName}`);
+    } else {
+      // Use filename as-is
+      blobPath = fileName.startsWith('ketqua/') ? fileName : `ketqua/${fileName}`;
+    }
+    
+    console.log(`Using blob path: ${blobPath}`);
+    
+    // Check SMTP configuration
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+      throw new Error('SMTP configuration is not properly set up. Please configure SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables.');
+    }
+
+    // Fetch document from Vercel Blob
+    let fileBuffer: Buffer;
+    try {
+      fileBuffer = await fetchTemplateFromVercelBlob(blobPath);
+      console.log(`Document fetched from blob: ${blobPath}, size: ${fileBuffer.length} bytes`);
+    } catch (fetchError) {
+      console.error('Failed to fetch document from blob:', fetchError);
+      console.error('Blob path attempted:', blobPath);
+      throw new Error(`Document not found: ${fileName}. Please ensure the document exists in blob storage.`);
+    }
+
+    // Configure transporter
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    // Verify transporter configuration
+    try {
+      await transporter.verify();
+      console.log('SMTP configuration verified successfully');
+    } catch (verifyError) {
+      console.error('SMTP verification failed:', verifyError);
+      throw new Error('Email server configuration error. Please check SMTP settings.');
+    }
+
+    // Extract clean filename for attachment
+    const attachmentFileName = fileName.split('/').pop() || fileName;
+
+    // Send email with attachment
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: `Tài liệu hồ sơ tín dụng: ${attachmentFileName}`,
+      text: `Kính gửi,\n\nVui lòng xem tài liệu đính kèm.\n\nTrân trọng,\nHệ thống CRM`,
+      html: `
+        <p>Kính gửi,</p>
+        <p>Vui lòng xem tài liệu đính kèm.</p>
+        <p>Trân trọng,<br/>Hệ thống CRM</p>
+      `,
+      attachments: [
+        {
+          filename: attachmentFileName,
+          content: fileBuffer,
+        },
+      ],
+    });
+
+    console.log(`Document ${fileName} sent to ${email} successfully`);
+  } catch (error) {
+    console.error('Error sending document by email from blob:', error);
+    throw error;
+  }
 }
 
 export async function deleteDocument(fileName: string): Promise<boolean> {

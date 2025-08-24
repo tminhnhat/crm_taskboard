@@ -230,12 +230,21 @@ function DocumentsContent() {
 
     setIsSending(true);
     try {
+      console.log('Sending email for document:', selectedDocumentForEmail);
+      console.log('File name:', selectedDocumentForEmail.file_name);
+      console.log('Email address:', emailAddress);
+      
+      if (!selectedDocumentForEmail.file_name) {
+        throw new Error('Document file name is missing');
+      }
+      
       await sendDocumentByEmail(selectedDocumentForEmail.file_name, emailAddress);
       alert('Gửi email thành công!');
       setShowSendmailModal(false);
       setSelectedDocumentForEmail(null);
       setEmailAddress('');
     } catch (error) {
+      console.error('Email sending error:', error);
       alert(`Lỗi gửi email: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSending(false);
