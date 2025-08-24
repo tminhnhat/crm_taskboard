@@ -84,25 +84,54 @@ export async function POST(req: NextRequest) {
         addLog(`Could not extract template text: ${textError}`);
       }
       
-      // Step 7: Test rendering with dummy data
+      // Step 7: Test rendering with dummy data (using same structure as real API)
       addLog('Testing template rendering with dummy data...');
       const dummyData = {
+        // Customer data - flattened (same as documentService.ts)
+        customer_id: 'TEST_100',
+        customer_name: 'Test Customer Name',
+        full_name: 'Test Customer Name',
+        id_number: '123456789',
+        phone: '0123456789',
+        email: 'test@example.com',
+        address: 'Test Address, Test City',
+        
+        // Collateral data - flattened
+        collateral_id: 'COL_001',
+        collateral_type: 'Real Estate',
+        collateral_value: '1000000000',
+        collateral_description: 'Test Property Description',
+        
+        // Credit assessment data - flattened
+        assessment_id: 'ASSESS_001',
+        loan_amount: '500000000',
+        interest_rate: '8.5',
+        loan_term: '12',
+        
+        // Date fields
+        current_date: '24/08/2025',
+        current_year: '2025',
+        
+        // Keep nested structure as backup (same as documentService.ts)
         customer: {
+          customer_id: 'TEST_100',
           full_name: 'Test Customer Name',
           id_number: '123456789',
           phone: '0123456789',
           email: 'test@example.com',
-          address: 'Test Address'
+          address: 'Test Address, Test City'
         },
         collateral: {
-          description: 'Test Collateral Description',
-          value: 1000000,
-          type: 'Real Estate'
+          collateral_id: 'COL_001',
+          collateral_type: 'Real Estate',
+          appraised_value: '1000000000',
+          description: 'Test Property Description'
         },
         creditAssessment: {
-          amount: 500000,
-          term: 12,
-          interest_rate: 8.5,
+          assessment_id: 'ASSESS_001',
+          approved_amount: '500000000',
+          interest_rate: '8.5',
+          loan_term: '12',
           assessment_result: 'Approved'
         }
       };
