@@ -69,6 +69,48 @@ export default function CollateralForm({
     loadCustomers()
   }, [fetchCustomers])
 
+  // Update form state when collateral prop changes
+  useEffect(() => {
+    if (collateral) {
+      setFormState({
+        collateral_type: collateral.collateral_type || '',
+        value: collateral.value?.toString() || '',
+        customer_id: collateral.customer_id?.toString() || '',
+        valuation_date: collateral.valuation_date || '',
+        status: collateral.status || 'active',
+        location: collateral.location || '',
+        description: collateral.description || '',
+        owner_info: collateral.owner_info || JSON.stringify({
+          primary_owner_id: '',
+          primary_owner_name: '',
+          spouse_id: '',
+          spouse_name: '',
+          notes: ''
+        }),
+        metadata: (collateral.metadata as Record<string, Record<string, unknown>>) || {}
+      })
+    } else {
+      // Reset form for new collateral
+      setFormState({
+        collateral_type: '',
+        value: '',
+        customer_id: '',
+        valuation_date: '',
+        status: 'active',
+        location: '',
+        description: '',
+        owner_info: JSON.stringify({
+          primary_owner_id: '',
+          primary_owner_name: '',
+          spouse_id: '',
+          spouse_name: '',
+          notes: ''
+        }),
+        metadata: {}
+      })
+    }
+  }, [collateral])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
