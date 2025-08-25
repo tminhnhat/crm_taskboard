@@ -19,7 +19,7 @@ type IconType = ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref"> &
 interface MetadataField {
   key: string
   label: string
-  type: 'text' | 'number' | 'select' | 'date' | 'tel' | 'email' | 'textarea' | 'section'
+  type: 'text' | 'number' | 'select' | 'date' | 'tel' | 'email' | 'textarea' | 'section' | 'boolean'
   options?: string[]
   readOnly?: boolean
 }
@@ -34,6 +34,7 @@ interface MetadataFormProps {
   initialData?: Record<string, Record<string, unknown>>
   onChange: (metadata: Record<string, Record<string, unknown>>) => void
   suggestedTemplates?: string[]
+  customTemplates?: MetadataTemplates
 }
 
 type MetadataTemplates = {
@@ -200,10 +201,14 @@ const METADATA_TEMPLATES: MetadataTemplates = {
 export default function MetadataForm({ 
   initialData = {}, 
   onChange,
-  suggestedTemplates 
+  suggestedTemplates,
+  customTemplates
 }: MetadataFormProps) {
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<Record<string, Record<string, unknown>>>(initialData)
+
+  // Use custom templates if provided, otherwise use default templates
+  const templates = customTemplates || METADATA_TEMPLATES
 
   const handleFieldChange = (template: string, field: string, value: unknown) => {
     const newMetadata = {
@@ -241,7 +246,7 @@ export default function MetadataForm({
     <div className="space-y-6">
       {/* Template Selection */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {Object.entries(METADATA_TEMPLATES)
+        {Object.entries(templates)
           .filter(([key]) => !suggestedTemplates || suggestedTemplates.includes(key))
           .map(([key, template]) => {
           const Icon = template.icon
@@ -279,53 +284,73 @@ export default function MetadataForm({
       {activeTemplate && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {METADATA_TEMPLATES[activeTemplate].title}
+            {templates[activeTemplate].title}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {METADATA_TEMPLATES[activeTemplate].fields.map((field) => (
-              <div key={field.key}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {field.label}
-                </label>
-                {field.type === 'select' ? (
-                  <select
-                    value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
-                    onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  >
-                    <option value="">Chọn {field.label}</option>
-                    {field.options?.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                ) : field.type === 'textarea' ? (
-                  <textarea
-                    value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
-                    onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.value)}
-                    rows={3}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                ) : (
-                  <input
-                    type={field.type}
-                    value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
-                    onChange={(e) => {
-                      const value = field.type === 'number' 
-                        ? parseFloat(e.target.value) 
-                        : e.target.value
-                      handleFieldChange(activeTemplate, field.key, value)
-                    }}
-                    readOnly={field.readOnly}
-                    className={`block w-full rounded-md border-gray-300 shadow-sm ${
-                      field.readOnly 
-                        ? 'bg-gray-50 text-gray-500'
-                        : 'focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                )}
-              </div>
+            {templates[activeTemplate].fields.map((field) => (
+              field.type === 'section' ? (
+                <div key={field.key} className="col-span-full">
+                  <h4 className="text-md font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200">
+                    {field.label}
+                  </h4>
+                </div>
+              ) : (
+                <div key={field.key}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {field.label}
+                  </label>
+                  {field.type === 'select' ? (
+                    <select
+                      value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
+                      onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.value)}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="">Chọn {field.label}</option>
+                      {field.options?.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  ) : field.type === 'textarea' ? (
+                    <textarea
+                      value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
+                      onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.value)}
+                      rows={3}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  ) : field.type === 'boolean' ? (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(metadata[activeTemplate]?.[field.key])}
+                        onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.checked)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-600">
+                        {Boolean(metadata[activeTemplate]?.[field.key]) ? 'Có' : 'Không'}
+                      </span>
+                    </div>
+                  ) : (
+                    <input
+                      type={field.type}
+                      value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
+                      onChange={(e) => {
+                        const value = field.type === 'number' 
+                          ? parseFloat(e.target.value) 
+                          : e.target.value
+                        handleFieldChange(activeTemplate, field.key, value)
+                      }}
+                      readOnly={field.readOnly}
+                      className={`block w-full rounded-md border-gray-300 shadow-sm ${
+                        field.readOnly 
+                          ? 'bg-gray-50 text-gray-500'
+                          : 'focus:border-blue-500 focus:ring-blue-500'
+                      }`}
+                    />
+                  )}
+                </div>
+              )
             ))}
           </div>
         </div>

@@ -206,9 +206,10 @@ export default function CreditAssessmentForm({
               <div className="border rounded-lg p-4">
                 <h4 className="text-lg font-medium mb-4">Thông tin khoản vay</h4>
                 <MetadataForm
-                  initialData={formState.loan_info}
-                  onChange={(data) => handleJsonDataChange('loan_info', data)}
+                  initialData={{ loan_info: formState.loan_info }}
+                  onChange={(data) => handleJsonDataChange('loan_info', data.loan_info || {})}
                   suggestedTemplates={['loan_info']}
+                  customTemplates={CREDIT_ASSESSMENT_TEMPLATES}
                 />
               </div>
 
@@ -216,9 +217,10 @@ export default function CreditAssessmentForm({
               <div className="border rounded-lg p-4">
                 <h4 className="text-lg font-medium mb-4">Phương án kinh doanh</h4>
                 <MetadataForm
-                  initialData={formState.business_plan}
-                  onChange={(data) => handleJsonDataChange('business_plan', data)}
+                  initialData={{ business_plan: formState.business_plan }}
+                  onChange={(data) => handleJsonDataChange('business_plan', data.business_plan || {})}
                   suggestedTemplates={['business_plan']}
+                  customTemplates={CREDIT_ASSESSMENT_TEMPLATES}
                 />
               </div>
 
@@ -226,9 +228,10 @@ export default function CreditAssessmentForm({
               <div className="border rounded-lg p-4">
                 <h4 className="text-lg font-medium mb-4">Báo cáo tài chính</h4>
                 <MetadataForm
-                  initialData={formState.financial_reports}
-                  onChange={(data) => handleJsonDataChange('financial_reports', data)}
+                  initialData={{ financial_reports: formState.financial_reports }}
+                  onChange={(data) => handleJsonDataChange('financial_reports', data.financial_reports || {})}
                   suggestedTemplates={['financial_reports']}
+                  customTemplates={CREDIT_ASSESSMENT_TEMPLATES}
                 />
               </div>
 
@@ -236,9 +239,10 @@ export default function CreditAssessmentForm({
               <div className="border rounded-lg p-4">
                 <h4 className="text-lg font-medium mb-4">Chi tiết đánh giá</h4>
                 <MetadataForm
-                  initialData={formState.assessment_details}
-                  onChange={(data) => handleJsonDataChange('assessment_details', data)}
+                  initialData={{ assessment_details: formState.assessment_details }}
+                  onChange={(data) => handleJsonDataChange('assessment_details', data.assessment_details || {})}
                   suggestedTemplates={['assessment_details']}
+                  customTemplates={CREDIT_ASSESSMENT_TEMPLATES}
                 />
               </div>
 
@@ -246,9 +250,10 @@ export default function CreditAssessmentForm({
               <div className="border rounded-lg p-4">
                 <h4 className="text-lg font-medium mb-4">Thông tin người vay</h4>
                 <MetadataForm
-                  initialData={formState.metadata}
+                  initialData={{ borrower_info: formState.metadata.borrower_info || {}, spouse_info: formState.metadata.spouse_info || {}, credit_history: formState.metadata.credit_history || {} }}
                   onChange={(data) => handleJsonDataChange('metadata', data)}
                   suggestedTemplates={['borrower_info', 'spouse_info', 'credit_history']}
+                  customTemplates={CREDIT_ASSESSMENT_TEMPLATES}
                 />
               </div>
             </div>
