@@ -102,6 +102,7 @@ interface CustomerCardProps {
   onDelete: (customerId: number) => void
   onStatusChange: (customerId: number, status: string) => void
   onRecalculateNumerology?: (customerId: number) => void
+  onGenerateQR?: (customer: Customer) => void
 }
 
 const customerTypeColors = {
@@ -121,7 +122,7 @@ const customerTypeIcons = {
   corporate: BuildingOfficeIcon
 }
 
-export default function CustomerCard({ customer, onEdit, onDelete, onStatusChange, onRecalculateNumerology }: CustomerCardProps) {
+export default function CustomerCard({ customer, onEdit, onDelete, onStatusChange, onRecalculateNumerology, onGenerateQR }: CustomerCardProps) {
   const TypeIcon = customerTypeIcons[customer.customer_type]
   const [showNumerology, setShowNumerology] = useState(false)
 
@@ -466,6 +467,15 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                 title="Tính lại thần số học"
               >
                 🔢
+              </button>
+            )}
+            {onGenerateQR && (
+              <button
+                onClick={() => onGenerateQR(customer)}
+                className="text-green-600 hover:text-green-800 text-sm font-medium ml-2"
+                title="Tạo mã QR thanh toán"
+              >
+                📱
               </button>
             )}
             <button

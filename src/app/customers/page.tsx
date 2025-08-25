@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, QrCodeIcon } from '@heroicons/react/24/outline'
 import Navigation from '@/components/Navigation'
 import CustomerCard from '@/components/CustomerCard'
 import CustomerForm from '@/components/CustomerForm'
 import CustomerFilters from '@/components/CustomerFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import QRPaymentGenerator from '@/components/QRPaymentGenerator'
 import { useCustomers } from '@/hooks/useCustomers'
 import type { CustomerType } from '@/lib/supabase'
 import { Customer } from '@/lib/supabase'
@@ -15,6 +16,8 @@ export default function CustomersPage() {
   const { customers, loading, error, createCustomer, updateCustomer, deleteCustomer, updateCustomerStatus, recalculateNumerology } = useCustomers()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
+  const [isQRGeneratorOpen, setIsQRGeneratorOpen] = useState(false)
+  const [selectedCustomerForQR, setSelectedCustomerForQR] = useState<number | undefined>(undefined)
   const [filters, setFilters] = useState({
     customerType: '',
     status: 'active',
@@ -150,6 +153,21 @@ export default function CustomersPage() {
     }
   }
 
+  const handleOpenQRGenerator = (customerId?: number) => {
+    setSelectedCustomerForQR(customerId)
+    setIsQRGeneratorOpen(true)
+  }
+
+  const handleOpenQRGeneratorForCustomer = (customer: Customer) => {
+    setSelectedCustomerForQR(customer.customer_id)
+    setIsQRGeneratorOpen(true)
+  }
+
+  const handleCloseQRGenerator = () => {
+    setIsQRGeneratorOpen(false)
+    setSelectedCustomerForQR(undefined)
+  }
+
   // Calculate total pages
   const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredCustomers.length / customersPerPage)), [filteredCustomers.length, customersPerPage])
 
@@ -192,13 +210,22 @@ export default function CustomersPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <h2 className="text-2xl font-bold text-gray-900">Quản Lý Khách Hàng</h2>
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Khách Hàng Mới
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => handleOpenQRGenerator()}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <QrCodeIcon className="h-4 w-4 mr-2" />
+                Tạo QR Thanh Toán
+              </button>
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Khách Hàng Mới
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -254,6 +281,7 @@ export default function CustomersPage() {
                     onDelete={handleDeleteCustomer}
                     onStatusChange={handleStatusChange}
                     onRecalculateNumerology={handleRecalculateNumerology}
+                    onGenerateQR={handleOpenQRGeneratorForCustomer}
                   />
                 ))}
             </div>
@@ -315,6 +343,13 @@ export default function CustomersPage() {
         onClose={handleCloseForm}
         onSubmit={editingCustomer ? handleUpdateCustomer : handleCreateCustomer}
         customer={editingCustomer}
+      />
+
+      {/* QR Payment Generator Modal */}
+      <QRPaymentGenerator
+        isOpen={isQRGeneratorOpen}
+        onClose={handleCloseQRGenerator}
+        prefilledCustomerId={selectedCustomerForQR}
       />
     </div>
   )
