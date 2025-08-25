@@ -47,8 +47,8 @@ export default function QRPaymentGenerator({
         setFormData(prev => ({
           ...prev,
           accountName: customer.full_name,
-          // You might want to add account_number field to customer model
-          accountNumber: prev.accountNumber || ''
+          // Use customer's account_number field if available
+          accountNumber: customer.account_number || prev.accountNumber || ''
         }))
       }
     }
@@ -210,6 +210,7 @@ export default function QRPaymentGenerator({
                       {customers.map((customer) => (
                         <option key={customer.customer_id} value={customer.customer_id}>
                           {customer.full_name} - {customer.phone}
+                          {customer.account_number && ` (STK: ${customer.account_number})`}
                         </option>
                       ))}
                     </select>
@@ -220,6 +221,9 @@ export default function QRPaymentGenerator({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Số tài khoản <span className="text-red-500">*</span>
+                  {formData.useCustomerData && !!formData.selectedCustomerId && (
+                    <span className="text-xs text-green-600 ml-2">(từ thông tin khách hàng)</span>
+                  )}
                 </label>
                 <input
                   type="text"
@@ -227,9 +231,19 @@ export default function QRPaymentGenerator({
                   value={formData.accountNumber}
                   onChange={handleInputChange}
                   placeholder="Nhập số tài khoản Vietinbank"
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                    formData.useCustomerData && !!formData.selectedCustomerId && formData.accountNumber 
+                      ? 'bg-green-50 border-green-300' 
+                      : ''
+                  }`}
                   required
+                  readOnly={formData.useCustomerData && !!formData.selectedCustomerId && !!formData.accountNumber}
                 />
+                {formData.useCustomerData && !!formData.selectedCustomerId && !formData.accountNumber && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    ⚠️ Khách hàng chưa có số tài khoản. Vui lòng nhập thủ công hoặc cập nhật thông tin khách hàng.
+                  </p>
+                )}
               </div>
 
               <div>
