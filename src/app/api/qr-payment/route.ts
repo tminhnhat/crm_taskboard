@@ -3,6 +3,11 @@ import { createPaymentQRImage, VietQRData, QRImageOptions } from '@/lib/vietqr';
 
 export async function POST(request: NextRequest) {
   try {
+    // Set response timeout
+    request.signal.addEventListener('abort', () => {
+      throw new Error('Request timeout');
+    });
+
     const body = await request.json();
     
     const {
@@ -14,10 +19,24 @@ export async function POST(request: NextRequest) {
       customOptions
     } = body;
 
-    // Validate required fields
-    if (!accountNumber || !accountName) {
+    // Validate required fields with detailed error messages
+    if (!accountNumber && !accountName) {
       return NextResponse.json(
         { error: 'Số tài khoản và tên chủ tài khoản là bắt buộc' },
+        { status: 400 }
+      );
+    }
+    
+    if (!accountNumber) {
+      return NextResponse.json(
+        { error: 'Số tài khoản là bắt buộc' },
+        { status: 400 }
+      );
+    }
+    
+    if (!accountName) {
+      return NextResponse.json(
+        { error: 'Tên chủ tài khoản là bắt buộc' },
         { status: 400 }
       );
     }
@@ -68,9 +87,34 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('QR generation error:', error);
+    
+    // Provide more detailed error messages
+    let errorMessage = 'Lỗi khi tạo mã QR thanh toán';
+    let statusCode = 500;
+    let errorDetails = undefined;
+
+    if (error instanceof Error) {
+      // Check for specific error types
+      if (error.message.includes('font')) {
+        errorMessage = 'Lỗi khi tải font chữ. Vui lòng thử lại sau.';
+      } else if (error.message.includes('canvas')) {
+        errorMessage = 'Lỗi khi tạo hình ảnh QR. Vui lòng thử lại sau.';
+      } else if (error.message === 'Request timeout') {
+        errorMessage = 'Yêu cầu đã hết thời gian chờ. Vui lòng thử lại.';
+        statusCode = 408;
+      }
+      
+      if (process.env.NODE_ENV === 'development') {
+        errorDetails = error.message;
+      }
+    }
+
     return NextResponse.json(
-      { error: 'Lỗi khi tạo mã QR thanh toán' },
-      { status: 500 }
+      { 
+        error: errorMessage,
+        details: errorDetails
+      },
+      { status: statusCode }
     );
   }
 }
