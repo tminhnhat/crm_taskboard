@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
       accountName,
       amount,
       description,
+      backgroundImage,
       customOptions
     } = body;
 
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
     // VietinBank styling options (matching toolqr.html)
     const defaultOptions: QRImageOptions = {
       backgroundColor: '#bfe8ff',
+      backgroundImage: backgroundImage, // Include background image if provided
       qrSize: 380,
       fontSize: {
         title: 40,

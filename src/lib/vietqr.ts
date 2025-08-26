@@ -1,5 +1,6 @@
 import { createCanvas, loadImage, CanvasRenderingContext2D } from 'canvas';
 import * as QRCode from 'qrcode';
+import { list } from '@vercel/blob';
 
 // VietQR Bank codes
 const BANK_CODES = {
@@ -24,6 +25,7 @@ export interface VietQRData {
 
 export interface QRImageOptions {
   backgroundColor?: string;
+  backgroundImage?: string; // URL to background image from Vercel Blob
   qrSize?: number;
   fontSize?: {
     title: number;
@@ -131,9 +133,55 @@ export async function createPaymentQRImage(
   const canvas = createCanvas(680, 1020);
   const ctx = canvas.getContext('2d');
 
-  // Set background with VietinBank gradient
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, 680, 1020);
+  // Set background - either custom image or solid color
+  if (options.backgroundImage) {
+    try {
+      // Extract image name from URL or use directly if it's already a name
+      const imageName = options.backgroundImage.includes('/') 
+        ? options.backgroundImage.split('/').pop() || options.backgroundImage
+        : options.backgroundImage;
+      
+      const backgroundBuffer = await fetchQRBackgroundImage(imageName);
+      if (backgroundBuffer) {
+        const backgroundImg = await loadImage(backgroundBuffer);
+        
+        // Draw background image to fill canvas while maintaining aspect ratio
+        const imgAspect = backgroundImg.width / backgroundImg.height;
+        const canvasAspect = 680 / 1020;
+        
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (imgAspect > canvasAspect) {
+          // Image is wider, fit by height
+          drawHeight = 1020;
+          drawWidth = 1020 * imgAspect;
+          drawX = (680 - drawWidth) / 2;
+          drawY = 0;
+        } else {
+          // Image is taller, fit by width
+          drawWidth = 680;
+          drawHeight = 680 / imgAspect;
+          drawX = 0;
+          drawY = (1020 - drawHeight) / 2;
+        }
+        
+        ctx.drawImage(backgroundImg, drawX, drawY, drawWidth, drawHeight);
+      } else {
+        // Fallback to solid color if image fails to load
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, 680, 1020);
+      }
+    } catch (error) {
+      console.error('Error loading background image:', error);
+      // Fallback to solid color
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, 680, 1020);
+    }
+  } else {
+    // Use solid background color
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, 680, 1020);
+  }
 
   // Generate QR code using VietQR API format
   const qrUrl = qrUrlFromAccount(qrData.accountNumber);
@@ -267,8 +315,8 @@ export async function createPaymentQRImage(
   ctx.fillStyle = colors.accent;
   ctx.font = `700 ${fontSize.small}px "SVN Gilroy", Arial, sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('VietinBank - CN Nam Sài Gòn', 680 / 2, 1020 - 75);
-  ctx.fillText('Phòng Dịch vụ Khách Hàng', 680 / 2, 1020 - 55);
+  ctx.fillText('VietinBank - CN Bắc Đà Nẵng', 680 / 2, 1020 - 75);
+  ctx.fillText('Phòng Giao Dịch Thanh Bình', 680 / 2, 1020 - 55);
   ctx.fillText('Quét mã QR để thanh toán', 680 / 2, 1020 - 25);
 
   // Convert to buffer
@@ -299,9 +347,9 @@ export function getBankName(bankCode: string): string {
  */
 export function getVietinBankBranchInfo() {
   return {
-    branch: 'VietinBank - CN Nam Sài Gòn',
-    department: 'Phòng Dịch vụ Khách Hàng',
-    address: '23 Nguyễn Hữu Thọ, P. Tân Hưng, TP HCM'
+    branch: 'VietinBank - CN Bắc Đà Nẵng',
+    department: 'Phòng Giao Dịch Thanh Bình',
+    address: '162 Đống Đa, P. Hải Châu, TP. Đà Nẵng'
   };
 }
 
@@ -310,6 +358,68 @@ export function getVietinBankBranchInfo() {
  */
 export function cleanAccountNumber(accountNumber: string): string {
   return (accountNumber || '').replace(/\D/g, ''); // chỉ giữ số
+}
+
+/**
+ * Get list of available QR background images from Vercel Blob (qrimg folder)
+ */
+export async function getQRBackgroundImages(): Promise<Array<{
+  name: string;
+  url: string;
+  pathname: string;
+}>> {
+  try {
+    const { blobs } = await list({
+      prefix: 'qrimg/',
+      limit: 50
+    });
+
+    // Filter for image files
+    const imageBlobs = blobs
+      .filter((blob: any) => {
+        const ext = blob.pathname.toLowerCase();
+        return ext.endsWith('.png') || 
+               ext.endsWith('.jpg') || 
+               ext.endsWith('.jpeg') || 
+               ext.endsWith('.webp') ||
+               ext.endsWith('.gif');
+      })
+      .map((blob: any) => ({
+        name: blob.pathname.replace('qrimg/', ''),
+        url: blob.url,
+        pathname: blob.pathname
+      }));
+
+    return imageBlobs;
+  } catch (error) {
+    console.error('Error fetching QR background images:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch a specific QR background image from Vercel Blob
+ */
+export async function fetchQRBackgroundImage(imageName: string): Promise<Buffer | null> {
+  try {
+    const images = await getQRBackgroundImages();
+    const targetImage = images.find(img => img.name === imageName);
+    
+    if (!targetImage) {
+      console.warn(`Background image not found: ${imageName}`);
+      return null;
+    }
+
+    const response = await fetch(targetImage.url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+
+    return Buffer.from(await response.arrayBuffer());
+  } catch (error) {
+    console.error('Error fetching QR background image:', error);
+    return null;
+  }
 }
 
 export { BANK_CODES };

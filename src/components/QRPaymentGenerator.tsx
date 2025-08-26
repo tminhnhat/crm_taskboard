@@ -20,6 +20,7 @@ interface QRPaymentData {
   description?: string
   useCustomerData: boolean
   selectedCustomerId?: number
+  backgroundImage?: string
 }
 
 export default function QRPaymentGenerator({
@@ -34,10 +35,17 @@ export default function QRPaymentGenerator({
     amount: undefined,
     description: '',
     useCustomerData: true,
-    selectedCustomerId: prefilledCustomerId
+    selectedCustomerId: prefilledCustomerId,
+    backgroundImage: undefined
   })
   const [isGenerating, setIsGenerating] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [backgroundImages, setBackgroundImages] = useState<Array<{
+    name: string;
+    url: string;
+    pathname: string;
+  }>>([])
+  const [isLoadingBackgrounds, setIsLoadingBackgrounds] = useState(true)
 
   // Update form when customer is selected
   useEffect(() => {
@@ -64,6 +72,25 @@ export default function QRPaymentGenerator({
       }))
     }
   }, [prefilledCustomerId, customers])
+
+  // Load available background images
+  useEffect(() => {
+    const fetchBackgrounds = async () => {
+      try {
+        const response = await fetch('/api/qr-backgrounds')
+        const data = await response.json()
+        if (data.success) {
+          setBackgroundImages(data.backgrounds)
+        }
+      } catch (error) {
+        console.error('Error fetching background images:', error)
+      } finally {
+        setIsLoadingBackgrounds(false)
+      }
+    }
+
+    fetchBackgrounds()
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
@@ -101,6 +128,7 @@ export default function QRPaymentGenerator({
           accountName: formData.accountName,
           amount: formData.amount,
           description: formData.description,
+          backgroundImage: formData.backgroundImage,
         }),
       })
 
@@ -142,7 +170,8 @@ export default function QRPaymentGenerator({
       amount: undefined,
       description: '',
       useCustomerData: true,
-      selectedCustomerId: undefined
+      selectedCustomerId: undefined,
+      backgroundImage: undefined
     })
     onClose()
   }
@@ -289,6 +318,40 @@ export default function QRPaymentGenerator({
                   rows={3}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ảnh nền QR Code <span className="text-gray-500">(tùy chọn)</span>
+                </label>
+                <select
+                  name="backgroundImage"
+                  value={formData.backgroundImage || ''}
+                  onChange={handleInputChange}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  disabled={isLoadingBackgrounds}
+                >
+                  <option value="">Không sử dụng ảnh nền (màu đặc)</option>
+                  {isLoadingBackgrounds ? (
+                    <option disabled>Đang tải ảnh nền...</option>
+                  ) : (
+                    backgroundImages.map((bg) => (
+                      <option key={bg.pathname} value={bg.name}>
+                        {bg.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+                {backgroundImages.length === 0 && !isLoadingBackgrounds && (
+                  <p className="text-sm text-amber-600 mt-1">
+                    ℹ️ Chưa có ảnh nền nào trong thư mục qrimg của Vercel Blob
+                  </p>
+                )}
+                {formData.backgroundImage && (
+                  <p className="text-sm text-green-600 mt-1">
+                    ✓ Sử dụng ảnh nền: {formData.backgroundImage}
+                  </p>
+                )}
               </div>
 
               <div className="flex space-x-3">
