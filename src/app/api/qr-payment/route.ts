@@ -21,31 +21,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare QR data
+    // Prepare QR data (using VietinBank format like toolqr.html)
     const qrData: VietQRData = {
-      bankCode: 'VTB', // Vietinbank
+      bankCode: '970415', // VietinBank code
       accountNumber: accountNumber.toString(),
       accountName: accountName.toString(),
       amount: amount ? parseFloat(amount) : undefined,
       description: description || '',
-      template: 'compact2'
+      template: 'QY3QZ1v' // Same template as toolqr.html
     };
 
-    // Default options for A6 size
+    // VietinBank styling options (matching toolqr.html)
     const defaultOptions: QRImageOptions = {
-      backgroundColor: '#ffffff',
-      qrSize: 400,
+      backgroundColor: '#bfe8ff',
+      qrSize: 380,
       fontSize: {
-        title: 48,
-        header: 36,
-        content: 32,
-        small: 24
+        title: 40,
+        header: 30,
+        content: 24,
+        small: 18
       },
       colors: {
-        primary: '#1E40AF',
-        secondary: '#3B82F6',
-        text: '#1F2937',
-        accent: '#059669'
+        primary: '#134a7c',
+        secondary: '#0b7cc2',
+        text: '#134a7c',
+        accent: '#355a78'
       }
     };
 
