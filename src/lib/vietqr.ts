@@ -227,6 +227,12 @@ export async function createPaymentQRImage(
   // Draw QR code
   ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
 
+  // Draw bank logo and name
+  ctx.fillStyle = colors.primary;
+  ctx.font = `800 ${fontSize.header}px "SVN Gilroy", Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText(getBankName(qrData.bankCode), 680 / 2, 120);
+
   // Title styling (matching toolqr.html)
   ctx.fillStyle = colors.primary;
   ctx.font = `800 ${fontSize.title}px "SVN Gilroy", Arial, sans-serif`;
@@ -238,28 +244,27 @@ export async function createPaymentQRImage(
   // Account information section (matching toolqr.html positions)
   const accountY = 730;
   
-  // Account number label
+  // Account number label with value
   ctx.fillStyle = colors.text;
-  ctx.font = `400 ${fontSize.content}px "SVN Gilroy", Arial, sans-serif`;
+  ctx.font = `600 ${fontSize.content}px "SVN Gilroy", Arial, sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('STK:', 680 / 2, accountY);
+  ctx.fillText('SỐ TÀI KHOẢN:', 680 / 2, accountY);
   
-  // Account number value
   ctx.fillStyle = colors.primary;
   ctx.font = `700 ${fontSize.header}px "SVN Gilroy", Arial, sans-serif`;
-  ctx.fillText(qrData.accountNumber, 680 / 2, accountY + 40);
+  // Format account number with spaces for readability
+  const formattedAccountNumber = qrData.accountNumber.replace(/(\d{4})/g, '$1 ').trim();
+  ctx.fillText(formattedAccountNumber, 680 / 2, accountY + 40);
 
-  // Account holder name (if provided)
-  if (qrData.accountName) {
-    ctx.fillStyle = colors.text;
-    ctx.font = `500 ${fontSize.small + 2}px "SVN Gilroy", Arial, sans-serif`;
-    ctx.fillText('CHỦ TÀI KHOẢN:', 680 / 2, accountY + 90);
-    
-    ctx.fillStyle = colors.primary;
-    ctx.font = `700 ${fontSize.content + 2}px "SVN Gilroy", Arial, sans-serif`;
-    const accountName = qrData.accountName.toUpperCase();
-    ctx.fillText(accountName, 680 / 2, accountY + 125);
-  }
+  // Account holder name
+  ctx.fillStyle = colors.text;
+  ctx.font = `600 ${fontSize.content}px "SVN Gilroy", Arial, sans-serif`;
+  ctx.fillText('CHỦ TÀI KHOẢN:', 680 / 2, accountY + 90);
+  
+  ctx.fillStyle = colors.primary;
+  ctx.font = `700 ${fontSize.header}px "SVN Gilroy", Arial, sans-serif`;
+  const accountName = qrData.accountName.toUpperCase();
+  ctx.fillText(accountName, 680 / 2, accountY + 125);
 
   // Amount (if provided)
   if (qrData.amount && qrData.amount > 0) {

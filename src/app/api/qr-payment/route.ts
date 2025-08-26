@@ -24,12 +24,12 @@ export async function POST(request: NextRequest) {
 
     // Prepare QR data (using VietinBank format like toolqr.html)
     const qrData: VietQRData = {
-      bankCode: '970415', // VietinBank code
+      bankCode: 'VTB', // VietinBank code
       accountNumber: accountNumber.toString(),
       accountName: accountName.toString(),
       amount: amount ? parseFloat(amount) : undefined,
       description: description || '',
-      template: 'QY3QZ1v' // Same template as toolqr.html
+      template: 'compact' // Using compact template for better QR code
     };
 
     // VietinBank styling options (matching toolqr.html)
@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
       backgroundImage: backgroundImage, // Include background image if provided
       qrSize: 380,
       fontSize: {
-        title: 40,
-        header: 30,
-        content: 24,
-        small: 18
+        title: 36,
+        header: 32,
+        content: 28,
+        small: 20
       },
       colors: {
         primary: '#134a7c',
@@ -97,9 +97,27 @@ export async function GET(request: NextRequest) {
       accountName: accountName,
       amount: amount ? parseFloat(amount) : undefined,
       description: description || '',
+      template: 'compact'
     };
 
-    const imageBuffer = await createPaymentQRImage(qrData);
+    const defaultOptions: QRImageOptions = {
+      backgroundColor: '#bfe8ff',
+      qrSize: 380,
+      fontSize: {
+        title: 36,
+        header: 32,
+        content: 28,
+        small: 20
+      },
+      colors: {
+        primary: '#134a7c',
+        secondary: '#0b7cc2',
+        text: '#134a7c',
+        accent: '#355a78'
+      }
+    };
+
+    const imageBuffer = await createPaymentQRImage(qrData, defaultOptions);
 
     return new NextResponse(new Uint8Array(imageBuffer), {
       status: 200,
