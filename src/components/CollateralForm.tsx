@@ -176,6 +176,20 @@ export default function CollateralForm({
               <span className="sr-only">Đóng</span>
               <XMarkIcon className="h-6 w-6" aria-hidden="true" />
             </button>
+            {/* New fields for spouse owner_info metadata */}
+            {(() => { const info = JSON.parse(formState.owner_info || '{}');
+              const spouse = customers.find((c: Customer) => c.customer_id.toString() === info.spouse_id);
+              if (!spouse) return null;
+              return (
+                <div className="mt-2 space-y-1">
+                  <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={spouse.id_number || ''} readOnly placeholder="Số CMND/CCCD (Vợ/Chồng)" />
+                  <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={spouse.id_issue_date || ''} readOnly placeholder="Ngày cấp (Vợ/Chồng)" />
+                  <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={spouse.id_issue_authority || ''} readOnly placeholder="Nơi cấp (Vợ/Chồng)" />
+                  <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={spouse.address || ''} readOnly placeholder="Địa chỉ (Vợ/Chồng)" />
+                  <input type="text" className="block w-full border rounded px-2 py-1 text-sm" value={spouse.phone || ''} readOnly placeholder="Số điện thoại (Vợ/Chồng)" />
+                </div>
+              )
+            })()}
           </div>
 
           <div className="sm:flex sm:items-start">
@@ -403,6 +417,7 @@ export default function CollateralForm({
       {/* Owner Info */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-gray-700">Thông tin chủ sở hữu</h3>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Primary Owner Info */}
           <div>
@@ -420,7 +435,12 @@ export default function CollateralForm({
                   owner_info: JSON.stringify({
                     ...currentInfo,
                     primary_owner_id: e.target.value,
-                    primary_owner_name: selectedCustomer?.full_name || ''
+                    primary_owner_name: selectedCustomer?.full_name || '',
+                    id_number: selectedCustomer?.id_number || '',
+                    id_issue_date: selectedCustomer?.id_issue_date || '',
+                    id_issue_authority: selectedCustomer?.id_issue_authority || '',
+                    address: selectedCustomer?.address || '',
+                    phone: selectedCustomer?.phone || ''
                   })
                 }))
               }}
@@ -433,6 +453,16 @@ export default function CollateralForm({
                 </option>
               ))}
             </select>
+            {/* New fields for owner_info metadata */}
+            {(() => { const info = JSON.parse(formState.owner_info || '{}'); return (
+              <div className="mt-2 space-y-1">
+                <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={info.id_number || ''} readOnly placeholder="Số CMND/CCCD" />
+                <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={info.id_issue_date || ''} readOnly placeholder="Ngày cấp" />
+                <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={info.id_issue_authority || ''} readOnly placeholder="Nơi cấp" />
+                <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={info.address || ''} readOnly placeholder="Địa chỉ" />
+                <input type="text" className="block w-full border rounded px-2 py-1 text-sm" value={info.phone || ''} readOnly placeholder="Số điện thoại" />
+              </div>
+            )})()}
           </div>
 
           {/* Spouse Info */}
