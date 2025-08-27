@@ -7,22 +7,26 @@ import path from 'path';
 // Font registration using local system fonts
 async function registerFonts() {
   try {
-    // Register only Gilroy fonts from public/fonts
+    // In Vercel serverless, __dirname points to the .next/server directory, but public is at process.cwd()/public
+    const fontDir = path.join(process.cwd(), 'public', 'fonts');
     const gilroyFonts = [
-      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-Regular.otf'), weight: '400' },
-      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-Medium.otf'), weight: '500' },
-      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-SemiBold.otf'), weight: '600' },
-      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-Bold.otf'), weight: '700' },
-      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-ExtraBold.otf'), weight: '800' }
+      { file: 'SVN-Gilroy-Regular.otf', weight: '400' },
+      { file: 'SVN-Gilroy-Medium.otf', weight: '500' },
+      { file: 'SVN-Gilroy-SemiBold.otf', weight: '600' },
+      { file: 'SVN-Gilroy-Bold.otf', weight: '700' },
+      { file: 'SVN-Gilroy-ExtraBold.otf', weight: '800' }
     ];
     for (const font of gilroyFonts) {
+      const fontPath = path.join(fontDir, font.file);
       try {
-        registerFont(font.path, {
+        // Check if font file exists before registering
+        await fs.access(fontPath);
+        registerFont(fontPath, {
           family: 'Gilroy',
           weight: font.weight
         });
       } catch (error) {
-        console.error(`Error loading Gilroy font weight ${font.weight}:`, error);
+        console.error(`Error loading Gilroy font ${font.file} (weight ${font.weight}):`, error);
       }
     }
   } catch (error) {
