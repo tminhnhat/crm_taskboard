@@ -7,7 +7,7 @@ import path from 'path';
 // Font registration using local system fonts
 async function registerFonts() {
   try {
-    // Register Gilroy fonts from public/fonts (for Next.js static serving)
+    // Register only Gilroy fonts from public/fonts
     const gilroyFonts = [
       { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-Regular.otf'), weight: '400' },
       { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-Medium.otf'), weight: '500' },
