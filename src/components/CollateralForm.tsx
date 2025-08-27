@@ -177,9 +177,9 @@ export default function CollateralForm({
               <XMarkIcon className="h-6 w-6" aria-hidden="true" />
             </button>
             {/* New fields for spouse owner_info metadata */}
-            {(() => { const info = JSON.parse(formState.owner_info || '{}');
-              const spouse = customers.find((c: Customer) => c.customer_id.toString() === info.spouse_id);
-              if (!spouse) return null;
+            {(() => {
+              const info = JSON.parse(formState.owner_info || '{}');
+              const spouse = customers.find((c: Customer) => c.customer_id.toString() === info.spouse_id) || {};
               return (
                 <div className="mt-2 space-y-1">
                   <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={spouse.id_number || ''} readOnly placeholder="Số CMND/CCCD (Vợ/Chồng)" />
@@ -188,7 +188,7 @@ export default function CollateralForm({
                   <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={spouse.address || ''} readOnly placeholder="Địa chỉ (Vợ/Chồng)" />
                   <input type="text" className="block w-full border rounded px-2 py-1 text-sm" value={spouse.phone || ''} readOnly placeholder="Số điện thoại (Vợ/Chồng)" />
                 </div>
-              )
+              );
             })()}
           </div>
 
