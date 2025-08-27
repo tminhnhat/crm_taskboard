@@ -467,7 +467,12 @@ export default function CollateralForm({
                   owner_info: JSON.stringify({
                     ...currentInfo,
                     spouse_id: e.target.value,
-                    spouse_name: selectedCustomer?.full_name || ''
+                    spouse_name: selectedCustomer?.full_name || '',
+                    spouse_id_number: selectedCustomer?.id_number || '',
+                    spouse_id_issue_date: selectedCustomer?.id_issue_date || '',
+                    spouse_id_issue_authority: selectedCustomer?.id_issue_authority || '',
+                    spouse_address: selectedCustomer?.address || '',
+                    spouse_phone: selectedCustomer?.phone || ''
                   })
                 }))
               }}
@@ -485,14 +490,13 @@ export default function CollateralForm({
             {/* Spouse info fields */}
             {(() => {
               const info = JSON.parse(formState.owner_info || '{}');
-              const spouse: Customer | undefined = customers.find((c: Customer) => c.customer_id.toString() === info.spouse_id);
               return (
                 <div className="mt-2 grid grid-cols-1 gap-1">
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={spouse?.id_number || ''} readOnly placeholder="Số CMND/CCCD (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={spouse?.id_issue_date || ''} readOnly placeholder="Ngày cấp (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={spouse?.id_issue_authority || ''} readOnly placeholder="Nơi cấp (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={spouse?.address || ''} readOnly placeholder="Địa chỉ (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm" value={spouse?.phone || ''} readOnly placeholder="Số điện thoại (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={info.spouse_id_number || ''} readOnly placeholder="Số CMND/CCCD (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={info.spouse_id_issue_date || ''} readOnly placeholder="Ngày cấp (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={info.spouse_id_issue_authority || ''} readOnly placeholder="Nơi cấp (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={info.spouse_address || ''} readOnly placeholder="Địa chỉ (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm" value={info.spouse_phone || ''} readOnly placeholder="Số điện thoại (Vợ/Chồng)" />
                 </div>
               );
             })()}
