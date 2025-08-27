@@ -7,24 +7,26 @@ import path from 'path';
 // Font registration using local system fonts
 async function registerFonts() {
   try {
-    // Register Arial-based fonts which have good Vietnamese support
-    const systemFonts = [
-      { path: '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', weight: '400' },
-      { path: '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', weight: '700' }
+    // Register Gilroy fonts from public/fonts (for Next.js static serving)
+    const gilroyFonts = [
+      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-Regular.otf'), weight: '400' },
+      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-Medium.otf'), weight: '500' },
+      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-SemiBold.otf'), weight: '600' },
+      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-Bold.otf'), weight: '700' },
+      { path: path.resolve(process.cwd(), 'public/fonts/SVN-Gilroy-ExtraBold.otf'), weight: '800' }
     ];
-
-    for (const font of systemFonts) {
+    for (const font of gilroyFonts) {
       try {
         registerFont(font.path, {
-          family: 'DejaVu Sans',
+          family: 'Gilroy',
           weight: font.weight
         });
       } catch (error) {
-        console.error(`Error loading font weight ${font.weight}:`, error);
+        console.error(`Error loading Gilroy font weight ${font.weight}:`, error);
       }
     }
   } catch (error) {
-    console.error('Error registering fonts:', error);
+    console.error('Error registering Gilroy fonts:', error);
     // Fallback to system sans-serif font if fonts fail to load
     console.log('Using fallback font...');
   }
@@ -260,13 +262,13 @@ export async function createPaymentQRImage(
 
   // Draw bank logo and name
   ctx.fillStyle = colors.primary;
-  ctx.font = `bold ${fontSize.header}px 'DejaVu Sans'`;
+  ctx.font = `bold ${fontSize.header}px 'Gilroy'`;
   ctx.textAlign = 'center';
   ctx.fillText(getBankName(qrData.bankCode), 680 / 2, 120);
 
   // Title styling (matching toolqr.html)
   ctx.fillStyle = colors.primary;
-  ctx.font = `bold ${fontSize.title}px 'DejaVu Sans'`;
+  ctx.font = `bold ${fontSize.title}px 'Gilroy'`;
   ctx.textAlign = 'center';
   
   const title = 'THANH TOÁN QR CODE';
@@ -277,23 +279,23 @@ export async function createPaymentQRImage(
   
   // Account number label with value
   ctx.fillStyle = colors.text;
-  ctx.font = `normal ${fontSize.content}px 'DejaVu Sans'`;
+  ctx.font = `normal ${fontSize.content}px 'Gilroy'`;
   ctx.textAlign = 'center';
   ctx.fillText('SỐ TÀI KHOẢN:', 680 / 2, accountY);
   
   ctx.fillStyle = colors.primary;
-  ctx.font = `bold ${fontSize.header}px 'DejaVu Sans'`;
+  ctx.font = `bold ${fontSize.header}px 'Gilroy'`;
   // Format account number with spaces for readability
   const formattedAccountNumber = qrData.accountNumber.replace(/(\d{4})/g, '$1 ').trim();
   ctx.fillText(formattedAccountNumber, 680 / 2, accountY + 40);
 
   // Account holder name
   ctx.fillStyle = colors.text;
-  ctx.font = `normal ${fontSize.content}px 'DejaVu Sans'`;
+  ctx.font = `normal ${fontSize.content}px 'Gilroy'`;
   ctx.fillText('CHỦ TÀI KHOẢN:', 680 / 2, accountY + 90);
   
   ctx.fillStyle = colors.primary;
-  ctx.font = `bold ${fontSize.header}px 'DejaVu Sans'`;
+  ctx.font = `bold ${fontSize.header}px 'Gilroy'`;
   const accountName = qrData.accountName.toUpperCase();
   ctx.fillText(accountName, 680 / 2, accountY + 125);
 
@@ -302,11 +304,11 @@ export async function createPaymentQRImage(
     const amountY = qrData.accountName ? accountY + 175 : accountY + 120;
     
     ctx.fillStyle = colors.text;
-    ctx.font = `normal ${fontSize.small + 2}px 'DejaVu Sans'`;
+    ctx.font = `normal ${fontSize.small + 2}px 'Gilroy'`;
     ctx.fillText('SỐ TIỀN:', 680 / 2, amountY);
     
     ctx.fillStyle = colors.accent;
-    ctx.font = `bold ${fontSize.content + 4}px 'DejaVu Sans'`;
+    ctx.font = `bold ${fontSize.content + 4}px 'Gilroy'`;
     const formattedAmount = new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
@@ -320,11 +322,11 @@ export async function createPaymentQRImage(
     const descY = qrData.amount ? baseY + 85 : baseY;
     
     ctx.fillStyle = colors.text;
-    ctx.font = `normal ${fontSize.small}px 'DejaVu Sans'`;
+    ctx.font = `normal ${fontSize.small}px 'Gilroy'`;
     ctx.fillText('NỘI DUNG:', 680 / 2, descY);
     
     ctx.fillStyle = colors.text;
-    ctx.font = `normal ${fontSize.small}px 'DejaVu Sans'`;
+    ctx.font = `normal ${fontSize.small}px 'Gilroy'`;
     
     // Wrap text if too long
     const maxWidth = 600;
@@ -349,7 +351,7 @@ export async function createPaymentQRImage(
 
   // Footer (matching toolqr.html style)
   ctx.fillStyle = colors.accent;
-  ctx.font = `bold ${fontSize.small}px 'DejaVu Sans'`;
+  ctx.font = `bold ${fontSize.small}px 'Gilroy'`;
   ctx.textAlign = 'center';
   ctx.fillText('VietinBank - CN Bắc Đà Nẵng', 680 / 2, 1020 - 75);
   ctx.fillText('Phòng Giao Dịch Thanh Bình', 680 / 2, 1020 - 55);
