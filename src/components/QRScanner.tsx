@@ -78,25 +78,54 @@ export default function QRScanner({ onResult }: QRScannerProps) {
     if (!file) return;
     const img = new window.Image();
     img.src = URL.createObjectURL(file);
-    img.onload = () => {
+    img.onload = async () => {
       const canvas = document.createElement('canvas');
       canvas.width = img.width;
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       if (!ctx) return setError('Không thể đọc ảnh');
       ctx.drawImage(img, 0, 0, img.width, img.height);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
-      const code = jsQR(imageData.data, img.width, img.height);
+      let imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+      // Enhance image: grayscale and increase contrast
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        // Grayscale
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        // Increase contrast
+        const contrast = 1.5;
+        const contrasted = (avg - 128) * contrast + 128;
+        data[i] = data[i + 1] = data[i + 2] = Math.max(0, Math.min(255, contrasted));
+      }
+      ctx.putImageData(imageData, 0, 0);
+      imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+      // Try jsQR first
+      let code = jsQR(imageData.data, img.width, img.height);
       if (code && code.data) {
         const parsed = parseVNIDQR(code.data);
         if (parsed) {
           onResult(parsed);
-        } else {
-          setError('QR không hợp lệ hoặc không đúng định dạng CCCD Việt Nam');
+          return;
         }
-      } else {
-        setError('Không tìm thấy mã QR trong ảnh');
       }
+
+      // Fallback: try ZXing decodeFromCanvas
+      try {
+        const codeReader = new BrowserMultiFormatReader();
+        const result = await codeReader.decodeFromCanvas(canvas);
+        if (result && result.getText()) {
+          const parsed = parseVNIDQR(result.getText());
+          if (parsed) {
+            onResult(parsed);
+            return;
+          }
+        }
+      } catch (err) {
+        // ignore, will show error below
+      }
+
+      setError('Không tìm thấy mã QR trong ảnh hoặc ảnh không rõ nét. Hãy thử lại với ảnh rõ hơn.');
     };
     img.onerror = () => setError('Không thể tải ảnh');
   };
