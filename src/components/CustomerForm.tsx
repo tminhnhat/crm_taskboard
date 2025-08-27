@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import QRScanner from './QRScanner';
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Customer, CustomerType } from '@/lib/supabase';
@@ -13,6 +14,24 @@ interface CustomerFormProps {
 }
 
 export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: CustomerFormProps) {
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  // Handle QR scan result from QRScanner
+  const handleQRResult = (data: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      id_number: data.id_number || prev.id_number,
+      id_issue_date: data.id_issue_date ?
+        (data.id_issue_date.length === 8 ? `${data.id_issue_date.slice(0,2)}/${data.id_issue_date.slice(2,4)}/${data.id_issue_date.slice(4)}` : data.id_issue_date)
+        : prev.id_issue_date,
+      full_name: data.full_name || prev.full_name,
+      date_of_birth: data.date_of_birth ?
+        (data.date_of_birth.length === 8 ? `${data.date_of_birth.slice(0,2)}/${data.date_of_birth.slice(2,4)}/${data.date_of_birth.slice(4)}` : data.date_of_birth)
+        : prev.date_of_birth,
+      gender: data.gender && (data.gender.toLowerCase() === 'nam' ? 'male' : data.gender.toLowerCase() === 'nữ' ? 'female' : prev.gender),
+      address: data.address || prev.address,
+    }));
+    setShowQRScanner(false);
+  };
   const [formData, setFormData] = useState<Partial<Customer>>({
     customer_type: 'individual' as CustomerType,
     full_name: '',
@@ -301,6 +320,32 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 flex justify-end">
+                <button
+                  type="button"
+                  className="mb-2 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                  onClick={() => setShowQRScanner(true)}
+                >
+                  📷 Quét QR CCCD (Camera/Ảnh)
+                </button>
+              </div>
+      {/* QRScanner Modal */}
+      {showQRScanner && (
+        <Dialog open={showQRScanner} onClose={() => setShowQRScanner(false)} className="fixed z-50 inset-0 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+          <div className="relative bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-auto z-10 flex flex-col items-center">
+            <h3 className="text-lg font-semibold mb-2">Quét mã QR CCCD</h3>
+            <QRScanner onResult={handleQRResult} />
+            <button
+              type="button"
+              className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-gray-700"
+              onClick={() => setShowQRScanner(false)}
+            >
+              Đóng
+            </button>
+          </div>
+        </Dialog>
+      )}
               <div>
                 <label htmlFor="customer_type" className="block text-sm font-medium text-gray-700 mb-1">
                   Loại Khách Hàng *
