@@ -1,0 +1,117 @@
+{
+  "customer": {
+    "customer_id": 1,
+    "customer_type": "individual",
+    "full_name": "Nguyen Van A",
+    "date_of_birth": "1990-01-01",
+    "gender": "male",
+    "id_number": "012345678",
+    "id_issue_date": "2010-01-01",
+    "id_issue_authority": "CA TP HCM",
+    "phone": "0901234567",
+    "email": "nguyenvana@email.com",
+    "address": "123 Đường ABC, Quận 1, TP HCM",
+    "hobby": "Đọc sách",
+    "status": "active",
+    "account_number": "123456789",
+    "cif_number": "CIF001",
+    "numerology_data": null,
+    "created_at": "2023-01-01T00:00:00Z",
+    "updated_at": "2023-06-01T00:00:00Z",
+    "business_registration_number": null,
+    "business_registration_authority": null,
+    "registration_date": null,
+    "company_name": null,
+    "legal_representative": null,
+    "legal_representative_cif_number": null,
+    "business_sector": null,
+    "company_size": null,
+    "annual_revenue": null
+  },
+  "collateral": {
+    "collateral_id": 1,
+    "customer_id": 1,
+    "collateral_type": "real estate",
+    "description": "Nhà ở 123 Đường ABC, Quận 1, TP HCM",
+    "value": 5000000000,
+    "valuation_date": "2025-01-01",
+    "legal_status": "owned",
+    "location": "123 Đường ABC, Quận 1, TP HCM",
+    "owner_info": "Nguyen Van A",
+    "status": "active",
+    "metadata": {
+      "land_area": 100,
+      "construction_area": 80,
+      "certificate_number": "CN123456",
+      "issue_date": "2015-01-01"
+    },
+    "created_at": "2025-01-01T00:00:00Z"
+  },
+  "credit_assessment": {
+    "assessment_id": 1,
+    "customer_id": 1,
+    "staff_id": 2,
+    "product_id": 1,
+    "status": "approved",
+    "department": "Tín dụng cá nhân",
+    "department_head": "Tran Thi B",
+    "fee_amount": 1000000,
+    "approval_decision": "approved",
+    "loan_info": {},
+    "business_plan": {},
+    "financial_reports": {},
+    "assessment_details": {},
+    "metadata": {
+      "borrower": {
+        "full_name": "Nguyen Van A",
+        "birth_date": "1990-01-01",
+        "gender": "male",
+        "id_number": "012345678",
+        "id_issue_date": "2010-01-01",
+        "id_issue_place": "CA TP HCM",
+        "phone": "0901234567",
+        "email": "nguyenvana@email.com",
+        "marital_status": "single",
+        "education_level": "Đại học",
+        "current_address": "123 Đường ABC, Quận 1, TP HCM",
+        "permanent_address": "123 Đường ABC, Quận 1, TP HCM",
+        "residence_status": "owned",
+        "residence_time_years": 10,
+        "occupation": "Nhân viên văn phòng",
+        "workplace": "Công ty XYZ",
+        "position": "Nhân viên",
+        "work_experience_years": 5,
+        "income": {
+          "salary_monthly": 20000000,
+          "business_monthly": 0,
+          "other_monthly": 0,
+          "total_monthly": 20000000
+        },
+        "assets": [
+          {
+            "type": "real estate",
+            "description": "Nhà ở 123 Đường ABC, Quận 1, TP HCM",
+            "value": 5000000000,
+            "ownership_type": "owned",
+            "collateral_status": true,
+            "registration_number": "CN123456"
+          }
+        ],
+        "business_info": {
+          "personal_tax_number": null,
+          "business_registration": null,
+          "business_experience_years": null,
+          "business_partners": []
+        },
+        "credit_history": {
+          "credit_score": 800,
+          "existing_loans": [],
+          "credit_cards": []
+        }
+      },
+      "spouse": null
+    },
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-08-27T00:00:00Z"
+  }
+}
