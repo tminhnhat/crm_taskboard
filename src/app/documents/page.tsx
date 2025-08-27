@@ -306,7 +306,7 @@ function DocumentsContent() {
       {/* Generate Document Modal */}
       {showGenerateForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h3 className="text-lg font-semibold text-gray-900">Tạo Tài liệu Mới</h3>
               <button
