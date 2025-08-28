@@ -486,6 +486,19 @@ export default function CreditAssessmentForm({
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
+                <label className="block text-sm font-medium text-gray-700">Trạng thái</label>
+                <select
+                  name="status"
+                  value={formState.status}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  required
+                >
+                  <option value="draft">Nháp</option>
+                  <option value="approve">Phê duyệt</option>
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700">Khách hàng</label>
                 <select
                   name="customer_id"
@@ -552,13 +565,20 @@ export default function CreditAssessmentForm({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Lãnh đạo phòng</label>
-                <input
-                  type="text"
+                <select
                   name="department_head"
                   value={formState.department_head}
                   onChange={handleInputChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                />
+                  required
+                >
+                  <option value="">Chọn lãnh đạo phòng</option>
+                  {staff.map(s => (
+                    <option key={s.staff_id} value={s.full_name}>
+                      {s.full_name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
