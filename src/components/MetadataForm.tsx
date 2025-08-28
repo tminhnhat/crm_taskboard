@@ -1,3 +1,4 @@
+"use client";
 // Hàm tự động chuyển key sang tiếng Việt (giống CollateralCard)
 const formatFieldLabel = (key: string): string => {
   const vietnameseLabels: Record<string, string> = {
@@ -54,7 +55,7 @@ const formatFieldLabel = (key: string): string => {
   };
   return vietnameseLabels[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
-"use client";
+
 
 import { useState } from 'react'
 import {
