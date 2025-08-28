@@ -331,7 +331,7 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                   <div className="flex items-center space-x-2">
                     <IconComponent className="h-5 w-5 text-gray-500" />
                     <span className="font-medium text-gray-700">
-                      {getMetadataTitle(key)}
+                      {formatFieldLabel(key)}
                     </span>
                   </div>
                   <ChevronDownIcon 
