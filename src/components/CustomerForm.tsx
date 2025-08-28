@@ -262,7 +262,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     }
     
     if (formData.id_issue_date && !validateDateFormat(formData.id_issue_date)) {
-      alert('Định dạng ngày cấp CMND/CCCD không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      alert('Định dạng ngày cấp CCCD không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
     }
 
@@ -588,7 +588,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
 
               <div>
                 <label htmlFor="id_number" className="block text-sm font-medium text-gray-700 mb-1">
-                  Số CMND/CCCD
+                  Số CCCD
                 </label>
                 <input
                   type="text"
@@ -596,7 +596,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   value={formData.id_number || ''}
                   onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Nhập số CMND/CCCD"
+                  placeholder="Nhập số CCCD"
                 />
               </div>
             </div>
@@ -604,7 +604,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="id_issue_date" className="block text-sm font-medium text-gray-700 mb-1">
-                  Ngày Cấp CMND/CCCD
+                  Ngày Cấp CCCD
                 </label>
                 <input
                   type="text"
@@ -627,14 +627,27 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 <label htmlFor="id_issue_authority" className="block text-sm font-medium text-gray-700 mb-1">
                   Nơi Cấp
                 </label>
-                <input
-                  type="text"
-                  id="id_issue_authority"
-                  value={formData.id_issue_authority || ''}
-                  onChange={(e) => setFormData({ ...formData, id_issue_authority: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Nhập nơi cấp CMND/CCCD"
-                />
+                <div className="flex gap-2">
+                  <select
+                    className="rounded-md border border-gray-300 px-2 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    value={['Cục CS QLHC về TTXH', 'Bộ Công An'].includes(formData.id_issue_authority || '') ? (formData.id_issue_authority || '') : ''}
+                    onChange={e => {
+                      if (e.target.value) setFormData({ ...formData, id_issue_authority: e.target.value });
+                    }}
+                  >
+                    <option value="">Chọn nhanh</option>
+                    <option value="Cục CS QLHC về TTXH">Cục CS QLHC về TTXH</option>
+                    <option value="Bộ Công An">Bộ Công An</option>
+                  </select>
+                  <input
+                    type="text"
+                    id="id_issue_authority"
+                    value={formData.id_issue_authority || ''}
+                    onChange={(e) => setFormData({ ...formData, id_issue_authority: e.target.value })}
+                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập nơi cấp CCCD"
+                  />
+                </div>
               </div>
 
               {/* Business Registration Fields for Individual */}
