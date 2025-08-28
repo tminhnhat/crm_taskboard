@@ -915,51 +915,11 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
             </div>
 
             <div>
-              <label htmlFor="relationship" className="block text-sm font-medium text-gray-700 mb-1">
-                Mối Quan Hệ
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mối Quan Hệ (Vợ/Chồng, Cha/Mẹ, Con, Bạn bè...)
               </label>
               <select
                 id="relationship"
-                value={formData.relationship || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData(prev => ({
-                    ...prev,
-                    relationship: value,
-                    relationship_other: value === 'Khác' ? prev.relationship_other : ''
-                  }));
-                }}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Chọn mối quan hệ</option>
-                <option value="Chủ sở hữu">Chủ sở hữu</option>
-                <option value="Vợ/Chồng">Vợ/Chồng</option>
-                <option value="Cha">Cha</option>
-                <option value="Mẹ">Mẹ</option>
-                <option value="Con">Con</option>
-                <option value="Anh/Chị/Em">Anh/Chị/Em</option>
-                <option value="Bạn bè">Bạn bè</option>
-                <option value="Đồng nghiệp">Đồng nghiệp</option>
-                <option value="Khác">Khác</option>
-              </select>
-              {formData.relationship === 'Khác' && (
-                <input
-                  type="text"
-                  className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Nhập mối quan hệ khác"
-                  value={formData.relationship_other || ''}
-                  onChange={e => setFormData(prev => ({ ...prev, relationship_other: e.target.value }))}
-                />
-              )}
-            </div>
-
-            {/* Spouse Info */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vợ/Chồng (nếu có)
-              </label>
-              <select
-                id="spouse_id"
                 value={formData.spouse_id || ''}
                 onChange={e => {
                   const selectedId = Number(e.target.value);
@@ -974,23 +934,24 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                       id_issue_authority: selected.id_issue_authority,
                       address: selected.address,
                       phone: selected.phone
-                    } : {}
+                    } : {},
+                    relationship: selected ? selected.full_name : '',
                   }));
                 }}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Chọn vợ/chồng</option>
+                <option value="">Chọn mối quan hệ</option>
                 {customers.filter(c => !customer || c.customer_id !== customer.customer_id).map(c => (
                   <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
                 ))}
               </select>
               {formData.spouse_id && formData.spouse_info && (
                 <div className="mt-2 grid grid-cols-1 gap-1">
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_number || ''} readOnly placeholder="Số CMND/CCCD (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_issue_date || ''} readOnly placeholder="Ngày cấp (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_issue_authority || ''} readOnly placeholder="Nơi cấp (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.address || ''} readOnly placeholder="Địa chỉ (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm" value={formData.spouse_info.phone || ''} readOnly placeholder="Số điện thoại (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_number || ''} readOnly placeholder="Số CMND/CCCD" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_issue_date || ''} readOnly placeholder="Ngày cấp" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_issue_authority || ''} readOnly placeholder="Nơi cấp" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.address || ''} readOnly placeholder="Địa chỉ" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm" value={formData.spouse_info.phone || ''} readOnly placeholder="Số điện thoại" />
                 </div>
               )}
             </div>
