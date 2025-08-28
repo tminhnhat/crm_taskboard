@@ -306,6 +306,17 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       ...customerData
     } = formData;
 
+    // Determine relationship value: if spouse_id is selected, use that customer's name; else fallback to manual/other
+    let relationshipValue = null;
+    if (formData.spouse_id) {
+      const spouse = customers.find(c => c.customer_id === formData.spouse_id);
+      relationshipValue = spouse ? spouse.full_name : null;
+    } else if (formData.relationship === 'Khác') {
+      relationshipValue = formData.relationship_other || 'Khác';
+    } else {
+      relationshipValue = formData.relationship || null;
+    }
+
     onSubmit({
       ...customerData,
       date_of_birth: formData.date_of_birth ? formatDateForSubmission(formData.date_of_birth) : null,
@@ -319,7 +330,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       hobby: formData.hobby || null,
       cif_number: formData.cif_number || null,
       numerology_data: numerologyData,
-      relationship: formData.relationship === 'Khác' ? (formData.relationship_other || 'Khác') : (formData.relationship || null),
+      relationship: relationshipValue,
       // Business registration fields
       business_registration_number: formData.business_registration_number || null,
       business_registration_authority: formData.business_registration_authority || null,
