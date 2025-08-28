@@ -54,7 +54,7 @@ const formatFieldLabel = (key: string): string => {
   };
   return vietnameseLabels[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
-'use client'
+"use client";
 
 import { useState } from 'react'
 import {
