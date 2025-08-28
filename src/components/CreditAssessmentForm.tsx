@@ -43,7 +43,7 @@ const CREDIT_ASSESSMENT_TEMPLATES_KINH_DOANH: MetadataTemplates = {
     title: '1. Thông tin khoản vay (Kinh doanh)',
     icon: BanknotesIcon,
     fields: [
-      { key: 'loan_type.category', label: 'Loại khoản vay', type: 'select', options: ['Kinh doanh'] },
+      { key: 'loan_type.category', label: 'Loại khoản vay', type: 'select', options: ['Kinh doanh', 'Tiêu dùng', 'Thẻ Tín Dụng'] },
       { key: 'loan_type.product_name', label: 'Tên sản phẩm', type: 'text' },
       { key: 'purpose.main_purpose', label: 'Mục đích vay', type: 'text' },
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
@@ -273,20 +273,31 @@ export default function CreditAssessmentForm({
   products
 }: CreditAssessmentFormProps) {
 
-  const [formState, setFormState] = useState({
-    customer_id: assessment?.customer_id?.toString() || '',
-    staff_id: assessment?.staff_id?.toString() || '',
-    product_id: assessment?.product_id?.toString() || '',
-    department: assessment?.department || '',
-    department_head: assessment?.department_head || '',
-    fee_amount: assessment?.fee_amount?.toString() || '',
-    approval_decision: assessment?.approval_decision || '',
-    status: assessment?.status || 'draft',
-    loan_info: assessment?.loan_info || {},
-    business_plan: assessment?.business_plan || {},
-    financial_reports: assessment?.financial_reports || {},
-    assessment_details: assessment?.assessment_details || {},
-    metadata: assessment?.metadata || {}
+  const [formState, setFormState] = useState(() => {
+    // Đồng bộ loan_type và loan_info.loan_type.category nếu có
+    let loan_type = typeof assessment?.loan_type === 'string' ? assessment.loan_type : '';
+    let loan_info = assessment?.loan_info || {};
+    if (loan_type && (!loan_info['loan_type.category'] || loan_info['loan_type.category'] !== loan_type)) {
+      loan_info = { ...loan_info, ['loan_type.category']: loan_type };
+    } else if (loan_info['loan_type.category'] && !loan_type) {
+      loan_type = loan_info['loan_type.category'];
+    }
+    return {
+      customer_id: assessment?.customer_id?.toString() || '',
+      staff_id: assessment?.staff_id?.toString() || '',
+      product_id: assessment?.product_id?.toString() || '',
+      department: assessment?.department || '',
+      department_head: assessment?.department_head || '',
+      fee_amount: assessment?.fee_amount?.toString() || '',
+      approval_decision: assessment?.approval_decision || '',
+      status: assessment?.status || 'draft',
+      loan_type,
+      loan_info,
+      business_plan: assessment?.business_plan || {},
+      financial_reports: assessment?.financial_reports || {},
+      assessment_details: assessment?.assessment_details || {},
+      metadata: assessment?.metadata || {}
+    }
   })
 
   // Chọn template theo loại khoản vay
@@ -301,6 +312,13 @@ export default function CreditAssessmentForm({
   // Update form state when assessment changes
   useEffect(() => {
     if (assessment) {
+      let loan_type = typeof assessment.loan_type === 'string' ? assessment.loan_type : '';
+      let loan_info = assessment.loan_info || {};
+      if (loan_type && (!loan_info['loan_type.category'] || loan_info['loan_type.category'] !== loan_type)) {
+        loan_info = { ...loan_info, ['loan_type.category']: loan_type };
+      } else if (loan_info['loan_type.category'] && !loan_type) {
+        loan_type = loan_info['loan_type.category'];
+      }
       setFormState({
         customer_id: assessment.customer_id?.toString() || '',
         staff_id: assessment.staff_id?.toString() || '',
@@ -310,7 +328,8 @@ export default function CreditAssessmentForm({
         fee_amount: assessment.fee_amount?.toString() || '',
         approval_decision: assessment.approval_decision || '',
         status: assessment.status || 'draft',
-        loan_info: assessment.loan_info || {},
+        loan_type,
+        loan_info,
         business_plan: assessment.business_plan || {},
         financial_reports: assessment.financial_reports || {},
         assessment_details: assessment.assessment_details || {},
@@ -326,6 +345,7 @@ export default function CreditAssessmentForm({
         fee_amount: '',
         approval_decision: '',
         status: 'draft',
+        loan_type: '',
         loan_info: {},
         business_plan: {},
         financial_reports: {},
@@ -337,7 +357,6 @@ export default function CreditAssessmentForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
     const assessmentData = {
       customer_id: parseInt(formState.customer_id),
       staff_id: parseInt(formState.staff_id),
@@ -347,29 +366,52 @@ export default function CreditAssessmentForm({
       fee_amount: parseFloat(formState.fee_amount) || 0,
       approval_decision: formState.approval_decision,
       status: formState.status,
+      loan_type: formState.loan_type,
       loan_info: formState.loan_info,
       business_plan: formState.business_plan,
       financial_reports: formState.financial_reports,
       assessment_details: formState.assessment_details,
       metadata: formState.metadata
     }
-
     onSubmit(assessmentData)
   }
 
+  // Khi thay đổi loan_type thì đồng bộ loan_info.loan_type.category
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormState(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    const { name, value } = e.target;
+    setFormState(prev => {
+      if (name === 'loan_type') {
+        return {
+          ...prev,
+          loan_type: value,
+          loan_info: {
+            ...prev.loan_info,
+            ['loan_type.category']: value
+          }
+        };
+      }
+      return {
+        ...prev,
+        [name]: value
+      };
+    });
   }
 
+  // Khi thay đổi loan_info.loan_type.category thì đồng bộ loan_type
   const handleSectionDataChange = (section: string, data: Record<string, unknown>) => {
-    setFormState(prev => ({
-      ...prev,
-      [section]: data
-    }))
+    setFormState(prev => {
+      if (section === 'loan_info' && data['loan_type.category'] && data['loan_type.category'] !== prev.loan_type) {
+        return {
+          ...prev,
+          loan_info: data,
+          loan_type: data['loan_type.category']
+        };
+      }
+      return {
+        ...prev,
+        [section]: data
+      };
+    });
   }
 
   return (
@@ -507,6 +549,22 @@ export default function CreditAssessmentForm({
               </div>
             </div>
 
+            {/* Loan Type Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Loại khoản vay</label>
+              <select
+                name="loan_type"
+                value={formState.loan_type}
+                onChange={handleInputChange}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                required
+              >
+                <option value="">Chọn loại khoản vay</option>
+                <option value="Kinh doanh">Kinh doanh</option>
+                <option value="Tiêu dùng">Tiêu dùng</option>
+                <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+              </select>
+            </div>
             {/* Unified Metadata Sections */}
             <div className="space-y-6">
               <MetadataSection
