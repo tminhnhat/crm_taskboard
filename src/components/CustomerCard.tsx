@@ -207,7 +207,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                   ) : (
                     <>
                       <span>
-                        CMND/CCCD: {customer.id_number || 'Chưa cập nhật'}
+                        CCCD: {customer.id_number || 'Chưa cập nhật'}
                       </span>
                       {customer.id_issue_date && (
                         <span className="text-gray-500 ml-2">
