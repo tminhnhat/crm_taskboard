@@ -306,11 +306,27 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       ...customerData
     } = formData;
 
-    // Determine relationship value: if spouse_id is selected, use that customer's name; else fallback to manual/other
+    // If spouse_id is selected, save all spouse data as JSON string in relationship field
     let relationshipValue = null;
     if (formData.spouse_id) {
       const spouse = customers.find(c => c.customer_id === formData.spouse_id);
-      relationshipValue = spouse ? spouse.full_name : null;
+      if (spouse) {
+        // Save all spouse data as JSON string
+        relationshipValue = JSON.stringify({
+          customer_id: spouse.customer_id,
+          full_name: spouse.full_name,
+          date_of_birth: spouse.date_of_birth,
+          gender: spouse.gender,
+          id_number: spouse.id_number,
+          id_issue_date: spouse.id_issue_date,
+          id_issue_authority: spouse.id_issue_authority,
+          phone: spouse.phone,
+          address: spouse.address,
+          cif_number: spouse.cif_number,
+        });
+      } else {
+        relationshipValue = null;
+      }
     } else if (formData.relationship === 'Khác') {
       relationshipValue = formData.relationship_other || 'Khác';
     } else {
