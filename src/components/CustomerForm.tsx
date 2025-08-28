@@ -32,7 +32,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     }));
     setShowQRScanner(false);
   };
-  const [formData, setFormData] = useState<Partial<Customer>>({
+  const [formData, setFormData] = useState<Partial<Customer> & { relationship_other?: string }>({
     customer_type: 'individual' as CustomerType,
     full_name: '',
     date_of_birth: '',
@@ -47,8 +47,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     status: 'active',
     account_number: '',
     cif_number: '',
-  numerology_data: {} as Record<string, unknown>,
-  relationship: '',
+    numerology_data: {} as Record<string, unknown>,
+    relationship: '',
+    relationship_other: '',
     // Business registration fields for both individual and corporate
     business_registration_number: '',
     registration_date: '',
@@ -193,7 +194,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
 
   useEffect(() => {
     if (customer) {
-  setFormData({
+      setFormData({
         customer_type: customer.customer_type,
         full_name: customer.full_name,
         date_of_birth: formatDateForDisplay(customer.date_of_birth),
@@ -208,8 +209,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         status: customer.status,
         account_number: customer.account_number,
         cif_number: customer.cif_number || '',
-  numerology_data: customer.numerology_data || {} as Record<string, unknown>,
-  relationship: customer.relationship || '',
+        numerology_data: customer.numerology_data || {} as Record<string, unknown>,
+        relationship: customer.relationship || '',
+        relationship_other: '',
         // Business registration fields
         business_registration_number: customer.business_registration_number || '',
         business_registration_authority: customer.business_registration_authority || '',
@@ -217,10 +219,11 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         // Corporate fields
         company_name: customer.company_name || '',
         legal_representative: customer.legal_representative || '',
+        legal_representative_cif_number: customer.legal_representative_cif_number || '',
         business_sector: customer.business_sector || '',
       })
     } else {
-  setFormData({
+      setFormData({
         customer_type: 'individual',
         full_name: '',
         date_of_birth: '',
@@ -235,8 +238,16 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         status: 'active',
         account_number: '',
         cif_number: '',
-  numerology_data: {} as Record<string, unknown>,
-  relationship: '',
+        numerology_data: {} as Record<string, unknown>,
+        relationship: '',
+        relationship_other: '',
+        business_registration_number: '',
+        business_registration_authority: '',
+        registration_date: '',
+        company_name: '',
+        legal_representative: '',
+        legal_representative_cif_number: '',
+        business_sector: ''
       })
     }
   }, [customer, isOpen])
@@ -291,8 +302,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       address: formData.address || null,
       hobby: formData.hobby || null,
       cif_number: formData.cif_number || null,
-  numerology_data: numerologyData,
-  relationship: formData.relationship || null,
+      numerology_data: numerologyData,
+      relationship: formData.relationship === 'Khác' ? (formData.relationship_other || 'Khác') : (formData.relationship || null),
       // Business registration fields
       business_registration_number: formData.business_registration_number || null,
       business_registration_authority: formData.business_registration_authority || null,
@@ -897,14 +908,39 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
               <label htmlFor="relationship" className="block text-sm font-medium text-gray-700 mb-1">
                 Mối Quan Hệ
               </label>
-              <input
-                type="text"
+              <select
                 id="relationship"
                 value={formData.relationship || ''}
-                onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData(prev => ({
+                    ...prev,
+                    relationship: value,
+                    relationship_other: value === 'Khác' ? prev.relationship_other : ''
+                  }));
+                }}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="VD: Cha, mẹ, vợ/chồng, bạn bè, đồng nghiệp..."
-              />
+              >
+                <option value="">Chọn mối quan hệ</option>
+                <option value="Chủ sở hữu">Chủ sở hữu</option>
+                <option value="Vợ/Chồng">Vợ/Chồng</option>
+                <option value="Cha">Cha</option>
+                <option value="Mẹ">Mẹ</option>
+                <option value="Con">Con</option>
+                <option value="Anh/Chị/Em">Anh/Chị/Em</option>
+                <option value="Bạn bè">Bạn bè</option>
+                <option value="Đồng nghiệp">Đồng nghiệp</option>
+                <option value="Khác">Khác</option>
+              </select>
+              {formData.relationship === 'Khác' && (
+                <input
+                  type="text"
+                  className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Nhập mối quan hệ khác"
+                  value={formData.relationship_other || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, relationship_other: e.target.value }))}
+                />
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
