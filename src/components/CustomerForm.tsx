@@ -276,13 +276,13 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Validate date formats
     if (formData.date_of_birth && !validateDateFormat(formData.date_of_birth)) {
       alert('Định dạng ngày sinh không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
     }
-    
+
     if (formData.id_issue_date && !validateDateFormat(formData.id_issue_date)) {
       alert('Định dạng ngày cấp CCCD không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
@@ -292,37 +292,43 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       alert('Định dạng ngày đăng ký không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
       return
     }
-    
+
     let numerologyData = null
     if (formData.numerology_data && Object.keys(formData.numerology_data).length > 0) {
       numerologyData = formData.numerology_data
     }
 
-      // Remove spouse_id and spouse_info from the submitted object to fix type error
-      onSubmit({
-        ...formData,
-        date_of_birth: formData.date_of_birth ? formatDateForSubmission(formData.date_of_birth) : null,
-        id_issue_date: formData.id_issue_date ? formatDateForSubmission(formData.id_issue_date) : null,
-        gender: formData.gender || null,
-        id_number: formData.id_number || null,
-        id_issue_authority: formData.id_issue_authority || null,
-        phone: formData.phone || null,
-        email: formData.email || null,
-        address: formData.address || null,
-        hobby: formData.hobby || null,
-        cif_number: formData.cif_number || null,
-        numerology_data: numerologyData,
-        relationship: formData.relationship === 'Khác' ? (formData.relationship_other || 'Khác') : (formData.relationship || null),
-        // Business registration fields
-        business_registration_number: formData.business_registration_number || null,
-        business_registration_authority: formData.business_registration_authority || null,
-        // Corporate fields
-        company_name: formData.company_name || null,
-        legal_representative: formData.legal_representative || null,
-        business_sector: formData.business_sector || null,
-    // Only submit fields defined in Partial<Customer>
-    })
-    onClose()
+    // Only include fields that exist in the Customer table
+    const {
+      spouse_id,
+      spouse_info,
+      relationship_other,
+      ...customerData
+    } = formData;
+
+    onSubmit({
+      ...customerData,
+      date_of_birth: formData.date_of_birth ? formatDateForSubmission(formData.date_of_birth) : null,
+      id_issue_date: formData.id_issue_date ? formatDateForSubmission(formData.id_issue_date) : null,
+      gender: formData.gender || null,
+      id_number: formData.id_number || null,
+      id_issue_authority: formData.id_issue_authority || null,
+      phone: formData.phone || null,
+      email: formData.email || null,
+      address: formData.address || null,
+      hobby: formData.hobby || null,
+      cif_number: formData.cif_number || null,
+      numerology_data: numerologyData,
+      relationship: formData.relationship === 'Khác' ? (formData.relationship_other || 'Khác') : (formData.relationship || null),
+      // Business registration fields
+      business_registration_number: formData.business_registration_number || null,
+      business_registration_authority: formData.business_registration_authority || null,
+      // Corporate fields
+      company_name: formData.company_name || null,
+      legal_representative: formData.legal_representative || null,
+      business_sector: formData.business_sector || null,
+    });
+    onClose();
   }
 
   return (
