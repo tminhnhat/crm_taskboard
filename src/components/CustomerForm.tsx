@@ -5,6 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Customer, CustomerType } from '@/lib/supabase';
 import { calculateNumerologyData } from '@/lib/numerology';
 import { toVNDate, toISODate, isValidDate } from '@/lib/date';
+import { useCustomers } from '@/hooks/useCustomers';
 
 interface CustomerFormProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface CustomerFormProps {
 }
 
 export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: CustomerFormProps) {
+  const { customers } = useCustomers();
   const [showQRScanner, setShowQRScanner] = useState(false);
   // Handle QR scan result from QRScanner
   const handleQRResult = (data: any) => {
@@ -32,7 +34,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     }));
     setShowQRScanner(false);
   };
-  const [formData, setFormData] = useState<Partial<Customer> & { relationship_other?: string }>({
+  const [formData, setFormData] = useState<Partial<Customer> & { relationship_other?: string, spouse_id?: number, spouse_info?: any }>({
     customer_type: 'individual' as CustomerType,
     full_name: '',
     date_of_birth: '',
@@ -58,7 +60,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     company_name: '',
     legal_representative: '',
     legal_representative_cif_number: '',
-    business_sector: ''
+    business_sector: '',
+    spouse_id: undefined,
+    spouse_info: {},
   })
 
   const [showNumerologyInfo, setShowNumerologyInfo] = useState(false)
@@ -221,6 +225,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         legal_representative: customer.legal_representative || '',
         legal_representative_cif_number: customer.legal_representative_cif_number || '',
         business_sector: customer.business_sector || '',
+        spouse_id: undefined,
+        spouse_info: {},
       })
     } else {
       setFormData({
@@ -247,7 +253,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         company_name: '',
         legal_representative: '',
         legal_representative_cif_number: '',
-        business_sector: ''
+        business_sector: '',
+        spouse_id: undefined,
+        spouse_info: {},
       })
     }
   }, [customer, isOpen])
@@ -290,27 +298,29 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       numerologyData = formData.numerology_data
     }
 
-    onSubmit({
-      ...formData,
-      date_of_birth: formData.date_of_birth ? formatDateForSubmission(formData.date_of_birth) : null,
-      id_issue_date: formData.id_issue_date ? formatDateForSubmission(formData.id_issue_date) : null,
-      gender: formData.gender || null,
-      id_number: formData.id_number || null,
-      id_issue_authority: formData.id_issue_authority || null,
-      phone: formData.phone || null,
-      email: formData.email || null,
-      address: formData.address || null,
-      hobby: formData.hobby || null,
-      cif_number: formData.cif_number || null,
-      numerology_data: numerologyData,
-      relationship: formData.relationship === 'Khác' ? (formData.relationship_other || 'Khác') : (formData.relationship || null),
-      // Business registration fields
-      business_registration_number: formData.business_registration_number || null,
-      business_registration_authority: formData.business_registration_authority || null,
-      // Corporate fields
-      company_name: formData.company_name || null,
-      legal_representative: formData.legal_representative || null,
-      business_sector: formData.business_sector || null,
+      // Remove spouse_id and spouse_info from the submitted object to fix type error
+      onSubmit({
+        ...formData,
+        date_of_birth: formData.date_of_birth ? formatDateForSubmission(formData.date_of_birth) : null,
+        id_issue_date: formData.id_issue_date ? formatDateForSubmission(formData.id_issue_date) : null,
+        gender: formData.gender || null,
+        id_number: formData.id_number || null,
+        id_issue_authority: formData.id_issue_authority || null,
+        phone: formData.phone || null,
+        email: formData.email || null,
+        address: formData.address || null,
+        hobby: formData.hobby || null,
+        cif_number: formData.cif_number || null,
+        numerology_data: numerologyData,
+        relationship: formData.relationship === 'Khác' ? (formData.relationship_other || 'Khác') : (formData.relationship || null),
+        // Business registration fields
+        business_registration_number: formData.business_registration_number || null,
+        business_registration_authority: formData.business_registration_authority || null,
+        // Corporate fields
+        company_name: formData.company_name || null,
+        legal_representative: formData.legal_representative || null,
+        business_sector: formData.business_sector || null,
+    // Only submit fields defined in Partial<Customer>
     })
     onClose()
   }
@@ -940,6 +950,48 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   value={formData.relationship_other || ''}
                   onChange={e => setFormData(prev => ({ ...prev, relationship_other: e.target.value }))}
                 />
+              )}
+            </div>
+
+            {/* Spouse Info */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Vợ/Chồng (nếu có)
+              </label>
+              <select
+                id="spouse_id"
+                value={formData.spouse_id || ''}
+                onChange={e => {
+                  const selectedId = Number(e.target.value);
+                  const selected = customers.find(c => c.customer_id === selectedId);
+                  setFormData(prev => ({
+                    ...prev,
+                    spouse_id: selectedId,
+                    spouse_info: selected ? {
+                      full_name: selected.full_name,
+                      id_number: selected.id_number,
+                      id_issue_date: selected.id_issue_date,
+                      id_issue_authority: selected.id_issue_authority,
+                      address: selected.address,
+                      phone: selected.phone
+                    } : {}
+                  }));
+                }}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Chọn vợ/chồng</option>
+                {customers.filter(c => !customer || c.customer_id !== customer.customer_id).map(c => (
+                  <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
+                ))}
+              </select>
+              {formData.spouse_id && formData.spouse_info && (
+                <div className="mt-2 grid grid-cols-1 gap-1">
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_number || ''} readOnly placeholder="Số CMND/CCCD (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_issue_date || ''} readOnly placeholder="Ngày cấp (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.id_issue_authority || ''} readOnly placeholder="Nơi cấp (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.address || ''} readOnly placeholder="Địa chỉ (Vợ/Chồng)" />
+                  <input type="text" className="border rounded px-2 py-1 text-sm" value={formData.spouse_info.phone || ''} readOnly placeholder="Số điện thoại (Vợ/Chồng)" />
+                </div>
               )}
             </div>
 
