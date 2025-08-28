@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
+import Navigation from '@/components/Navigation';
 
 export default function TemplatesDashboard() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -77,6 +78,7 @@ export default function TemplatesDashboard() {
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <h1 className="text-xl font-bold mb-4">Quản lý Template</h1>
+  <Navigation />
       <div className="mb-6">
         <form className="flex gap-2 items-center" onSubmit={handleUpload}>
           <input 

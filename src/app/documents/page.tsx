@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, Suspense, useEffect } from 'react';
+import Navigation from '@/components/Navigation';
 import { useSearchParams } from 'next/navigation';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -718,6 +719,7 @@ function DocumentsContent() {
 export default function DocumentsPage() {
   return (
     <Suspense fallback={<LoadingSpinner message="Đang tải trang quản lý tài liệu..." />}>
+  <Navigation />
       <DocumentsContent />
     </Suspense>
   );

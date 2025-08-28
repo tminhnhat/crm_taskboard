@@ -627,9 +627,9 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 <label htmlFor="id_issue_authority" className="block text-sm font-medium text-gray-700 mb-1">
                   Nơi Cấp
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <select
-                    className="rounded-md border border-gray-300 px-2 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="sm:w-48 w-full rounded-md border border-gray-300 px-2 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     value={['Cục CS QLHC về TTXH', 'Bộ Công An'].includes(formData.id_issue_authority || '') ? (formData.id_issue_authority || '') : ''}
                     onChange={e => {
                       if (e.target.value) setFormData({ ...formData, id_issue_authority: e.target.value });
@@ -644,7 +644,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                     id="id_issue_authority"
                     value={formData.id_issue_authority || ''}
                     onChange={(e) => setFormData({ ...formData, id_issue_authority: e.target.value })}
-                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0"
                     placeholder="Nhập nơi cấp CCCD"
                   />
                 </div>
