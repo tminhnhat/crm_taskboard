@@ -39,7 +39,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     gender: '',
     id_number: '',
     id_issue_date: '',
-    id_issue_authority: '',
+    id_issue_authority: 'Cục CS QLHC về TTXH',
     phone: '',
     email: '',
     address: '',
