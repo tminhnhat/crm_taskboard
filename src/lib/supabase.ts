@@ -448,6 +448,7 @@ export interface CreditAssessment {
   department_head: string | null
   fee_amount: number | null
   approval_decision: string | null
+  loan_type?: string | null // Loại khoản vay
   loan_info: LoanInfo
   business_plan: BusinessPlan
   financial_reports: { [key: string]: FinancialReport }
@@ -518,6 +519,11 @@ export interface Database {
         Row: Customer
         Insert: Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>
         Update: Partial<Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>>
+      }
+      credit_assessments: {
+        Row: CreditAssessment
+        Insert: Omit<CreditAssessment, 'assessment_id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<CreditAssessment, 'assessment_id' | 'created_at' | 'updated_at'>>
       }
       products: {
         Row: Product
