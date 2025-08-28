@@ -109,6 +109,7 @@ export interface Customer {
   account_number: string | null
   cif_number: string | null
   numerology_data: Record<string, unknown> | null // JSONB type
+  relationship?: string | null
   created_at: string
   updated_at: string
   // Business registration fields

@@ -47,7 +47,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
     status: 'active',
     account_number: '',
     cif_number: '',
-    numerology_data: {} as Record<string, unknown>,
+  numerology_data: {} as Record<string, unknown>,
+  relationship: '',
     // Business registration fields for both individual and corporate
     business_registration_number: '',
     registration_date: '',
@@ -192,7 +193,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
 
   useEffect(() => {
     if (customer) {
-      setFormData({
+  setFormData({
         customer_type: customer.customer_type,
         full_name: customer.full_name,
         date_of_birth: formatDateForDisplay(customer.date_of_birth),
@@ -207,7 +208,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         status: customer.status,
         account_number: customer.account_number,
         cif_number: customer.cif_number || '',
-        numerology_data: customer.numerology_data || {} as Record<string, unknown>,
+  numerology_data: customer.numerology_data || {} as Record<string, unknown>,
+  relationship: customer.relationship || '',
         // Business registration fields
         business_registration_number: customer.business_registration_number || '',
         business_registration_authority: customer.business_registration_authority || '',
@@ -218,7 +220,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         business_sector: customer.business_sector || '',
       })
     } else {
-      setFormData({
+  setFormData({
         customer_type: 'individual',
         full_name: '',
         date_of_birth: '',
@@ -233,7 +235,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         status: 'active',
         account_number: '',
         cif_number: '',
-        numerology_data: {} as Record<string, unknown>
+  numerology_data: {} as Record<string, unknown>,
+  relationship: '',
       })
     }
   }, [customer, isOpen])
@@ -288,7 +291,8 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
       address: formData.address || null,
       hobby: formData.hobby || null,
       cif_number: formData.cif_number || null,
-      numerology_data: numerologyData,
+  numerology_data: numerologyData,
+  relationship: formData.relationship || null,
       // Business registration fields
       business_registration_number: formData.business_registration_number || null,
       business_registration_authority: formData.business_registration_authority || null,
@@ -886,6 +890,20 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                 }}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                 placeholder='Dữ liệu thần số học sẽ được tự động tạo hoặc nhập thủ công dạng JSON'
+              />
+            </div>
+
+            <div>
+              <label htmlFor="relationship" className="block text-sm font-medium text-gray-700 mb-1">
+                Mối Quan Hệ
+              </label>
+              <input
+                type="text"
+                id="relationship"
+                value={formData.relationship || ''}
+                onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="VD: Cha, mẹ, vợ/chồng, bạn bè, đồng nghiệp..."
               />
             </div>
 
