@@ -36,8 +36,11 @@ type MetadataTemplates = {
   [key: string]: TemplateConfig
 }
 
+// ===============================
 // Unified Credit Assessment Templates
+// ===============================
 // CREDIT_ASSESSMENT_TEMPLATES phân chia theo loại khoản vay
+// --------- KINH DOANH TEMPLATE ---------
 const CREDIT_ASSESSMENT_TEMPLATES_KINH_DOANH: MetadataTemplates = {
   loan_info: {
     title: '1. Thông tin khoản vay (Kinh doanh)',
@@ -72,7 +75,7 @@ const CREDIT_ASSESSMENT_TEMPLATES_KINH_DOANH: MetadataTemplates = {
   // ...existing code for financial_reports, assessment_details, borrower_info...
 };
 
-// Standalone spouse metadata template
+// --------- SPOUSE METADATA TEMPLATE (STANDALONE) ---------
 const SPOUSE_METADATA_TEMPLATE: TemplateConfig = {
   title: 'Thông tin vợ/chồng',
   icon: UserGroupIcon,
@@ -91,6 +94,7 @@ const SPOUSE_METADATA_TEMPLATE: TemplateConfig = {
 };
 
 
+// --------- TIEU DUNG TEMPLATE ---------
 const CREDIT_ASSESSMENT_TEMPLATES_TIEU_DUNG: MetadataTemplates = {
   loan_info: {
     title: '1. Thông tin khoản vay (Tiêu Dùng)',
@@ -106,6 +110,7 @@ const CREDIT_ASSESSMENT_TEMPLATES_TIEU_DUNG: MetadataTemplates = {
   // ...existing code for business_plan, financial_reports, assessment_details, borrower_info...
 };
 
+// --------- THE TIN DUNG TEMPLATE ---------
 const CREDIT_ASSESSMENT_TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
   loan_info: {
     title: '1. Thông tin khoản vay (Thẻ tín dụng)',
@@ -120,6 +125,8 @@ const CREDIT_ASSESSMENT_TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
 };
 
 // Unified Metadata Section Component
+// --------- METADATA SECTION COMPONENT ---------
+// (Handles rendering of each template section)
 interface MetadataSectionProps {
   title: string
   icon: IconType
@@ -273,6 +280,7 @@ interface CreditAssessmentFormProps {
   products: any[];
 }
 
+// --------- MAIN CREDIT ASSESSMENT FORM COMPONENT ---------
 export default function CreditAssessmentForm({
   isOpen,
   onClose,
@@ -568,6 +576,50 @@ export default function CreditAssessmentForm({
                 />
               </div>
             </div>
+
+            {/* Spouse select and metadata section */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
+              <select
+                value={formState.metadata.spouse_info?.customer_id || ''}
+                onChange={e => {
+                  const selectedId = e.target.value;
+                  const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId);
+                  if (selectedCustomer) {
+                    // Map customer fields to spouse_info fields
+                    const mapped = {
+                      customer_id: selectedCustomer.customer_id,
+                      full_name: selectedCustomer.full_name,
+                      date_of_birth: selectedCustomer.date_of_birth,
+                      gender: selectedCustomer.gender,
+                      id_number: selectedCustomer.id_number,
+                      id_issue_date: selectedCustomer.id_issue_date,
+                      id_issue_authority: selectedCustomer.id_issue_authority,
+                      phone: selectedCustomer.phone,
+                      address: selectedCustomer.address,
+                      account_number: selectedCustomer.account_number,
+                      cif_number: selectedCustomer.cif_number
+                    };
+                    handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: mapped });
+                  } else {
+                    handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: {} });
+                  }
+                }}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">Chọn khách hàng làm vợ/chồng</option>
+                {customers.map(c => (
+                  <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
+                ))}
+              </select>
+            </div>
+            <MetadataSection
+              title={SPOUSE_METADATA_TEMPLATE.title}
+              icon={SPOUSE_METADATA_TEMPLATE.icon}
+              initialData={formState.metadata.spouse_info || {}}
+              fields={SPOUSE_METADATA_TEMPLATE.fields}
+              onChange={(data) => handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: data })}
+            />
 
             {/* Loan Type Field */}
             <div>
