@@ -43,8 +43,6 @@ const CREDIT_ASSESSMENT_TEMPLATES_KINH_DOANH: MetadataTemplates = {
     title: '1. Thông tin khoản vay (Kinh doanh)',
     icon: BanknotesIcon,
     fields: [
-      { key: 'loan_type.category', label: 'Loại khoản vay', type: 'select', options: ['Kinh doanh', 'Tiêu dùng', 'Thẻ Tín Dụng'] },
-      { key: 'loan_type.product_name', label: 'Tên sản phẩm', type: 'text' },
       { key: 'purpose.main_purpose', label: 'Mục đích vay', type: 'text' },
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
       { key: 'amount.requested', label: 'Số tiền vay', type: 'number' },
@@ -79,8 +77,6 @@ const CREDIT_ASSESSMENT_TEMPLATES_TIEU_DUNG: MetadataTemplates = {
     title: '1. Thông tin khoản vay (Tiêu Dùng)',
     icon: BanknotesIcon,
     fields: [
-      { key: 'loan_type.category', label: 'Loại khoản vay', type: 'select', options: ['Tiêu Dùng'] },
-      { key: 'loan_type.product_name', label: 'Tên sản phẩm', type: 'text' },
       { key: 'purpose.main_purpose', label: 'Mục đích vay', type: 'text' },
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
       { key: 'amount.requested', label: 'Số tiền vay', type: 'number' },
@@ -96,13 +92,9 @@ const CREDIT_ASSESSMENT_TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
     title: '1. Thông tin khoản vay (Thẻ tín dụng)',
     icon: BanknotesIcon,
     fields: [
-      { key: 'loan_type.category', label: 'Loại khoản vay', type: 'select', options: ['Thẻ tín dụng'] },
-      { key: 'loan_type.product_name', label: 'Tên sản phẩm', type: 'text' },
-      { key: 'purpose.main_purpose', label: 'Mục đích vay', type: 'text' },
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
       { key: 'amount.requested', label: 'Hạn mức thẻ', type: 'number' },
       { key: 'term.requested_months', label: 'Thời hạn thẻ (tháng)', type: 'number' },
-      { key: 'term.grace_period_months', label: 'Thời gian ân hạn (tháng)', type: 'number' }
     ]
   },
   // ...existing code for business_plan, financial_reports, assessment_details, borrower_info, spouse_info...
@@ -380,6 +372,15 @@ export default function CreditAssessmentForm({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormState(prev => {
+      // Nếu chọn staff_id thì tự động lấy department từ staff
+      if (name === 'staff_id') {
+        const selectedStaff = staff.find(s => s.staff_id.toString() === value);
+        return {
+          ...prev,
+          staff_id: value,
+          department: selectedStaff?.department || '',
+        };
+      }
       if (name === 'loan_type') {
         return {
           ...prev,
