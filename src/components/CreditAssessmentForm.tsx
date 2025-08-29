@@ -671,16 +671,7 @@ export default function CreditAssessmentForm({
                           hobby: selectedCustomer.hobby,
                           status: selectedCustomer.status,
                           account_number: selectedCustomer.account_number,
-                          cif_number: selectedCustomer.cif_number,
-                          business_registration_number: selectedCustomer.business_registration_number,
-                          business_registration_authority: selectedCustomer.business_registration_authority,
-                          registration_date: selectedCustomer.registration_date,
-                          company_name: selectedCustomer.company_name,
-                          legal_representative: selectedCustomer.legal_representative,
-                          legal_representative_cif_number: selectedCustomer.legal_representative_cif_number,
-                          business_sector: selectedCustomer.business_sector,
-                          company_size: selectedCustomer.company_size,
-                          annual_revenue: selectedCustomer.annual_revenue
+                          cif_number: selectedCustomer.cif_number
                         };
                         handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: mapped });
                       } else {
