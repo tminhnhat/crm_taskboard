@@ -69,8 +69,39 @@ const CREDIT_ASSESSMENT_TEMPLATES_KINH_DOANH: MetadataTemplates = {
       { key: 'pakd_vaynhct', label: 'Vay NHCT', type: 'number' }
     ]
   },
-  // ...existing code for financial_reports, assessment_details, borrower_info, spouse_info...
+  // ...existing code for financial_reports, assessment_details, borrower_info...
 };
+
+// Standalone spouse metadata template
+const SPOUSE_METADATA_TEMPLATE: TemplateConfig = {
+  title: 'Thông tin vợ/chồng',
+  icon: UserGroupIcon,
+  fields: [
+    { key: 'full_name', label: 'Họ và tên', type: 'text' },
+    { key: 'date_of_birth', label: 'Ngày sinh', type: 'date' },
+    { key: 'gender', label: 'Giới tính', type: 'select', options: ['Nam', 'Nữ', 'Khác'] },
+    { key: 'id_number', label: 'Số CMND/CCCD', type: 'text' },
+    { key: 'id_issue_date', label: 'Ngày cấp', type: 'date' },
+    { key: 'id_issue_authority', label: 'Nơi cấp', type: 'text' },
+    { key: 'phone', label: 'Số điện thoại', type: 'tel' },
+    { key: 'email', label: 'Email', type: 'email' },
+    { key: 'address', label: 'Địa chỉ', type: 'text' },
+    { key: 'hobby', label: 'Sở thích', type: 'text' },
+    { key: 'status', label: 'Tình trạng', type: 'text' },
+    { key: 'account_number', label: 'Số tài khoản', type: 'text' },
+    { key: 'cif_number', label: 'Số CIF', type: 'text' },
+    { key: 'business_registration_number', label: 'Số ĐKKD', type: 'text' },
+    { key: 'business_registration_authority', label: 'Nơi cấp ĐKKD', type: 'text' },
+    { key: 'registration_date', label: 'Ngày ĐKKD', type: 'date' },
+    { key: 'company_name', label: 'Tên công ty', type: 'text' },
+    { key: 'legal_representative', label: 'Người đại diện pháp luật', type: 'text' },
+    { key: 'legal_representative_cif_number', label: 'CIF đại diện pháp luật', type: 'text' },
+    { key: 'business_sector', label: 'Ngành nghề kinh doanh', type: 'text' },
+    { key: 'company_size', label: 'Quy mô công ty', type: 'select', options: ['micro', 'small', 'medium', 'large'] },
+    { key: 'annual_revenue', label: 'Doanh thu hàng năm', type: 'text' }
+  ]
+};
+
 
 const CREDIT_ASSESSMENT_TEMPLATES_TIEU_DUNG: MetadataTemplates = {
   loan_info: {
@@ -84,7 +115,7 @@ const CREDIT_ASSESSMENT_TEMPLATES_TIEU_DUNG: MetadataTemplates = {
       { key: 'term.grace_period_months', label: 'Thời gian ân hạn (tháng)', type: 'number' }
     ]
   },
-  // ...existing code for business_plan, financial_reports, assessment_details, borrower_info, spouse_info...
+  // ...existing code for business_plan, financial_reports, assessment_details, borrower_info...
 };
 
 const CREDIT_ASSESSMENT_TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
@@ -97,7 +128,7 @@ const CREDIT_ASSESSMENT_TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
       { key: 'term.requested_months', label: 'Thời hạn thẻ (tháng)', type: 'number' },
     ]
   },
-  // ...existing code for business_plan, financial_reports, assessment_details, borrower_info, spouse_info...
+  // ...existing code for business_plan, financial_reports, assessment_details, borrower_info...
 };
 
 // Unified Metadata Section Component
@@ -616,15 +647,13 @@ export default function CreditAssessmentForm({
                   />
                 )}
 
-                {selectedTemplates.spouse_info && (
-                  <MetadataSection
-                    title={selectedTemplates.spouse_info.title}
-                    icon={selectedTemplates.spouse_info.icon}
-                    initialData={formState.metadata.spouse_info || {}}
-                    fields={selectedTemplates.spouse_info.fields}
-                    onChange={(data) => handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: data })}
-                  />
-                )}
+                <MetadataSection
+                  title={SPOUSE_METADATA_TEMPLATE.title}
+                  icon={SPOUSE_METADATA_TEMPLATE.icon}
+                  initialData={formState.metadata.spouse_info || {}}
+                  fields={SPOUSE_METADATA_TEMPLATE.fields}
+                  onChange={(data) => handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: data })}
+                />
 
                 {selectedTemplates.credit_history && (
                   <MetadataSection
