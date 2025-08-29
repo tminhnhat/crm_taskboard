@@ -84,21 +84,9 @@ const SPOUSE_METADATA_TEMPLATE: TemplateConfig = {
     { key: 'id_issue_date', label: 'Ngày cấp', type: 'date' },
     { key: 'id_issue_authority', label: 'Nơi cấp', type: 'text' },
     { key: 'phone', label: 'Số điện thoại', type: 'tel' },
-    { key: 'email', label: 'Email', type: 'email' },
     { key: 'address', label: 'Địa chỉ', type: 'text' },
-    { key: 'hobby', label: 'Sở thích', type: 'text' },
-    { key: 'status', label: 'Tình trạng', type: 'text' },
     { key: 'account_number', label: 'Số tài khoản', type: 'text' },
     { key: 'cif_number', label: 'Số CIF', type: 'text' },
-    { key: 'business_registration_number', label: 'Số ĐKKD', type: 'text' },
-    { key: 'business_registration_authority', label: 'Nơi cấp ĐKKD', type: 'text' },
-    { key: 'registration_date', label: 'Ngày ĐKKD', type: 'date' },
-    { key: 'company_name', label: 'Tên công ty', type: 'text' },
-    { key: 'legal_representative', label: 'Người đại diện pháp luật', type: 'text' },
-    { key: 'legal_representative_cif_number', label: 'CIF đại diện pháp luật', type: 'text' },
-    { key: 'business_sector', label: 'Ngành nghề kinh doanh', type: 'text' },
-    { key: 'company_size', label: 'Quy mô công ty', type: 'select', options: ['micro', 'small', 'medium', 'large'] },
-    { key: 'annual_revenue', label: 'Doanh thu hàng năm', type: 'text' }
   ]
 };
 
@@ -668,8 +656,6 @@ export default function CreditAssessmentForm({
                           phone: selectedCustomer.phone,
                           email: selectedCustomer.email,
                           address: selectedCustomer.address,
-                          hobby: selectedCustomer.hobby,
-                          status: selectedCustomer.status,
                           account_number: selectedCustomer.account_number,
                           cif_number: selectedCustomer.cif_number
                         };
