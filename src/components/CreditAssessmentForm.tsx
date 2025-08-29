@@ -647,6 +647,54 @@ export default function CreditAssessmentForm({
                   />
                 )}
 
+                {/* Spouse select and metadata section */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
+                  <select
+                    value={formState.metadata.spouse_info?.customer_id || ''}
+                    onChange={e => {
+                      const selectedId = e.target.value;
+                      const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId);
+                      if (selectedCustomer) {
+                        // Map customer fields to spouse_info fields
+                        const mapped = {
+                          customer_id: selectedCustomer.customer_id,
+                          full_name: selectedCustomer.full_name,
+                          date_of_birth: selectedCustomer.date_of_birth,
+                          gender: selectedCustomer.gender,
+                          id_number: selectedCustomer.id_number,
+                          id_issue_date: selectedCustomer.id_issue_date,
+                          id_issue_authority: selectedCustomer.id_issue_authority,
+                          phone: selectedCustomer.phone,
+                          email: selectedCustomer.email,
+                          address: selectedCustomer.address,
+                          hobby: selectedCustomer.hobby,
+                          status: selectedCustomer.status,
+                          account_number: selectedCustomer.account_number,
+                          cif_number: selectedCustomer.cif_number,
+                          business_registration_number: selectedCustomer.business_registration_number,
+                          business_registration_authority: selectedCustomer.business_registration_authority,
+                          registration_date: selectedCustomer.registration_date,
+                          company_name: selectedCustomer.company_name,
+                          legal_representative: selectedCustomer.legal_representative,
+                          legal_representative_cif_number: selectedCustomer.legal_representative_cif_number,
+                          business_sector: selectedCustomer.business_sector,
+                          company_size: selectedCustomer.company_size,
+                          annual_revenue: selectedCustomer.annual_revenue
+                        };
+                        handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: mapped });
+                      } else {
+                        handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: {} });
+                      }
+                    }}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="">Chọn khách hàng làm vợ/chồng</option>
+                    {customers.map(c => (
+                      <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
+                    ))}
+                  </select>
+                </div>
                 <MetadataSection
                   title={SPOUSE_METADATA_TEMPLATE.title}
                   icon={SPOUSE_METADATA_TEMPLATE.icon}
