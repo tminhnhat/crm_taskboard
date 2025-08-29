@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { toVNDate } from '@/lib/date'
-import { formatMoneyToWords, formatAreaToWords } from '@/lib/currency'
+
 import {
   BanknotesIcon,
   DocumentTextIcon,
@@ -107,7 +107,37 @@ const CREDIT_ASSESSMENT_TEMPLATES_TIEU_DUNG: MetadataTemplates = {
       { key: 'term.grace_period_months', label: 'Thời gian ân hạn (tháng)', type: 'number' }
     ]
   },
-  // ...existing code for business_plan, financial_reports, assessment_details, borrower_info...
+  repayment_sources: {
+    title: '2. Nguồn trả nợ',
+    icon: ClipboardDocumentCheckIcon,
+    fields: [
+      { key: 'from_customer_salary', label: 'Từ lương của khách hàng', type: 'number' },
+      { key: 'from_customer_salary_desc', label: 'Mô tả nguồn lương của khách hàng', type: 'textarea' },
+      { key: 'from_spouse_salary', label: 'Từ lương của vợ/chồng', type: 'number' },
+      { key: 'from_spouse_salary_desc', label: 'Mô tả nguồn lương của vợ/chồng', type: 'textarea' },
+      { key: 'from_asset_rental', label: 'Từ cho thuê tài sản', type: 'number' },
+      { key: 'from_asset_rental_desc', label: 'Mô tả nguồn cho thuê tài sản', type: 'textarea' },
+      { key: 'from_business', label: 'Từ hoạt động kinh doanh', type: 'number' },
+      { key: 'from_business_desc', label: 'Mô tả nguồn hoạt động kinh doanh', type: 'textarea' },
+      { key: 'from_other', label: 'Từ nguồn khác', type: 'number' },
+      { key: 'from_other_desc', label: 'Mô tả nguồn khác', type: 'textarea' }
+    ]
+  },
+  liabilities: {
+    title: '3. Thông tin nợ phải trả',
+    icon: DocumentTextIcon,
+    fields: [
+      { key: 'expected_loan_liability', label: 'Nợ phải trả cho khoản vay dự kiến', type: 'number' },
+      { key: 'expected_loan_liability_desc', label: 'Mô tả nợ phải trả cho khoản vay dự kiến', type: 'textarea' },
+      { key: 'other_bank_liability', label: 'Nợ phải trả tại TCTD khác', type: 'number' },
+      { key: 'other_bank_liability_desc', label: 'Mô tả nợ phải trả tại TCTD khác', type: 'textarea' },
+      { key: 'credit_card_liability', label: 'Nợ phải trả thẻ TD', type: 'number' },
+      { key: 'credit_card_liability_desc', label: 'Mô tả nợ phải trả thẻ TD', type: 'textarea' },
+      { key: 'other_liability', label: 'Nợ phải trả khác', type: 'number' },
+      { key: 'other_liability_desc', label: 'Mô tả nợ phải trả khác', type: 'textarea' },
+      { key: 'residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
+    ]
+  },
 };
 
 // --------- THE TIN DUNG TEMPLATE ---------
@@ -121,7 +151,37 @@ const CREDIT_ASSESSMENT_TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
       { key: 'term.requested_months', label: 'Thời hạn thẻ (tháng)', type: 'number' },
     ]
   },
-  // ...existing code for business_plan, financial_reports, assessment_details, borrower_info...
+  repayment_sources: {
+    title: '2. Nguồn trả nợ',
+    icon: ClipboardDocumentCheckIcon,
+    fields: [
+      { key: 'from_customer_salary', label: 'Từ lương của khách hàng', type: 'number' },
+      { key: 'from_customer_salary_desc', label: 'Mô tả nguồn lương của khách hàng', type: 'textarea' },
+      { key: 'from_spouse_salary', label: 'Từ lương của vợ/chồng', type: 'number' },
+      { key: 'from_spouse_salary_desc', label: 'Mô tả nguồn lương của vợ/chồng', type: 'textarea' },
+      { key: 'from_asset_rental', label: 'Từ cho thuê tài sản', type: 'number' },
+      { key: 'from_asset_rental_desc', label: 'Mô tả nguồn cho thuê tài sản', type: 'textarea' },
+      { key: 'from_business', label: 'Từ hoạt động kinh doanh', type: 'number' },
+      { key: 'from_business_desc', label: 'Mô tả nguồn hoạt động kinh doanh', type: 'textarea' },
+      { key: 'from_other', label: 'Từ nguồn khác', type: 'number' },
+      { key: 'from_other_desc', label: 'Mô tả nguồn khác', type: 'textarea' }
+    ]
+  },
+  liabilities: {
+    title: '3. Thông tin nợ phải trả',
+    icon: DocumentTextIcon,
+    fields: [
+      { key: 'expected_loan_liability', label: 'Nợ phải trả cho khoản vay dự kiến', type: 'number' },
+      { key: 'expected_loan_liability_desc', label: 'Mô tả nợ phải trả cho khoản vay dự kiến', type: 'textarea' },
+      { key: 'other_bank_liability', label: 'Nợ phải trả tại TCTD khác', type: 'number' },
+      { key: 'other_bank_liability_desc', label: 'Mô tả nợ phải trả tại TCTD khác', type: 'textarea' },
+      { key: 'credit_card_liability', label: 'Nợ phải trả thẻ TD', type: 'number' },
+      { key: 'credit_card_liability_desc', label: 'Mô tả nợ phải trả thẻ TD', type: 'textarea' },
+      { key: 'other_liability', label: 'Nợ phải trả khác', type: 'number' },
+      { key: 'other_liability_desc', label: 'Mô tả nợ phải trả khác', type: 'textarea' },
+      { key: 'residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
+    ]
+  },
 };
 
 // Unified Metadata Section Component
@@ -148,20 +208,6 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: M
       ...metadata,
       [field]: value
     }
-
-    // Automatically update text representations of numbers
-    if (typeof value === 'number') {
-      // Update currency in words
-      if (field === 'tong_gia_tri_tsbd') {
-        newMetadata.tong_gia_tri_tsbd_bang_chu = formatMoneyToWords(value)
-      }
-      
-      // Update area in words
-      if (field === 'dien_tich') {
-        newMetadata.dien_tich_bang_chu = formatAreaToWords(value)
-      }
-    }
-
     setMetadata(newMetadata)
     onChange(newMetadata)
   }
@@ -616,7 +662,11 @@ export default function CreditAssessmentForm({
             <MetadataSection
               title={SPOUSE_METADATA_TEMPLATE.title}
               icon={SPOUSE_METADATA_TEMPLATE.icon}
-              initialData={formState.metadata.spouse_info || {}}
+              initialData={{
+                ...formState.metadata.spouse_info,
+                date_of_birth: formState.metadata.spouse_info?.date_of_birth ? toVNDate(formState.metadata.spouse_info.date_of_birth) : '',
+                id_issue_date: formState.metadata.spouse_info?.id_issue_date ? toVNDate(formState.metadata.spouse_info.id_issue_date) : ''
+              }}
               fields={SPOUSE_METADATA_TEMPLATE.fields}
               onChange={(data) => handleSectionDataChange('metadata', { ...formState.metadata, spouse_info: data })}
             />
