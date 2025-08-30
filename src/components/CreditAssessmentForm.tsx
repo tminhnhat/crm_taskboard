@@ -366,11 +366,12 @@ export default function CreditAssessmentForm({
   })
 
   // Chọn template theo loại khoản vay
-  let selectedTemplates = CREDIT_ASSESSMENT_TEMPLATES_KINH_DOANH;
+  // Always fallback to KINH_DOANH if category is not matched
+  let selectedTemplates: MetadataTemplates = CREDIT_ASSESSMENT_TEMPLATES_KINH_DOANH;
   const category = formState.loan_info?.['loan_type.category'] || formState.loan_info?.loan_type?.category;
   if (category === 'Tiêu Dùng') {
     selectedTemplates = CREDIT_ASSESSMENT_TEMPLATES_TIEU_DUNG;
-  } else if (category === 'Thẻ tín dụng') {
+  } else if (category === 'Thẻ tín dụng' || category === 'Thẻ Tín Dụng') {
     selectedTemplates = CREDIT_ASSESSMENT_TEMPLATES_THE_TIN_DUNG;
   }
 
@@ -727,15 +728,6 @@ export default function CreditAssessmentForm({
                   />
                 )}
 
-                {selectedTemplates.borrower_info && (
-                  <MetadataSection
-                    title={selectedTemplates.borrower_info.title}
-                    icon={selectedTemplates.borrower_info.icon}
-                    initialData={formState.metadata.borrower_info || {}}
-                    fields={selectedTemplates.borrower_info.fields}
-                    onChange={(data) => handleSectionDataChange('metadata', { ...formState.metadata, borrower_info: data })}
-                  />
-                )}
 
             </div>
 
