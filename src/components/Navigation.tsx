@@ -29,11 +29,8 @@ export default function Navigation() {
     // Credit process
     { name: 'Hợp Đồng', href: '/contracts', icon: DocumentTextIcon },
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: HomeIcon },
-    { name: 'Thẩm Định', href: '/assessments', icon: DocumentMagnifyingGlassIcon },
+    { name: 'Thẩm Định', href: '/assessments', icon: DocumentMagnifyingGlassIcon }
     
-    // Document management
-    { name: 'Tài Liệu', href: '/documents', icon: DocumentTextIcon },
-    { name: 'Mẫu Tài Liệu', href: '/templates', icon: DocumentMagnifyingGlassIcon }
   ]
 
   return (
