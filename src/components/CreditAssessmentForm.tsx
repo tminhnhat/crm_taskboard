@@ -536,16 +536,27 @@ export default function CreditAssessmentFormFull({
               </select>
             </div>
             {/* Render all metadata sections dynamically */}
-            {Object.entries(selectedTemplates).map(([sectionKey, section]) => (
-              <MetadataSection
-                key={sectionKey}
-                title={section.title}
-                icon={section.icon}
-                initialData={formState.assessment_details[sectionKey] || {}}
-                fields={section.fields}
-                onChange={data => handleSectionDataChange(sectionKey, data)}
-              />
-            ))}
+            {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
+              let initialData = formState.assessment_details[sectionKey] || {};
+              // Format date fields for spouse_info
+              if (sectionKey === 'spouse_info') {
+                initialData = {
+                  ...initialData,
+                  date_of_birth: initialData.date_of_birth ? toVNDate(initialData.date_of_birth) : '',
+                  id_issue_date: initialData.id_issue_date ? toVNDate(initialData.id_issue_date) : ''
+                };
+              }
+              return (
+                <MetadataSection
+                  key={sectionKey}
+                  title={section.title}
+                  icon={section.icon}
+                  initialData={initialData}
+                  fields={section.fields}
+                  onChange={data => handleSectionDataChange(sectionKey, data)}
+                />
+              );
+            })}
             <div className="flex justify-end space-x-3">
               <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Hủy</button>
               <button type="submit" disabled={isLoading} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50">
