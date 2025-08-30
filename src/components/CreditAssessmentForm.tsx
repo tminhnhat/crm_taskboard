@@ -223,6 +223,15 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 onChange={e => handleFieldChange(field.key, e.target.checked)}
                 className="h-4 w-4 text-blue-600 border-gray-300 rounded"
               />
+            ) : field.type === 'date' && (field.key === 'date_of_birth' || field.key === 'id_issue_date') ? (
+              <input
+                type="text"
+                value={metadata[field.key] || ''}
+                onChange={e => handleFieldChange(field.key, e.target.value)}
+                placeholder="dd/mm/yyyy"
+                readOnly={field.readOnly}
+                className={`block w-full rounded-md border-gray-300 shadow-sm ${field.readOnly ? 'bg-gray-50 text-gray-500' : ''}`}
+              />
             ) : (
               <input
                 type={field.type}
