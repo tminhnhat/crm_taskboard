@@ -27,7 +27,19 @@ function DocumentsContent() {
   const [emailAddress, setEmailAddress] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [availableTemplates, setAvailableTemplates] = useState<string[]>([]);
+  // Lấy danh sách template metadata từ Supabase
+  const { 
+    documents, 
+    loading: documentsLoading, 
+    error: documentsError, 
+    generateDocument, 
+    downloadDocument,
+    deleteDocument, 
+    fetchDocuments,
+    sendDocumentByEmail,
+    templates,
+    fetchTemplates
+  } = useDocuments();
   const [formData, setFormData] = useState<DocumentGenerationForm>({
     documentType: '',
     customerId: '',
@@ -38,16 +50,7 @@ function DocumentsContent() {
     emailAddress: ''
   });
 
-  const { 
-    documents, 
-    loading: documentsLoading, 
-    error: documentsError, 
-    generateDocument, 
-    downloadDocument,
-    deleteDocument, 
-    fetchDocuments,
-    sendDocumentByEmail
-  } = useDocuments();
+  // ...existing code...
   
   const { customers, refetch: fetchCustomers } = useCustomers();
   const { collaterals, refetch: fetchCollaterals } = useCollaterals();
@@ -79,23 +82,8 @@ function DocumentsContent() {
   }, []);
 
   // Load available templates
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        const response = await fetch('/api/templates');
-        const data = await response.json();
-        if (data.templates) {
-          // Extract template names without .docx extension
-          const templateNames = data.templates.map((t: string) => t.replace('.docx', ''));
-          setAvailableTemplates(templateNames);
-        }
-      } catch (error) {
-        console.error('Error loading templates:', error);
-      }
-    };
-
-    loadTemplates();
-  }, []);
+  // Refetch templates on mount
+  useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
   
   // Update local state when hook data changes
   useEffect(() => {
@@ -116,8 +104,9 @@ function DocumentsContent() {
     { value: 'lich_tra_no', label: 'Lịch trả nợ' }
   ];
 
+  // Kiểm tra template khả dụng dựa trên template_type
   const getDocumentTypeWithTemplate = (type: any) => {
-    const hasTemplate = availableTemplates.includes(type.value);
+    const hasTemplate = templates.some(tpl => tpl.template_type === type.value);
     return {
       ...type,
       hasTemplate,
@@ -133,7 +122,7 @@ function DocumentsContent() {
     }
 
     // Check if template is available for DOCX export
-    if (formData.exportType === 'docx' && !availableTemplates.includes(formData.documentType)) {
+    if (formData.exportType === 'docx' && !templates.some(tpl => tpl.template_type === formData.documentType)) {
       const selectedType = documentTypes.find(dt => dt.value === formData.documentType);
       alert(`Không thể tạo tài liệu Word cho "${selectedType?.label || formData.documentType}" vì chưa có mẫu. Vui lòng tải lên mẫu trong trang Templates hoặc chọn xuất Excel.`);
       return;
@@ -350,7 +339,7 @@ function DocumentsContent() {
                   </select>
                   {formData.documentType && formData.exportType === 'docx' && (
                     <div className="mt-2">
-                      {availableTemplates.includes(formData.documentType) ? (
+                      {templates.some(tpl => tpl.template_type === formData.documentType) ? (
                         <div className="flex items-center text-green-600 text-sm">
                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

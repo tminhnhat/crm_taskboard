@@ -39,12 +39,11 @@ export type DocumentType =
 export type DocumentExportType = 'docx' | 'pdf' | 'xlsx'
 
 export interface DocumentTemplate {
-  template_id: number
-  document_type: DocumentType
-  template_name: string
-  template_url: string
-  created_at: string
-  updated_at: string
+  template_id: number;
+  template_name: string;
+  template_type: string;
+  file_url: string;
+  created_at: string;
 }
 
 export interface Document {

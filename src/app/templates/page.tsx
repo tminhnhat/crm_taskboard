@@ -1,77 +1,48 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import Navigation from '@/components/Navigation';
+import { useDocuments } from '@/hooks/useDocuments';
 
 export default function TemplatesDashboard() {
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [templateName, setTemplateName] = useState('');
+  const [templateType, setTemplateType] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const { templates, loading, error, fetchTemplates, addTemplate, deleteTemplate } = useDocuments();
 
-  useEffect(() => {
-    async function fetchTemplates() {
-      setLoading(true);
-      try {
-        const response = await fetch('/api/templates');
-        const data = await response.json();
-        if (response.ok) {
-          setTemplates(data.templates || []);
-        } else {
-          console.error('Error fetching templates:', data.error);
-          setTemplates([]);
-        }
-      } catch (error) {
-        console.error('Error fetching templates:', error);
-        setTemplates([]);
-      }
-      setLoading(false);
-    }
-    fetchTemplates();
-  }, []);
+  // Refetch templates on mount
+  React.useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
 
   async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = e.currentTarget;
     const file = fileRef.current?.files?.[0];
-    const documentType = (form.elements.namedItem('documentType') as HTMLSelectElement).value;
-    
     if (!file) {
       alert('Vui lòng chọn file template');
       return;
     }
-    
+    if (!templateName || !templateType) {
+      alert('Vui lòng nhập tên và loại template');
+      return;
+    }
     setUploading(true);
     try {
-      // Tạo FormData để upload file
-      const formData = new FormData();
-      formData.append('template', file);
-      formData.append('documentType', documentType);
-
-      const response = await fetch('/api/templates/upload', {
-        method: 'POST',
-        body: formData,
+      // Upload file lên storage (giả định đã có API hoặc upload lên Supabase Storage, ở đây chỉ demo lưu URL tạm)
+      // TODO: Thay thế đoạn này bằng upload thực tế nếu có
+      const fakeUrl = URL.createObjectURL(file);
+      await addTemplate({
+        template_name: templateName,
+        template_type: templateType,
+        file_url: fakeUrl,
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert('Upload template thành công!');
-        // Refetch list từ API
-        const listResponse = await fetch('/api/templates');
-        const listData = await listResponse.json();
-        if (listResponse.ok) {
-          setTemplates(listData.templates || []);
-        }
-        // Clear form
-        if (fileRef.current) fileRef.current.value = '';
-      } else {
-        throw new Error(data.error || 'Upload failed');
-      }
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      alert(`Upload thất bại: ${error.message || 'Unknown error'}`);
+      setTemplateName('');
+      setTemplateType('');
+      if (fileRef.current) fileRef.current.value = '';
+      alert('Thêm template thành công!');
+    } catch (err: any) {
+      alert('Thêm template thất bại: ' + (err?.message || 'Unknown error'));
     } finally {
       setUploading(false);
+      fetchTemplates();
     }
   }
 
@@ -82,74 +53,75 @@ export default function TemplatesDashboard() {
         <h1 className="text-xl font-bold mb-4">Quản lý Template</h1>
         <div className="mb-6">
           <form className="flex flex-col sm:flex-row flex-wrap gap-2 items-stretch sm:items-center" onSubmit={handleUpload}>
-          <input 
-            ref={fileRef} 
-            type="file" 
-            name="template" 
-            accept=".docx,.doc" 
-            className="border p-2 rounded" 
-            required
-          />
-          <select 
-            name="documentType" 
-            className="border p-2 rounded"
-            required
-          >
-            <option value="">-- Chọn loại tài liệu --</option>
-            <option value="hop_dong_tin_dung">Hợp đồng tín dụng</option>
-            <option value="to_trinh_tham_dinh">Tờ trình thẩm định</option>
-            <option value="giay_de_nghi_vay_von">Giấy đề nghị vay vốn</option>
-            <option value="bien_ban_dinh_gia">Biên bản định giá</option>
-            <option value="hop_dong_the_chap">Hợp đồng thế chấp</option>
-          </select>
-          <button 
-            type="submit" 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50" 
-            disabled={uploading}
-          >
-            {uploading ? 'Đang upload...' : 'Upload Template'}
-          </button>
-        </form>
-      </div>
-
-      <div>
-        <h2 className="font-semibold mb-2">Danh sách Template</h2>
-        {loading ? <div>Đang tải...</div> : (
-          <ul className="divide-y">
-            {templates.length === 0 && <li className="py-2 text-gray-500">Chưa có template nào.</li>}
-            {templates.map((tpl, idx) => (
-              <li key={idx} className="py-2 flex justify-between items-center">
-                <span>{tpl.name || tpl}</span>
-                <button
-                  className="text-red-500 hover:underline"
-                  onClick={async () => {
-                    if (!window.confirm('Bạn chắc chắn muốn xóa template này?')) return;
-                    try {
-                      const res = await fetch(`/api/templates?file=maubieu/${encodeURIComponent(tpl)}`, { method: 'DELETE' });
-                      const data = await res.json();
-                      if (res.ok) {
-                        // Refetch list từ API
-                        const response = await fetch('/api/templates');
-                        const refreshData = await response.json();
-                        if (response.ok) {
-                          setTemplates(refreshData.templates || []);
-                        }
+            <input
+              ref={fileRef}
+              type="file"
+              name="template"
+              accept=".docx,.doc"
+              className="border p-2 rounded"
+              required
+            />
+            <input
+              type="text"
+              name="templateName"
+              placeholder="Tên template"
+              className="border p-2 rounded"
+              value={templateName}
+              onChange={e => setTemplateName(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              name="templateType"
+              placeholder="Loại template (ví dụ: hop_dong_tin_dung)"
+              className="border p-2 rounded"
+              value={templateType}
+              onChange={e => setTemplateType(e.target.value)}
+              required
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              disabled={uploading}
+            >
+              {uploading ? 'Đang upload...' : 'Thêm Template'}
+            </button>
+          </form>
+        </div>
+        <div>
+          <h2 className="font-semibold mb-2">Danh sách Template</h2>
+          {loading ? <div>Đang tải...</div> : (
+            <ul className="divide-y">
+              {templates.length === 0 && <li className="py-2 text-gray-500">Chưa có template nào.</li>}
+              {templates.map((tpl, idx) => (
+                <li key={tpl.template_id || idx} className="py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <div>
+                    <div className="font-semibold">{tpl.template_name}</div>
+                    <div className="text-sm text-gray-500">Loại: {tpl.template_type}</div>
+                    <div className="text-sm text-gray-500">Ngày tạo: {tpl.created_at ? new Date(tpl.created_at).toLocaleString() : ''}</div>
+                    <a href={tpl.file_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">Xem file</a>
+                  </div>
+                  <button
+                    className="text-red-500 hover:underline"
+                    onClick={async () => {
+                      if (!window.confirm('Bạn chắc chắn muốn xóa template này?')) return;
+                      try {
+                        await deleteTemplate(tpl.template_id);
                         alert('Đã xóa template!');
-                      } else {
-                        alert(data.error || 'Xóa thất bại');
+                        fetchTemplates();
+                      } catch (err: any) {
+                        alert('Xóa thất bại: ' + (err?.message || 'Unknown error'));
                       }
-                    } catch {
-                      alert('Lỗi xóa template');
-                    }
-                  }}
-                >
-                  Xóa
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                    }}
+                  >
+                    Xóa
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {error && <div className="text-red-500 mt-2">{error}</div>}
+        </div>
       </div>
     </>
   );

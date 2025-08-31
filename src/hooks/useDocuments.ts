@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Document, DocumentType, DocumentExportType } from '@/lib/supabase';
+import type { Document, DocumentType, DocumentExportType, DocumentTemplate } from '@/lib/supabase';
 
 export interface GenerateDocumentParams {
   documentType: DocumentType;
@@ -12,19 +12,96 @@ export interface GenerateDocumentParams {
 
 export interface UseDocumentsReturn {
   documents: Document[];
+  templates: DocumentTemplate[];
   loading: boolean;
   error: string | null;
   generateDocument: (params: GenerateDocumentParams) => Promise<{ filename: string; url: string }>;
-  downloadDocument: (params: GenerateDocumentParams) => Promise<void>; // New download function
+  downloadDocument: (params: GenerateDocumentParams) => Promise<void>;
   deleteDocument: (documentId: number) => Promise<void>;
   fetchDocuments: () => Promise<void>;
   sendDocumentByEmail: (filename: string, email: string) => Promise<void>;
+  fetchTemplates: (templateType?: string) => Promise<void>;
+  addTemplate: (template: Omit<DocumentTemplate, 'template_id' | 'created_at'>) => Promise<void>;
+  updateTemplate: (template_id: number, updates: Partial<Omit<DocumentTemplate, 'template_id' | 'created_at'>>) => Promise<void>;
+  deleteTemplate: (template_id: number) => Promise<void>;
 }
 
 export function useDocuments(): UseDocumentsReturn {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Fetch templates (optionally by template_type)
+  const fetchTemplates = useCallback(async (templateType?: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      let query = supabase.from('templates').select('*').order('created_at', { ascending: false });
+      if (templateType) {
+        query = query.eq('template_type', templateType);
+      }
+      const { data, error: fetchError } = await query;
+      if (fetchError) throw fetchError;
+      setTemplates(data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch templates');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Add a new template
+  const addTemplate = async (template: Omit<DocumentTemplate, 'template_id' | 'created_at'>): Promise<void> => {
+    try {
+      setError(null);
+      const { data, error: insertError } = await supabase
+        .from('templates')
+        .insert([template])
+        .select('*');
+      if (insertError) throw insertError;
+      if (data && data.length > 0) {
+        setTemplates(prev => [data[0], ...prev]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add template');
+      throw err;
+    }
+  };
+
+  // Update a template
+  const updateTemplate = async (template_id: number, updates: Partial<Omit<DocumentTemplate, 'template_id' | 'created_at'>>): Promise<void> => {
+    try {
+      setError(null);
+      const { data, error: updateError } = await supabase
+        .from('templates')
+        .update(updates)
+        .eq('template_id', template_id)
+        .select('*');
+      if (updateError) throw updateError;
+      if (data && data.length > 0) {
+        setTemplates(prev => prev.map(t => t.template_id === template_id ? data[0] : t));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update template');
+      throw err;
+    }
+  };
+
+  // Delete a template
+  const deleteTemplate = async (template_id: number): Promise<void> => {
+    try {
+      setError(null);
+      const { error: deleteError } = await supabase
+        .from('templates')
+        .delete()
+        .eq('template_id', template_id);
+      if (deleteError) throw deleteError;
+      setTemplates(prev => prev.filter(t => t.template_id !== template_id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete template');
+      throw err;
+    }
+  };
 
   // Fetch all documents with related data
   const fetchDocuments = useCallback(async () => {
@@ -303,6 +380,7 @@ export function useDocuments(): UseDocumentsReturn {
 
   return {
     documents,
+    templates,
     loading,
     error,
     generateDocument,
@@ -310,5 +388,9 @@ export function useDocuments(): UseDocumentsReturn {
     deleteDocument,
     fetchDocuments,
     sendDocumentByEmail,
+    fetchTemplates,
+    addTemplate,
+    updateTemplate,
+    deleteTemplate,
   };
 }
