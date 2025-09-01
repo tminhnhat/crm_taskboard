@@ -76,67 +76,63 @@ export default function AssessmentsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200">
       <Navigation />
-      
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
+      <main className="max-w-7xl mx-auto py-10 px-4 sm:px-8 lg:px-16">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Thẩm định tín dụng</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Quản lý các thẩm định tín dụng cho khách hàng
-            </p>
+            <h1 className="text-4xl font-extrabold text-blue-700 mb-2 drop-shadow">Thẩm định tín dụng</h1>
+            <p className="text-lg text-gray-500">Quản lý các thẩm định tín dụng cho khách hàng</p>
           </div>
-
           <button
             onClick={() => {
               setSelectedAssessment(null)
               setShowForm(true)
             }}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+            className="px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl shadow"
           >
-            Thẩm định mới
+            + Thẩm định mới
           </button>
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6">
-          <div className="flex items-center max-w-lg">
+        <div className="mb-10 flex justify-center">
+          <div className="flex items-center w-full max-w-xl">
             <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                <MagnifyingGlassIcon className="h-5 w-5 text-blue-400" />
               </div>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm kiếm thẩm định..."
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="block w-full pl-10 pr-3 py-3 border border-blue-200 rounded-xl leading-5 bg-white placeholder-blue-400 focus:outline-none focus:placeholder-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
               />
             </div>
           </div>
         </div>
 
         {/* Assessment List */}
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white p-8 rounded-3xl shadow-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {filteredAssessments.map(assessment => (
-          <CreditAssessmentCard
-            key={assessment.assessment_id}
-            assessment={assessment}
-            onView={() => {
-              setSelectedAssessment(assessment)
-              setShowForm(true)
-            }}
-            onEdit={() => {
-              setSelectedAssessment(assessment)
-              setShowForm(true)
-            }}
-            onDelete={() => {
-              setSelectedAssessment(assessment)
-              setShowDeleteDialog(true)
-            }}
-          />
+              <CreditAssessmentCard
+                key={assessment.assessment_id}
+                assessment={assessment}
+                onView={() => {
+                  setSelectedAssessment(assessment)
+                  setShowForm(true)
+                }}
+                onEdit={() => {
+                  setSelectedAssessment(assessment)
+                  setShowForm(true)
+                }}
+                onDelete={() => {
+                  setSelectedAssessment(assessment)
+                  setShowDeleteDialog(true)
+                }}
+              />
             ))}
           </div>
         </div>

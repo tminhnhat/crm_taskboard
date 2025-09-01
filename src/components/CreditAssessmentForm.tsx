@@ -209,22 +209,23 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
     onChange(newMetadata)
   }
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-blue-100">
-      <div className="flex items-center mb-4">
-        <div className="bg-blue-50 rounded-full p-2 mr-3">
-          <Icon className="h-6 w-6 text-blue-600" />
+    <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8 border-2 border-transparent hover:border-blue-400 transition-all duration-300 group relative overflow-hidden" style={{boxShadow:'0 8px 32px 0 rgba(60,130,220,0.12)'}}>
+      <div className="absolute inset-0 pointer-events-none group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-blue-100 opacity-60 transition-all duration-300 z-0" />
+      <div className="flex items-center mb-6 relative z-10">
+        <div className="bg-gradient-to-br from-blue-100 to-blue-300 rounded-full p-3 mr-4 shadow">
+          <Icon className="h-7 w-7 text-blue-600" />
         </div>
-        <h4 className="text-xl font-semibold text-blue-700 tracking-tight">{title}</h4>
+        <h4 className="text-2xl font-bold text-blue-700 tracking-tight drop-shadow">{title}</h4>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
         {fields.map(field => (
-          <div key={field.key} className="mb-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+          <div key={field.key} className="mb-3">
+            <label className="block text-base font-medium text-gray-700 mb-2">{field.label}</label>
             {field.type === 'select' ? (
               <select
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
               >
                 <option value="">Chọn {field.label}</option>
                 {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -234,14 +235,14 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
                 rows={3}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
               />
             ) : field.type === 'boolean' ? (
               <input
                 type="checkbox"
                 checked={!!metadata[field.key]}
                 onChange={e => handleFieldChange(field.key, e.target.checked)}
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                className="h-5 w-5 text-blue-600 border-gray-300 rounded"
               />
             ) : (
               <input
@@ -249,8 +250,8 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, field.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
                 readOnly={field.readOnly}
-                className={`block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 ${field.readOnly ? 'bg-blue-50 text-blue-700 font-bold border-blue-300' : ''}`}
-                style={field.readOnly ? { fontSize: '1.1rem' } : {}}
+                className={`block w-full rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base ${field.readOnly ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold border-blue-400' : ''}`}
+                style={field.readOnly ? { fontSize: '1.2rem' } : {}}
               />
             )}
             {/* Highlight for total fields */}
@@ -445,9 +446,13 @@ export default function CreditAssessmentFormFull({
   // --- Render ---
   return (
     <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" open={isOpen} onClose={onClose}>
-      <div className="min-h-screen px-4 text-center">
+  <div className="min-h-screen px-4 py-8 text-center bg-gradient-to-br from-blue-100 via-white to-blue-200 flex flex-col items-center justify-center">
         <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-  <div className="inline-block w-full max-w-5xl my-8 p-0 text-left align-middle transition-all transform">
+        <div className="inline-block w-full max-w-4xl my-8 p-0 text-left align-middle transition-all transform">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-extrabold text-blue-700 mb-2 drop-shadow">Thẩm định tín dụng</h2>
+            <p className="text-lg text-gray-500">Vui lòng nhập đầy đủ thông tin để đánh giá khoản vay</p>
+          </div>
           <div className="flex justify-between items-center mb-4">
             <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
               {assessment ? 'Chỉnh sửa thẩm định' : 'Thẩm định mới'}
