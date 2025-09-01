@@ -173,7 +173,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
     title: '5. Thu nhập còn lại',
     icon: ChartBarIcon,
     fields: [
-      { key: 'residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
+      { key: 'total_residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
     ]
   }
 }
@@ -403,7 +403,7 @@ export default function CreditAssessmentFormFull({
         if (formState.assessment_details?.monthly_expenses?.total_expenses !== undefined) {
           totalExpenses = parseFloat(formState.assessment_details.monthly_expenses.total_expenses) || 0;
         }
-        newData.residual_income = repaymentSources - newData.total_liability - totalExpenses;
+        newData.total_residual_income = repaymentSources - newData.total_liability - totalExpenses;
       }
 
       setFormState(prev => ({
