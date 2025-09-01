@@ -5,21 +5,36 @@ import { put } from '@vercel/blob';
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const file = formData.get('template') as File;
-    const documentType = formData.get('documentType') as string;
+    const file = formData.get('file') as File;
+    const templateName = formData.get('templateName') as string;
+    const templateType = formData.get('templateType') as string;
 
-    if (!file || !documentType) {
-      return NextResponse.json({ error: 'Missing file or documentType' }, { status: 400 });
+    if (!file || !templateName || !templateType) {
+      return NextResponse.json({ 
+        error: 'Missing required fields: file, templateName, templateType' 
+      }, { status: 400 });
     }
 
-    // Upload to Vercel Blob
-    const { url } = await put(`maubieu/${documentType}.docx`, file, {
+    // Generate unique filename to avoid conflicts
+    const fileExtension = file.name.split('.').pop();
+    const timestamp = Date.now();
+    const sanitizedName = templateName.replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = `${sanitizedName}_${timestamp}.${fileExtension}`;
+
+    // Upload to Vercel Blob Storage in maubieu/ folder
+    const { url } = await put(`maubieu/${filename}`, file, {
       access: 'public',
     });
 
-    return NextResponse.json({ url, success: true });
+    return NextResponse.json({ 
+      fileUrl: url,
+      filename,
+      success: true 
+    });
   } catch (error: any) {
-    console.error('Upload error:', error);
-    return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });
+    console.error('Template upload error:', error);
+    return NextResponse.json({ 
+      error: error.message || 'Template upload failed' 
+    }, { status: 500 });
   }
 }

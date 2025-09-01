@@ -24,6 +24,8 @@ export interface UseDocumentsReturn {
   addTemplate: (template: Omit<DocumentTemplate, 'template_id' | 'created_at'>) => Promise<void>;
   updateTemplate: (template_id: number, updates: Partial<Omit<DocumentTemplate, 'template_id' | 'created_at'>>) => Promise<void>;
   deleteTemplate: (template_id: number) => Promise<void>;
+  uploadTemplate: (file: File, templateName: string, templateType: string) => Promise<DocumentTemplate>;
+  deleteTemplateFile: (template: DocumentTemplate) => Promise<void>;
 }
 
 export function useDocuments(): UseDocumentsReturn {
@@ -97,6 +99,88 @@ export function useDocuments(): UseDocumentsReturn {
         .eq('template_id', template_id);
       if (deleteError) throw deleteError;
       setTemplates(prev => prev.filter(t => t.template_id !== template_id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete template');
+      throw err;
+    }
+  };
+
+  // Upload template file to Vercel Blob and save metadata to Supabase
+  const uploadTemplate = async (file: File, templateName: string, templateType: string): Promise<DocumentTemplate> => {
+    try {
+      setError(null);
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('templateName', templateName);
+      formData.append('templateType', templateType);
+      
+      // Upload file to Vercel Blob Storage in maubieu/ folder
+      const uploadResponse = await fetch('/api/templates/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || 'Failed to upload template file');
+      }
+      
+      const { fileUrl } = await uploadResponse.json();
+      
+      // Save template metadata to Supabase
+      const { data, error: insertError } = await supabase
+        .from('templates')
+        .insert([{
+          template_name: templateName,
+          template_type: templateType,
+          file_url: fileUrl
+        }])
+        .select('*');
+        
+      if (insertError) throw insertError;
+      
+      if (data && data.length > 0) {
+        const newTemplate = data[0];
+        setTemplates(prev => [newTemplate, ...prev]);
+        return newTemplate;
+      }
+      
+      throw new Error('Failed to save template metadata');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload template');
+      throw err;
+    }
+  };
+
+  // Delete template file from Vercel Blob and remove metadata from Supabase
+  const deleteTemplateFile = async (template: DocumentTemplate): Promise<void> => {
+    try {
+      setError(null);
+      
+      // Extract filename from file_url for blob deletion
+      const filename = template.file_url.split('/').pop();
+      if (filename) {
+        // Delete file from Vercel Blob Storage
+        const deleteResponse = await fetch(`/api/templates?file=maubieu/${filename}`, {
+          method: 'DELETE',
+        });
+        
+        if (!deleteResponse.ok) {
+          console.warn('Failed to delete template file from blob storage');
+        }
+      }
+      
+      // Delete metadata from Supabase
+      const { error: deleteError } = await supabase
+        .from('templates')
+        .delete()
+        .eq('template_id', template.template_id);
+        
+      if (deleteError) throw deleteError;
+      
+      setTemplates(prev => prev.filter(t => t.template_id !== template.template_id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete template');
       throw err;
@@ -392,5 +476,7 @@ export function useDocuments(): UseDocumentsReturn {
     addTemplate,
     updateTemplate,
     deleteTemplate,
+    uploadTemplate,
+    deleteTemplateFile,
   };
 }

@@ -121,11 +121,24 @@ function DocumentsContent() {
       return;
     }
 
-    // Check if template is available for DOCX export
-    if (formData.exportType === 'docx' && !templates.some(tpl => tpl.template_type === formData.documentType)) {
+    // Enhanced template validation
+    const templatesForType = templates.filter(tpl => tpl.template_type === formData.documentType);
+    const hasTemplate = templatesForType.length > 0;
+    
+    if (formData.exportType === 'docx' && !hasTemplate) {
       const selectedType = documentTypes.find(dt => dt.value === formData.documentType);
-      alert(`Không thể tạo tài liệu Word cho "${selectedType?.label || formData.documentType}" vì chưa có mẫu. Vui lòng tải lên mẫu trong trang Templates hoặc chọn xuất Excel.`);
-      return;
+      const message = `Không thể tạo tài liệu Word cho "${selectedType?.label || formData.documentType}" vì chưa có template.\n\n` +
+                     `Bạn có thể:\n` +
+                     `1. Chọn định dạng Excel (.xlsx) thay thế\n` +
+                     `2. Tải lên template trong trang Templates\n\n` +
+                     `Bạn có muốn chuyển sang Excel không?`;
+      
+      if (confirm(message)) {
+        setFormData(prev => ({ ...prev, exportType: 'xlsx' }));
+        return;
+      } else {
+        return;
+      }
     }
 
     if (formData.sendViaEmail && !formData.emailAddress) {
@@ -152,7 +165,7 @@ function DocumentsContent() {
           alert(`Tạo tài liệu thành công nhưng gửi email thất bại: ${emailError instanceof Error ? emailError.message : 'Unknown error'}`);
         }
       } else {
-        alert('Tạo tài liệu thành công!');
+        alert(`Tạo tài liệu thành công!\nFile: ${result.filename}`);
       }
       
       setShowGenerateForm(false);
@@ -265,15 +278,71 @@ function DocumentsContent() {
               Tạo và quản lý tài liệu cho khách hàng, tài sản đảm bảo và thẩm định tín dụng.
             </p>
           </div>
-          <button
-            onClick={() => setShowGenerateForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Tạo Tài liệu Mới
-          </button>
+          <div className="flex gap-3">
+            <a
+              href="/templates"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Quản lý Templates
+            </a>
+            <button
+              onClick={() => setShowGenerateForm(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Tạo Tài liệu Mới
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Template Status Overview */}
+      <div className="mb-6 bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Tình trạng Templates</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {documentTypes.map(type => {
+            const templatesForType = templates.filter(tpl => tpl.template_type === type.value);
+            const hasTemplate = templatesForType.length > 0;
+            
+            return (
+              <div key={type.value} className={`p-3 rounded-lg border-2 ${hasTemplate ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-gray-600">{type.label}</span>
+                  {hasTemplate ? (
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+                <div className="text-sm">
+                  {hasTemplate ? (
+                    <span className="text-green-700">
+                      {templatesForType.length} template{templatesForType.length > 1 ? 's' : ''}
+                    </span>
+                  ) : (
+                    <span className="text-orange-700">Chưa có template</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-4 flex items-center justify-between text-sm">
+          <div className="text-gray-600">
+            {templates.length} templates đã có sẵn cho {documentTypes.filter(type => templates.some(tpl => tpl.template_type === type.value)).length}/{documentTypes.length} loại tài liệu
+          </div>
+          <a href="/templates" className="text-blue-600 hover:text-blue-800 font-medium">
+            Quản lý templates →
+          </a>
         </div>
       </div>
 
@@ -337,21 +406,65 @@ function DocumentsContent() {
                       );
                     })}
                   </select>
-                  {formData.documentType && formData.exportType === 'docx' && (
-                    <div className="mt-2">
-                      {templates.some(tpl => tpl.template_type === formData.documentType) ? (
-                        <div className="flex items-center text-green-600 text-sm">
-                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          Mẫu tài liệu có sẵn
+                  {formData.documentType && (
+                    <div className="mt-2 p-3 rounded-lg bg-gray-50">
+                      {templates.filter(tpl => tpl.template_type === formData.documentType).length > 0 ? (
+                        <div>
+                          <div className="flex items-center text-green-600 text-sm mb-2">
+                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Templates có sẵn:
+                          </div>
+                          <div className="space-y-1">
+                            {templates
+                              .filter(tpl => tpl.template_type === formData.documentType)
+                              .map((template, index) => (
+                                <div key={template.template_id} className="flex items-center justify-between text-xs">
+                                  <span className="text-gray-700">
+                                    {index + 1}. {template.template_name}
+                                  </span>
+                                  <a
+                                    href={template.file_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800"
+                                  >
+                                    Xem
+                                  </a>
+                                </div>
+                              ))
+                            }
+                          </div>
+                          {formData.exportType === 'xlsx' && (
+                            <p className="text-xs text-gray-500 mt-2">
+                              Lưu ý: Templates Word sẽ được chuyển đổi để tạo file Excel
+                            </p>
+                          )}
                         </div>
                       ) : (
-                        <div className="flex items-center text-orange-600 text-sm">
-                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          Chưa có mẫu - Vui lòng tải lên trong <a href="/templates" className="underline hover:text-orange-800">trang Templates</a> hoặc chọn Excel
+                        <div>
+                          <div className="flex items-center text-orange-600 text-sm mb-2">
+                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            Chưa có template
+                          </div>
+                          <p className="text-xs text-orange-700 mb-2">
+                            Để tạo file Word (.docx), bạn cần upload template trước.
+                          </p>
+                          <a 
+                            href="/templates" 
+                            target="_blank"
+                            className="text-xs text-blue-600 hover:text-blue-800 underline"
+                          >
+                            → Tải lên template ngay
+                          </a>
+                          {formData.exportType === 'docx' && (
+                            <p className="text-xs text-red-600 mt-2 font-medium">
+                              ⚠️ Không thể tạo file Word mà không có template
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -624,6 +737,9 @@ function DocumentsContent() {
                     Tên File
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Template
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ngày tạo
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -656,6 +772,47 @@ function DocumentsContent() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{doc.file_name}</div>
+                      <div className="text-sm text-gray-500">
+                        {doc.file_name.endsWith('.docx') ? 'Word' : doc.file_name.endsWith('.xlsx') ? 'Excel' : 'Unknown'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {(() => {
+                          const templatesForType = templates.filter(tpl => tpl.template_type === doc.document_type);
+                          if (templatesForType.length > 0) {
+                            return (
+                              <div className="space-y-1">
+                                {templatesForType.slice(0, 1).map(template => (
+                                  <div key={template.template_id} className="flex items-center">
+                                    <span className="text-green-700">{template.template_name}</span>
+                                    <a
+                                      href={template.file_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="ml-2 text-blue-600 hover:text-blue-800"
+                                      title="Xem template"
+                                    >
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                      </svg>
+                                    </a>
+                                  </div>
+                                ))}
+                                {templatesForType.length > 1 && (
+                                  <div className="text-xs text-gray-500">
+                                    +{templatesForType.length - 1} template khác
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <span className="text-gray-500 text-sm">Không có template</span>
+                            );
+                          }
+                        })()}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(doc.created_at)}
