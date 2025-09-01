@@ -366,45 +366,58 @@ export default function CreditAssessmentFormFull({
   }
 
   const handleSectionDataChange = (section: string, data: Record<string, any>) => {
-      let newData = { ...data };
-      // Tính tổng chi phí sinh hoạt
-      if (section === 'monthly_expenses') {
-        const food = parseFloat(newData.food_expense) || 0;
-        const medical = parseFloat(newData.medical_expense) || 0;
-        const other = parseFloat(newData.other_expense) || 0;
-        newData.total_expenses = food + medical + other;
-      }
+    let newData = { ...data };
+    // Tính tổng chi phí sinh hoạt
+    if (section === 'monthly_expenses') {
+      const food = parseFloat(newData.food_expense) || 0;
+      const medical = parseFloat(newData.medical_expense) || 0;
+      const other = parseFloat(newData.other_expense) || 0;
+      newData.total_expenses = food + medical + other;
+    }
 
-      // Tính tổng nguồn trả nợ
-      if (section === 'repayment_sources') {
-        const fromCustomer = parseFloat(newData.from_customer_salary) || 0;
-        const fromSpouse = parseFloat(newData.from_spouse_salary) || 0;
-        const fromAsset = parseFloat(newData.from_asset_rental) || 0;
-        const fromBusiness = parseFloat(newData.from_business) || 0;
-        const fromOther = parseFloat(newData.from_other) || 0;
-        newData.total_repayment_sources = fromCustomer + fromSpouse + fromAsset + fromBusiness + fromOther;
-      }
+    // Tính tổng nguồn trả nợ
+    if (section === 'repayment_sources') {
+      const fromCustomer = parseFloat(newData.from_customer_salary) || 0;
+      const fromSpouse = parseFloat(newData.from_spouse_salary) || 0;
+      const fromAsset = parseFloat(newData.from_asset_rental) || 0;
+      const fromBusiness = parseFloat(newData.from_business) || 0;
+      const fromOther = parseFloat(newData.from_other) || 0;
+      newData.total_repayment_sources = fromCustomer + fromSpouse + fromAsset + fromBusiness + fromOther;
+    }
 
-      // Tính tổng nợ phải trả và thu nhập còn lại
-      if (section === 'liabilities') {
-        const expectedLoan = parseFloat(newData.expected_loan_liability) || 0;
-        const otherBank = parseFloat(newData.other_bank_liability) || 0;
-        const creditCard = parseFloat(newData.credit_card_liability) || 0;
-        const otherLiability = parseFloat(newData.other_liability) || 0;
-        newData.total_liability = expectedLoan + otherBank + creditCard + otherLiability;
-      }
-     // Tính residual_income
+    // Tính tổng nợ phải trả
+    if (section === 'liabilities') {
+      const expectedLoan = parseFloat(newData.expected_loan_liability) || 0;
+      const otherBank = parseFloat(newData.other_bank_liability) || 0;
+      const creditCard = parseFloat(newData.credit_card_liability) || 0;
+      const otherLiability = parseFloat(newData.other_liability) || 0;
+      newData.total_liability = expectedLoan + otherBank + creditCard + otherLiability;
+    }
 
-      newData.total_residual_income = newData.total_repayment_sources - newData.total_liability - newData.total_expenses;
-      
+    // Cập nhật section hiện tại
+    setFormState(prev => {
+      // Lấy dữ liệu mới nhất từ các section liên quan
+      const repayment = section === 'repayment_sources' ? newData : prev.assessment_details.repayment_sources || {};
+      const liabilities = section === 'liabilities' ? newData : prev.assessment_details.liabilities || {};
+      const expenses = section === 'monthly_expenses' ? newData : prev.assessment_details.monthly_expenses || {};
 
-      setFormState(prev => ({
+      const total_repayment_sources = parseFloat(repayment.total_repayment_sources) || 0;
+      const total_liability = parseFloat(liabilities.total_liability) || 0;
+      const total_expenses = parseFloat(expenses.total_expenses) || 0;
+
+      const total_residual_income = total_repayment_sources - total_liability - total_expenses;
+
+      return {
         ...prev,
         assessment_details: {
           ...prev.assessment_details,
-          [section]: newData
+          [section]: newData,
+          residual_income: {
+            total_residual_income
+          }
         }
-      }))
+      }
+    })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
