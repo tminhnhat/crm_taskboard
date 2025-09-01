@@ -392,19 +392,11 @@ export default function CreditAssessmentFormFull({
         const creditCard = parseFloat(newData.credit_card_liability) || 0;
         const otherLiability = parseFloat(newData.other_liability) || 0;
         newData.total_liability = expectedLoan + otherBank + creditCard + otherLiability;
-
-        // Tính residual_income nếu có repayment_sources
-        let repaymentSources = 0;
-        let totalExpenses = 0;
-        // Lấy từ state assessment_details nếu có
-        if (formState.assessment_details?.repayment_sources?.total_repayment_sources !== undefined) {
-          repaymentSources = parseFloat(formState.assessment_details.repayment_sources.total_repayment_sources) || 0;
-        }
-        if (formState.assessment_details?.monthly_expenses?.total_expenses !== undefined) {
-          totalExpenses = parseFloat(formState.assessment_details.monthly_expenses.total_expenses) || 0;
-        }
-        newData.total_residual_income = repaymentSources - newData.total_liability - totalExpenses;
       }
+     // Tính residual_income
+
+      newData.total_residual_income = newData.total_repayment_sources - newData.total_liability - newData.total_expenses;
+      
 
       setFormState(prev => ({
         ...prev,
