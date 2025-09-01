@@ -209,20 +209,22 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
     onChange(newMetadata)
   }
   return (
-    <div className="border rounded-lg p-4 mb-4">
-      <div className="flex items-center mb-2">
-        <Icon className="h-5 w-5 mr-2 text-blue-600" />
-        <h4 className="text-lg font-medium">{title}</h4>
+    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-blue-100">
+      <div className="flex items-center mb-4">
+        <div className="bg-blue-50 rounded-full p-2 mr-3">
+          <Icon className="h-6 w-6 text-blue-600" />
+        </div>
+        <h4 className="text-xl font-semibold text-blue-700 tracking-tight">{title}</h4>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {fields.map(field => (
-          <div key={field.key}>
+          <div key={field.key} className="mb-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
             {field.type === 'select' ? (
               <select
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm"
+                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Chọn {field.label}</option>
                 {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -232,7 +234,7 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
                 rows={3}
-                className="block w-full rounded-md border-gray-300 shadow-sm"
+                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
               />
             ) : field.type === 'boolean' ? (
               <input
@@ -247,8 +249,13 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, field.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
                 readOnly={field.readOnly}
-                className={`block w-full rounded-md border-gray-300 shadow-sm ${field.readOnly ? 'bg-gray-50 text-gray-500' : ''}`}
+                className={`block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 ${field.readOnly ? 'bg-blue-50 text-blue-700 font-bold border-blue-300' : ''}`}
+                style={field.readOnly ? { fontSize: '1.1rem' } : {}}
               />
+            )}
+            {/* Highlight for total fields */}
+            {field.readOnly && (
+              <span className="text-xs text-blue-500 font-semibold">Tự động tính</span>
             )}
           </div>
         ))}
@@ -440,7 +447,7 @@ export default function CreditAssessmentFormFull({
     <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" open={isOpen} onClose={onClose}>
       <div className="min-h-screen px-4 text-center">
         <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-        <div className="inline-block w-full max-w-5xl my-8 p-6 text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+  <div className="inline-block w-full max-w-5xl my-8 p-0 text-left align-middle transition-all transform">
           <div className="flex justify-between items-center mb-4">
             <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
               {assessment ? 'Chỉnh sửa thẩm định' : 'Thẩm định mới'}
@@ -449,8 +456,8 @@ export default function CreditAssessmentFormFull({
               <XMarkIcon className="h-6 w-6" />
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white rounded-xl shadow p-6 mb-6 border border-gray-100">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Trạng thái</label>
                 <select
@@ -548,13 +555,13 @@ export default function CreditAssessmentFormFull({
               </div>
             </div>
             {/* Loan Type Field */}
-            <div>
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700">Loại khoản vay</label>
               <select
                 name="loan_type"
                 value={formState.loan_type}
                 onChange={handleInputChange}
-                className="block w-full rounded-md border-gray-300 shadow-sm"
+                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 required
               >
                 <option value="">Chọn loại khoản vay</option>
@@ -564,7 +571,7 @@ export default function CreditAssessmentFormFull({
               </select>
             </div>
             {/* Spouse select and metadata section */}
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
               <select
                 value={formState.assessment_details.spouse_info?.customer_id || ''}
@@ -590,7 +597,7 @@ export default function CreditAssessmentFormFull({
                     handleSectionDataChange('spouse_info', {})
                   }
                 }}
-                className="block w-full rounded-md border-gray-300 shadow-sm"
+                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Chọn khách hàng làm vợ/chồng</option>
                 {customers.map(c => (
@@ -620,9 +627,10 @@ export default function CreditAssessmentFormFull({
                 />
               );
             })}
-            <div className="flex justify-end space-x-3">
-              <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Hủy</button>
-              <button type="submit" disabled={isLoading} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50">
+            <div className="flex justify-end space-x-4 mt-8">
+              <button type="button" onClick={onClose} className="px-5 py-2 text-base font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl shadow">Hủy</button>
+              <button type="submit" disabled={isLoading} className="px-5 py-2 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl shadow disabled:opacity-50 flex items-center gap-2">
+                {isLoading && <span className="animate-spin h-5 w-5 border-2 border-white border-t-blue-400 rounded-full inline-block"></span>}
                 {isLoading ? 'Đang xử lý...' : assessment ? 'Cập nhật' : 'Tạo mới'}
               </button>
             </div>
