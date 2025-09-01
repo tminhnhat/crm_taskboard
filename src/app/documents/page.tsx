@@ -10,7 +10,7 @@ import useCreditAssessments from '@/hooks/useCreditAssessments';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface DocumentGenerationForm {
-  documentType: string;
+  templateId: number | '';
   customerId: string;
   collateralId?: string;
   assessmentId?: string;
@@ -41,7 +41,7 @@ function DocumentsContent() {
     fetchTemplates
   } = useDocuments();
   const [formData, setFormData] = useState<DocumentGenerationForm>({
-    documentType: '',
+    templateId: '',
     customerId: '',
     collateralId: '',
     assessmentId: '',
@@ -94,16 +94,9 @@ function DocumentsContent() {
     setCollateralsList(collaterals || []);
   }, [collaterals]);
 
-  const documentTypes = [
-    { value: 'hop_dong_tin_dung', label: 'Hợp đồng tín dụng' },
-    { value: 'to_trinh_tham_dinh', label: 'Tờ trình thẩm định' },
-    { value: 'giay_de_nghi_vay_von', label: 'Giấy đề nghị vay vốn' },
-    { value: 'bien_ban_dinh_gia', label: 'Biên bản định giá' },
-    { value: 'hop_dong_the_chap', label: 'Hợp đồng thế chấp' },
-    { value: 'don_dang_ky_the_chap', label: 'Đơn đăng ký thế chấp' },
-    { value: 'hop_dong_thu_phi', label: 'Hợp đồng thu phí' },
-    { value: 'tai_lieu_khac', label: 'Tài liệu khác' }
-  ];
+  // Load available templates
+  // Refetch templates on mount
+  useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
 
   // Kiểm tra template khả dụng dựa trên template_type
   const getDocumentTypeWithTemplate = (type: any) => {
@@ -117,21 +110,8 @@ function DocumentsContent() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.documentType || !formData.customerId) {
-      alert('Vui lòng chọn loại tài liệu và khách hàng');
-      return;
-    }
-
-    // Enhanced template validation - all documents now require templates
-    const templatesForType = templates.filter(tpl => tpl.template_type === formData.documentType);
-    const hasTemplate = templatesForType.length > 0;
-    
-    if (!hasTemplate) {
-      const selectedType = documentTypes.find(dt => dt.value === formData.documentType);
-      const message = `Không thể tạo tài liệu cho "${selectedType?.label || formData.documentType}" vì chưa có template.\n\n` +
-                     `Vui lòng tải lên template trong trang Templates trước khi tạo tài liệu.`;
-      
-      alert(message);
+    if (!formData.templateId || !formData.customerId) {
+      alert('Vui lòng chọn template và khách hàng');
       return;
     }
 
@@ -143,7 +123,7 @@ function DocumentsContent() {
     setIsGenerating(true);
     try {
       const result = await generateDocument({
-        documentType: formData.documentType as any, // Cast to DocumentType
+        templateId: Number(formData.templateId),
         customerId: parseInt(formData.customerId),
         collateralId: formData.collateralId ? parseInt(formData.collateralId) : undefined,
         assessmentId: formData.assessmentId ? parseInt(formData.assessmentId) : undefined,
@@ -164,7 +144,7 @@ function DocumentsContent() {
       
       setShowGenerateForm(false);
       setFormData({
-        documentType: '',
+        templateId: '',
         customerId: '',
         collateralId: '',
         assessmentId: '',
@@ -185,14 +165,8 @@ function DocumentsContent() {
         // For blob URLs, open directly
         window.open(document.file_url, '_blank');
       } else {
-        // For other documents, use downloadDocument function
-        await downloadDocument({
-          documentType: document.document_type,
-          customerId: document.customer_id,
-          collateralId: document.collateral_id,
-          assessmentId: document.assessment_id,
-          exportType: document.file_name.split('.').pop() as 'docx' | 'xlsx' || 'docx'
-        });
+        // For legacy documents without blob URLs, show error message
+        alert('Tài liệu này chưa có liên kết tải xuống. Vui lòng tạo lại tài liệu.');
       }
     } catch (error) {
       alert(`Lỗi tải tài liệu: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -259,7 +233,18 @@ function DocumentsContent() {
   };
 
   const getDocumentTypeLabel = (type: string) => {
-    return documentTypes.find(dt => dt.value === type)?.label || type;
+    // Simple mapping for common document types
+    const typeLabels: Record<string, string> = {
+      'hop_dong_tin_dung': 'Hợp đồng tín dụng',
+      'to_trinh_tham_dinh': 'Tờ trình thẩm định',
+      'giay_de_nghi_vay_von': 'Giấy đề nghị vay vốn',
+      'bien_ban_dinh_gia': 'Biên bản định giá',
+      'hop_dong_the_chap': 'Hợp đồng thế chấp',
+      'don_dang_ky_the_chap': 'Đơn đăng ký thế chấp',
+      'hop_dong_thu_phi': 'Hợp đồng thu phí',
+      'tai_lieu_khac': 'Tài liệu khác'
+    };
+    return typeLabels[type] || type;
   };
 
   return (
@@ -299,40 +284,48 @@ function DocumentsContent() {
       <div className="mb-6 bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Tình trạng Templates</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {documentTypes.map(type => {
-            const templatesForType = templates.filter(tpl => tpl.template_type === type.value);
-            const hasTemplate = templatesForType.length > 0;
-            
-            return (
-              <div key={type.value} className={`p-3 rounded-lg border-2 ${hasTemplate ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-gray-600">{type.label}</span>
-                  {hasTemplate ? (
-                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </div>
-                <div className="text-sm">
-                  {hasTemplate ? (
-                    <span className="text-green-700">
-                      {templatesForType.length} template{templatesForType.length > 1 ? 's' : ''}
-                    </span>
-                  ) : (
-                    <span className="text-orange-700">Chưa có template</span>
-                  )}
-                </div>
+          {/* Group templates by type */}
+          {Object.entries(
+            templates.reduce((acc, template) => {
+              const type = template.template_type;
+              if (!acc[type]) {
+                acc[type] = [];
+              }
+              acc[type].push(template);
+              return acc;
+            }, {} as Record<string, any[]>)
+          ).map(([type, templatesForType]) => (
+            <div key={type} className="p-3 rounded-lg border-2 border-green-200 bg-green-50">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-gray-600">{getDocumentTypeLabel(type)}</span>
+                <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
               </div>
-            );
-          })}
+              <div className="text-sm">
+                <span className="text-green-700">
+                  {templatesForType.length} template{templatesForType.length > 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+          ))}
+          
+          {/* Show message if no templates */}
+          {templates.length === 0 && (
+            <div className="col-span-full text-center py-8 text-gray-500">
+              <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-sm">Chưa có template nào</p>
+              <a href="/templates" className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2 inline-block">
+                Tải lên template đầu tiên →
+              </a>
+            </div>
+          )}
         </div>
         <div className="mt-4 flex items-center justify-between text-sm">
           <div className="text-gray-600">
-            {templates.length} templates đã có sẵn cho {documentTypes.filter(type => templates.some(tpl => tpl.template_type === type.value)).length}/{documentTypes.length} loại tài liệu
+            {templates.length} template{templates.length !== 1 ? 's' : ''} có sẵn cho {Object.keys(templates.reduce((acc, t) => ({...acc, [t.template_type]: true}), {})).length} loại tài liệu
           </div>
           <a href="/templates" className="text-blue-600 hover:text-blue-800 font-medium">
             Quản lý templates →
@@ -376,89 +369,60 @@ function DocumentsContent() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Loại Tài liệu *
+                    Template *
                   </label>
                   <select
-                    value={formData.documentType}
-                    onChange={(e) => setFormData(prev => ({ ...prev, documentType: e.target.value }))}
+                    value={formData.templateId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, templateId: e.target.value as any }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
-                    <option value="">-- Chọn loại tài liệu --</option>
-                    {documentTypes.map(type => {
-                      const typeWithTemplate = getDocumentTypeWithTemplate(type);
-                      return (
-                        <option 
-                          key={type.value} 
-                          value={type.value}
-                          style={{
-                            color: typeWithTemplate.hasTemplate ? 'inherit' : '#666'
-                          }}
-                        >
-                          {typeWithTemplate.displayLabel}
-                        </option>
-                      );
-                    })}
+                    <option value="">-- Chọn template --</option>
+                    {templates.map(template => (
+                      <option key={template.template_id} value={template.template_id}>
+                        {template.template_name} ({template.template_type})
+                      </option>
+                    ))}
                   </select>
-                  {formData.documentType && (
+                  {templates.length === 0 && (
+                    <p className="mt-2 text-sm text-gray-500">
+                      Chưa có template nào. <a href="/templates" className="text-blue-600 hover:text-blue-800">Tải lên template</a>
+                    </p>
+                  )}
+                  {formData.templateId && (
                     <div className="mt-2 p-3 rounded-lg bg-gray-50">
-                      {templates.filter(tpl => tpl.template_type === formData.documentType).length > 0 ? (
-                        <div>
-                          <div className="flex items-center text-green-600 text-sm mb-2">
-                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            Templates có sẵn:
-                          </div>
-                          <div className="space-y-1">
-                            {templates
-                              .filter(tpl => tpl.template_type === formData.documentType)
-                              .map((template, index) => (
-                                <div key={template.template_id} className="flex items-center justify-between text-xs">
-                                  <span className="text-gray-700">
-                                    {index + 1}. {template.template_name}
-                                  </span>
-                                  <a
-                                    href={template.file_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800"
-                                  >
-                                    Xem
-                                  </a>
-                                </div>
-                              ))
-                            }
-                          </div>
-                          {templates.filter(tpl => tpl.template_type === formData.documentType).length > 1 && (
-                            <p className="text-xs text-gray-500 mt-2">
-                              {templates.filter(tpl => tpl.template_type === formData.documentType).length - 1} template khác có sẵn
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="flex items-center text-orange-600 text-sm mb-2">
-                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                            </svg>
-                            Chưa có template
-                          </div>
-                          <p className="text-xs text-orange-700 mb-2">
-                            Để tạo tài liệu, bạn cần upload template trước.
-                          </p>
-                          <a 
-                            href="/templates" 
-                            target="_blank"
-                            className="text-xs text-blue-600 hover:text-blue-800 underline"
-                          >
-                            → Tải lên template ngay
-                          </a>
-                          <p className="text-xs text-red-600 mt-2 font-medium">
-                            ⚠️ Không thể tạo tài liệu mà không có template
-                          </p>
-                        </div>
-                      )}
+                      {(() => {
+                        const selectedTemplate = templates.find(t => t.template_id === Number(formData.templateId));
+                        if (selectedTemplate) {
+                          return (
+                            <div>
+                              <div className="flex items-center text-green-600 text-sm mb-2">
+                                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                Template đã chọn:
+                              </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-700">
+                                  {selectedTemplate.template_name}
+                                </span>
+                                <a
+                                  href={selectedTemplate.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800"
+                                >
+                                  Xem template
+                                </a>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Loại: {selectedTemplate.template_type}
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   )}
                 </div>

@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import type { Document, DocumentType, DocumentExportType, DocumentTemplate } from '@/lib/supabase';
 
 export interface GenerateDocumentParams {
-  documentType: DocumentType;
+  templateId: number;
   customerId: number;
   collateralId?: number;
   assessmentId?: number;
@@ -245,7 +245,7 @@ export function useDocuments(): UseDocumentsReturn {
 
   // Generate and save a new document
   const generateDocument = async ({
-    documentType,
+    templateId,
     customerId,
     collateralId,
     assessmentId,
@@ -255,8 +255,8 @@ export function useDocuments(): UseDocumentsReturn {
       setError(null);
 
       // Validate required parameters
-      if (!documentType || !customerId || !exportType) {
-        throw new Error('Missing required parameters: documentType, customerId, exportType');
+      if (!templateId || !customerId || !exportType) {
+        throw new Error('Missing required parameters: templateId, customerId, exportType');
       }
 
       // Generate document and save to blob storage
@@ -264,7 +264,7 @@ export function useDocuments(): UseDocumentsReturn {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          documentType,
+          templateId,
           customerId,
           collateralId,
           creditAssessmentId: assessmentId,
@@ -287,11 +287,22 @@ export function useDocuments(): UseDocumentsReturn {
       // Use blob URL if available, otherwise fallback to local path
       const fileUrl = blobUrl || `/ketqua/${filename}`;
 
+      // Fetch template information to get the document type
+      const { data: templateData, error: templateError } = await supabase
+        .from('document_templates')
+        .select('template_type')
+        .eq('template_id', templateId)
+        .single();
+
+      if (templateError) {
+        throw new Error(`Failed to fetch template: ${templateError.message}`);
+      }
+
       // Record the document in the database
       const { data: newDoc, error: saveError } = await supabase
         .from('documents')
         .insert([{
-          document_type: documentType,
+          document_type: templateData.template_type as DocumentType,
           customer_id: customerId,
           collateral_id: collateralId,
           assessment_id: assessmentId,
@@ -394,7 +405,7 @@ export function useDocuments(): UseDocumentsReturn {
 
   // Download document directly to user's browser
   const downloadDocument = async ({
-    documentType,
+    templateId,
     customerId,
     collateralId,
     assessmentId,
@@ -404,8 +415,8 @@ export function useDocuments(): UseDocumentsReturn {
       setError(null);
 
       // Validate required parameters
-      if (!documentType || !customerId || !exportType) {
-        throw new Error('Missing required parameters: documentType, customerId, exportType');
+      if (!templateId || !customerId || !exportType) {
+        throw new Error('Missing required parameters: templateId, customerId, exportType');
       }
 
       // Generate document for direct download (original behavior)
@@ -413,7 +424,7 @@ export function useDocuments(): UseDocumentsReturn {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          documentType,
+          templateId,
           customerId,
           collateralId,
           creditAssessmentId: assessmentId,
@@ -430,7 +441,7 @@ export function useDocuments(): UseDocumentsReturn {
       const contentDisposition = response.headers.get('content-disposition');
       const filename = contentDisposition
         ? contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)?.[1]?.replace(/['"]/g, '')
-        : `${documentType}_${customerId}_${Date.now()}.${exportType}`;
+        : `template_${templateId}_${customerId}_${Date.now()}.${exportType}`;
 
       if (!filename) {
         throw new Error('Could not determine filename from response');

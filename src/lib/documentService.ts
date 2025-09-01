@@ -1,5 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
+import Docxtemplater from 'docxtemplater';
+import PizZip from 'pizzip';
+import * as XLSX from 'xlsx';
 import { fetchTemplateFromVercelBlob, uploadBufferToVercelBlob, deleteDocumentFromVercelBlob } from '@/lib/vercelBlob';
 import nodemailer from 'nodemailer';
 
@@ -17,7 +20,7 @@ export type DocumentType =
 export type ExportType = 'docx' | 'xlsx';
 
 export interface GenerateDocumentOptions {
-  documentType: DocumentType;
+  templateId: number; // ID of selected template from database
   customerId: string;
   collateralId?: string;
   creditAssessmentId?: string;
@@ -43,17 +46,98 @@ const CONTENT_TYPE_MAP: Record<ExportType, string> = {
   'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 };
 
-export interface GenerateDocumentResult {
-  buffer: Buffer;
-  filename: string;
-  contentType: string;
+/**
+ * Helper function to format values for Excel cells
+ */
+function formatValueForExcel(value: any): string | number {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  
+  // If it's a number string, try to convert to actual number for Excel
+  if (typeof value === 'string' && /^\d+(\.\d+)?$/.test(value)) {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      return numValue;
+    }
+  }
+  
+  // For dates, format appropriately
+  if (value instanceof Date) {
+    return format(value, 'dd/MM/yyyy');
+  }
+  
+  return String(value);
 }
 
 /**
- * Validates a DOCX template file for common corruption issues
+ * Helper function to replace placeholders in Excel worksheets
+ */
+function replaceExcelPlaceholders(worksheet: XLSX.WorkSheet, templateData: Record<string, any>): void {
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  
+  // Iterate through all cells in the worksheet
+  for (let rowNum = range.s.r; rowNum <= range.e.r; rowNum++) {
+    for (let colNum = range.s.c; colNum <= range.e.c; colNum++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowNum, c: colNum });
+      const cell = worksheet[cellAddress];
+      
+      if (cell && cell.v && typeof cell.v === 'string') {
+        let cellValue = cell.v;
+        let hasReplacement = false;
+        
+        // Replace placeholders with actual data
+        Object.entries(templateData).forEach(([key, value]) => {
+          const placeholder = `{{${key}}}`;
+          if (cellValue.includes(placeholder)) {
+            const formattedValue = formatValueForExcel(value);
+            cellValue = cellValue.replace(new RegExp(placeholder, 'g'), String(formattedValue));
+            hasReplacement = true;
+          }
+        });
+        
+        // Update cell if there were replacements
+        if (hasReplacement) {
+          // Try to determine if the final value should be a number
+          const finalValue = /^\d+(\.\d+)?$/.test(cellValue) ? parseFloat(cellValue) : cellValue;
+          
+          worksheet[cellAddress] = {
+            ...cell,
+            v: finalValue,
+            w: String(finalValue), // Display value
+            t: typeof finalValue === 'number' ? 'n' : 's' // Cell type: number or string
+          };
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Generate document with template content rendering
+ * 
+ * Supports both DOCX and XLSX templates with content generation:
+ * 
+ * DOCX Templates:
+ * - Use Docxtemplater for content rendering
+ * - Supports complex document structures
+ * - Placeholders: {{customer_name}}, {{loan_amount}}, etc.
+ * 
+ * XLSX Templates:
+ * - Use XLSX library for content rendering
+ * - Supports multiple worksheets
+ * - Placeholders: {{customer_name}}, {{loan_amount}}, etc.
+ * - Numbers are automatically converted to Excel number format
+ * - Available placeholders include:
+ *   - Customer: {{customer_name}}, {{full_name}}, {{id_number}}, {{phone}}, {{email}}, {{address}}
+ *   - Collateral: {{collateral_type}}, {{collateral_value}}, {{collateral_description}}
+ *   - Credit: {{loan_amount}}, {{interest_rate}}, {{loan_term}}
+ *   - Dates: {{current_date}}, {{current_year}}, {{current_month}}, {{current_day}}
+ *   - Numbers: {{loan_amount_number}}, {{interest_rate_number}}, {{collateral_value_number}}
+ *   - Formatted: {{loan_amount_formatted}}, {{collateral_value_formatted}}
  */
 export async function generateCreditDocument({
-  documentType,
+  templateId,
   customerId,
   collateralId,
   creditAssessmentId,
@@ -61,9 +145,23 @@ export async function generateCreditDocument({
 }: GenerateDocumentOptions): Promise<GenerateDocumentResult> {
   try {
     // Validate inputs
-    if (!documentType || !customerId || !exportType) {
-      throw new Error('Missing required parameters: documentType, customerId, exportType');
+    if (!templateId || !customerId || !exportType) {
+      throw new Error('Missing required parameters: templateId, customerId, exportType');
     }
+
+    // Fetch template information first
+    const templateResult = await supabase
+      .from('document_templates')
+      .select('*')
+      .eq('template_id', templateId)
+      .single();
+
+    if (templateResult.error) {
+      throw new Error(`Template not found: ${templateResult.error.message}`);
+    }
+
+    const template = templateResult.data;
+    console.log(`Using template: ${template.template_name} (${template.template_type})`);
 
     // Fetch data from database
     const [customerResult, collateralResult, creditAssessmentResult] = await Promise.all([
@@ -86,12 +184,12 @@ export async function generateCreditDocument({
         .from('credit_assessments')
         .select('*')
         .eq('assessment_id', creditAssessmentId)
-        .single() : Promise.resolve({ data: null, error: null }),
+        .single() : Promise.resolve({ data: null, error: null })
     ]);
 
-    // Check for errors
-    if (customerResult.error || !customerResult.data) {
-      throw new Error(`Customer not found: ${customerResult.error?.message || 'Unknown error'}`);
+    // Validate required data
+    if (customerResult.error) {
+      throw new Error(`Customer not found: ${customerResult.error.message}`);
     }
 
     if (collateralId && collateralResult.error) {
@@ -113,10 +211,10 @@ export async function generateCreditDocument({
     let contentType: string;
 
     if (exportType === 'docx') {
-      // Handle Word documents - fetch template from Vercel Blob (simplified approach)
+      // Handle Word documents with content rendering
       try {
-        console.log(`Fetching DOCX template for document type: ${documentType}`);
-        const templateBuffer = await fetchTemplateFromVercelBlob(`maubieu/${documentType}.docx`);
+        console.log(`Fetching DOCX template: ${template.template_name}`);
+        const templateBuffer = await fetchTemplateFromVercelBlob(template.file_url);
         
         console.log(`DOCX template fetched successfully, size: ${templateBuffer.length} bytes`);
         
@@ -126,57 +224,169 @@ export async function generateCreditDocument({
           throw new Error('Template file is not a valid DOCX format (invalid ZIP signature)');
         }
         
-        // For DOCX, we just return the template as-is for now (simplified approach)
-        // No content generation - just template management like XLSX
-        outBuffer = templateBuffer;
-        contentType = CONTENT_TYPE_MAP[exportType];
+        // Initialize Docxtemplater for content generation
+        const zip = new PizZip(templateBuffer);
+        const doc = new Docxtemplater(zip, {
+          paragraphLoop: true,
+          linebreaks: true,
+          nullGetter: function(part: any) {
+            // Return empty string for missing data instead of throwing error
+            console.log(`Missing template variable: ${part.value || part.module || part.tag || 'unknown'}`);
+            return '';
+          }
+        });
+
+        // Prepare template data for rendering
+        const templateData = {
+          // Customer data - flattened
+          customer_id: documentData.customer?.customer_id || '',
+          customer_name: documentData.customer?.full_name || documentData.customer?.customer_name || '',
+          full_name: documentData.customer?.full_name || '',
+          id_number: documentData.customer?.id_number || '',
+          phone: documentData.customer?.phone || '',
+          email: documentData.customer?.email || '',
+          address: documentData.customer?.address || '',
+          
+          // Collateral data - flattened  
+          collateral_id: documentData.collateral?.collateral_id || '',
+          collateral_type: documentData.collateral?.collateral_type || '',
+          collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
+          collateral_description: documentData.collateral?.description || '',
+          
+          // Credit assessment data - flattened
+          assessment_id: documentData.creditAssessment?.assessment_id || '',
+          loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
+          interest_rate: documentData.creditAssessment?.interest_rate || '',
+          loan_term: documentData.creditAssessment?.loan_term || '',
+          
+          // Date fields
+          current_date: format(new Date(), 'dd/MM/yyyy'),
+          current_year: format(new Date(), 'yyyy'),
+          
+          // Keep original nested structure as backup
+          customer: documentData.customer || {},
+          collateral: documentData.collateral || {},
+          creditAssessment: documentData.creditAssessment || {}
+        };
+
+        console.log('Template data prepared with keys:', Object.keys(templateData));
         
-        console.log('DOCX template processed successfully');
+        // Render template with data
+        doc.render(templateData);
+        console.log('Document rendered successfully');
+        
+        outBuffer = doc.getZip().generate({ 
+          type: 'nodebuffer',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 6 }
+        });
+        
+        contentType = CONTENT_TYPE_MAP[exportType];
+        console.log(`Generated DOCX document buffer size: ${outBuffer.length} bytes`);
+        
       } catch (templateError) {
         console.error('DOCX template processing error:', templateError);
         
         const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
         
         if (errorMessage.includes('Template không tìm thấy') || errorMessage.includes('not found')) {
-          throw new Error(`DOCX template file missing: Please upload a DOCX template for document type "${documentType}" in the Templates dashboard.`);
+          throw new Error(`DOCX template file missing: ${template.template_name}`);
         }
         
-        throw new Error(`DOCX template loading failed: ${errorMessage}`);
+        throw new Error(`DOCX template processing failed: ${errorMessage}`);
       }
     } else if (exportType === 'xlsx') {
-      // Handle Excel documents - fetch template from Vercel Blob
+      // Handle Excel documents with content rendering
       try {
-        console.log(`Fetching XLSX template for document type: ${documentType}`);
-        const templateBuffer = await fetchTemplateFromVercelBlob(`maubieu/${documentType}.xlsx`);
+        console.log(`Fetching XLSX template: ${template.template_name}`);
+        const templateBuffer = await fetchTemplateFromVercelBlob(template.file_url);
         
         console.log(`XLSX template fetched successfully, size: ${templateBuffer.length} bytes`);
         
-        // For XLSX, we just return the template as-is for now (management/rendering only)
-        // No content generation - just template management
-        outBuffer = templateBuffer;
-        contentType = CONTENT_TYPE_MAP[exportType];
+        // Read the Excel template
+        const workbook = XLSX.read(templateBuffer, { type: 'buffer' });
         
-        console.log('XLSX template processed successfully');
+        // Prepare template data for Excel (similar to DOCX)
+        const templateData = {
+          // Customer data - flattened
+          customer_id: documentData.customer?.customer_id || '',
+          customer_name: documentData.customer?.full_name || documentData.customer?.customer_name || '',
+          full_name: documentData.customer?.full_name || '',
+          id_number: documentData.customer?.id_number || '',
+          phone: documentData.customer?.phone || '',
+          email: documentData.customer?.email || '',
+          address: documentData.customer?.address || '',
+          
+          // Collateral data - flattened  
+          collateral_id: documentData.collateral?.collateral_id || '',
+          collateral_type: documentData.collateral?.collateral_type || '',
+          collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
+          collateral_description: documentData.collateral?.description || '',
+          
+          // Credit assessment data - flattened
+          assessment_id: documentData.creditAssessment?.assessment_id || '',
+          loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
+          interest_rate: documentData.creditAssessment?.interest_rate || '',
+          loan_term: documentData.creditAssessment?.loan_term || '',
+          
+          // Date fields
+          current_date: format(new Date(), 'dd/MM/yyyy'),
+          current_year: format(new Date(), 'yyyy'),
+          current_month: format(new Date(), 'MM'),
+          current_day: format(new Date(), 'dd'),
+          
+          // Additional Excel-friendly numeric fields
+          loan_amount_number: parseFloat(documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '0'),
+          interest_rate_number: parseFloat(documentData.creditAssessment?.interest_rate || '0'),
+          loan_term_number: parseInt(documentData.creditAssessment?.loan_term || '0'),
+          collateral_value_number: parseFloat(documentData.collateral?.appraised_value || documentData.collateral?.market_value || '0'),
+          
+          // Formatted currency values (for display)
+          loan_amount_formatted: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+            .format(parseFloat(documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '0')),
+          collateral_value_formatted: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+            .format(parseFloat(documentData.collateral?.appraised_value || documentData.collateral?.market_value || '0')),
+        };
+
+        console.log('Excel template data prepared with keys:', Object.keys(templateData));
+        
+        // Process each worksheet using the helper function
+        workbook.SheetNames.forEach(sheetName => {
+          console.log(`Processing Excel worksheet: ${sheetName}`);
+          const worksheet = workbook.Sheets[sheetName];
+          replaceExcelPlaceholders(worksheet, templateData);
+        });
+        
+        console.log('Excel template rendered successfully');
+        
+        // Generate the Excel buffer
+        outBuffer = XLSX.write(workbook, { 
+          type: 'buffer',
+          bookType: 'xlsx',
+          compression: true
+        });
+        
+        contentType = CONTENT_TYPE_MAP[exportType];
+        console.log(`Generated XLSX document buffer size: ${outBuffer.length} bytes`);
+        
       } catch (templateError) {
         console.error('XLSX template processing error:', templateError);
         
         const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
         
         if (errorMessage.includes('Template không tìm thấy') || errorMessage.includes('not found')) {
-          throw new Error(`XLSX template file missing: Please upload an XLSX template for document type "${documentType}" in the Templates dashboard.`);
+          throw new Error(`XLSX template file missing: ${template.template_name}`);
         }
         
-        throw new Error(`XLSX template loading failed: ${errorMessage}`);
+        throw new Error(`XLSX template processing failed: ${errorMessage}`);
       }
-    } else if (exportType === 'pdf') {
-      throw new Error('PDF export not yet implemented');
     } else {
       throw new Error(`Unsupported export type: ${exportType}`);
     }
 
     // Create filename with timestamp
     const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
-    const filename = `${documentType}_${customerId}_${timestamp}.${exportType}`;
+    const filename = `${template.template_type}_${customerId}_${timestamp}.${exportType}`;
 
     // Save document to Vercel Blob in ketqua folder
     let blobUrl: string | undefined = undefined;

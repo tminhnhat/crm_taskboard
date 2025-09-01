@@ -6,7 +6,7 @@ import { join } from 'path';
 // POST /api/documents - Generate and download document
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
-  let documentType = '';
+  let templateId = '';
   let customerId = '';
   let collateralId = '';
   let creditAssessmentId = '';
@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
     
-    ({ documentType, customerId, collateralId, creditAssessmentId, exportType } = body);
+    ({ templateId, customerId, collateralId, creditAssessmentId, exportType } = body);
     
-    console.log('Extracted params:', { documentType, customerId, collateralId, creditAssessmentId, exportType });
+    console.log('Extracted params:', { templateId, customerId, collateralId, creditAssessmentId, exportType });
     
     // Check if response should be JSON (for saving) or binary (for download)
     const returnJson = req.nextUrl.searchParams.get('return') === 'json';
@@ -40,34 +40,22 @@ export async function POST(req: NextRequest) {
     
     // Validate required fields with detailed logging
     const missingFields = [];
-    if (!documentType) missingFields.push('documentType');
+    if (!templateId) missingFields.push('templateId');
     if (!customerId) missingFields.push('customerId'); 
     if (!exportType) missingFields.push('exportType');
     
     if (missingFields.length > 0) {
       console.error('Missing required fields:', missingFields);
-      console.error('Received values:', { documentType, customerId, exportType });
+      console.error('Received values:', { templateId, customerId, exportType });
       return NextResponse.json({ 
         error: 'Missing required fields: ' + missingFields.join(', '),
-        received: { documentType, customerId, exportType },
-        required: ['documentType', 'customerId', 'exportType']
+        received: { templateId, customerId, exportType },
+        required: ['templateId', 'customerId', 'exportType']
       }, { status: 400 });
     }
     
-    // Validate document type and export type with enhanced error messages
-    const validDocumentTypes = ['hop_dong_tin_dung', 'to_trinh_tham_dinh', 'giay_de_nghi_vay_von', 'bien_ban_dinh_gia', 'hop_dong_the_chap', 'bang_tinh_lai', 'lich_tra_no'];
+    // Validate export type
     const validExportTypes = ['docx', 'xlsx'];
-    
-    if (!validDocumentTypes.includes(documentType)) {
-      console.error('Invalid document type:', documentType);
-      console.error('Valid document types:', validDocumentTypes);
-      return NextResponse.json({ 
-        error: `Invalid document type: ${documentType}`,
-        received: documentType,
-        validTypes: validDocumentTypes,
-        suggestion: 'Use one of the valid document types listed in validTypes array'
-      }, { status: 400 });
-    }
     
     if (!validExportTypes.includes(exportType)) {
       console.error('Invalid export type:', exportType);
@@ -84,7 +72,7 @@ export async function POST(req: NextRequest) {
     
     console.log('Calling generateCreditDocument...');
     const result = await generateCreditDocument({
-      documentType: documentType as any,
+      templateId: parseInt(templateId),
       customerId,
       collateralId,
       creditAssessmentId,
@@ -124,7 +112,7 @@ export async function POST(req: NextRequest) {
       
       // Log additional context for serverless debugging
       console.error('Request context:', {
-        documentType: documentType || 'undefined',
+        templateId: templateId || 'undefined',
         exportType: exportType || 'undefined', 
         customerId: customerId || 'undefined',
         collateralId: collateralId || 'undefined',
