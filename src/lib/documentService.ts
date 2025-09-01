@@ -151,7 +151,7 @@ export async function generateCreditDocument({
 
     // Fetch template information first
     const templateResult = await supabase
-      .from('document_templates')
+      .from('templates')
       .select('*')
       .eq('template_id', templateId)
       .single();

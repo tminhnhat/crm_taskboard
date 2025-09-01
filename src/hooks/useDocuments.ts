@@ -289,7 +289,7 @@ export function useDocuments(): UseDocumentsReturn {
 
       // Fetch template information to get the document type
       const { data: templateData, error: templateError } = await supabase
-        .from('document_templates')
+        .from('templates')
         .select('template_type')
         .eq('template_id', templateId)
         .single();

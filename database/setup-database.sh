@@ -20,8 +20,8 @@ case $SETUP_TYPE in
     "docs-only") 
         echo "📋 Setting up DOCUMENT SYSTEM ONLY..."
         echo "   - Complete document and template management"
-        echo "   - Includes: document_templates, documents with full features"
-        SQL_FILE="002_document_template_core.sql"
+        echo "   - Includes: templates, documents with full features"
+        SQL_FILE="002_document_template_core_fixed.sql"
         ;;
     "full")
         echo "📋 Setting up FULL CRM SYSTEM..."
