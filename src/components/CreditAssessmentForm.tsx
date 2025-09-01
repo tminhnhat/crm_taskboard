@@ -389,6 +389,7 @@ export default function CreditAssessmentFormFull({
 
         // Tính residual_income nếu có repayment_sources
         let repaymentSources = 0;
+        let totalExpenses = 0;
         // Lấy từ state assessment_details nếu có
         if (formState.assessment_details?.repayment_sources?.total_repayment_sources !== undefined) {
           repaymentSources = parseFloat(formState.assessment_details.repayment_sources.total_repayment_sources) || 0;
