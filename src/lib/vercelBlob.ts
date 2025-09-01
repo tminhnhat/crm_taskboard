@@ -2,18 +2,91 @@ import { put, list, del } from '@vercel/blob';
 
 /**
  * Tải template từ Vercel Blob Storage
- * @param path Đường dẫn blob (ví dụ: 'maubieu/hop_dong_tin_dung.docx')
+ * @param pathOrUrl Đường dẫn blob (ví dụ: 'maubieu/hop_dong_tin_dung.docx') hoặc full URL
  * @returns Buffer nội dung file
  */
-export async function fetchTemplateFromVercelBlob(path: string): Promise<Buffer> {
+export async function fetchTemplateFromVercelBlob(pathOrUrl: string): Promise<Buffer> {
   try {
-    console.log(`Fetching template from path: ${path}`);
+    console.log(`Fetching template from pathOrUrl: ${pathOrUrl}`);
     
     // Check if BLOB_READ_WRITE_TOKEN exists
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
       console.error('BLOB_READ_WRITE_TOKEN not configured');
       throw new Error('BLOB_READ_WRITE_TOKEN not configured');
     }
+    
+    // Check if it's already a full URL (starts with https://)
+    if (pathOrUrl.startsWith('https://')) {
+      console.log('Input is a full URL, fetching directly...');
+      
+      let response: Response;
+      let attempt = 0;
+      const maxRetries = 3;
+      
+      while (attempt < maxRetries) {
+        try {
+          console.log(`Fetching template directly, attempt ${attempt + 1}/${maxRetries}`);
+          response = await fetch(pathOrUrl, {
+            method: 'GET',
+            headers: {
+              'User-Agent': 'Vercel-Function/1.0'
+            }
+          });
+          
+          if (response.ok) {
+            break;
+          } else {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+        } catch (fetchError) {
+          attempt++;
+          console.warn(`Direct fetch attempt ${attempt} failed:`, fetchError);
+          
+          if (attempt >= maxRetries) {
+            throw new Error(`Không thể tải template sau ${maxRetries} lần thử: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
+          }
+          
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
+      }
+      
+      console.log(`Template fetched successfully via direct URL, status: ${response!.status}`);
+      
+      // Convert to buffer with proper error handling
+      try {
+        const arrayBuffer = await response!.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        console.log(`Template buffer created, size: ${buffer.length} bytes`);
+        
+        // Validate buffer is not empty and looks like a valid zip file (docx)
+        if (buffer.length === 0) {
+          throw new Error('Template file is empty');
+        }
+        
+        // Check for ZIP file signature (docx files are ZIP archives)
+        const zipSignature = buffer.subarray(0, 4);
+        const validZipSignatures = [
+          Buffer.from([0x50, 0x4B, 0x03, 0x04]), // Standard ZIP
+          Buffer.from([0x50, 0x4B, 0x05, 0x06]), // Empty ZIP
+          Buffer.from([0x50, 0x4B, 0x07, 0x08])  // Spanned ZIP
+        ];
+        
+        const isValidZip = validZipSignatures.some(sig => zipSignature.equals(sig));
+        if (!isValidZip) {
+          console.warn('Template file may not be a valid ZIP/DOCX file, signature:', zipSignature);
+        }
+        
+        return buffer;
+      } catch (bufferError) {
+        console.error('Error converting response to buffer:', bufferError);
+        throw new Error(`Error reading template file: ${bufferError instanceof Error ? bufferError.message : 'Unknown buffer error'}`);
+      }
+    }
+    
+    // Original logic for path-based access
+    const path = pathOrUrl;
     
     // Lấy danh sách blob để tìm URL chính xác
     console.log('Listing blobs to find template...');
@@ -98,13 +171,13 @@ export async function fetchTemplateFromVercelBlob(path: string): Promise<Buffer>
       
       return buffer;
     } catch (bufferError) {
-      console.error('Error processing template buffer:', bufferError);
-      throw new Error(`Không thể xử lý template file: ${bufferError instanceof Error ? bufferError.message : 'Unknown buffer error'}`);
+      console.error('Error converting response to buffer:', bufferError);
+      throw new Error(`Error reading template file: ${bufferError instanceof Error ? bufferError.message : 'Unknown buffer error'}`);
     }
     
   } catch (error) {
-    console.error('Error fetching template from blob:', error);
-    throw new Error(`Không thể tải template từ blob: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error(`Error fetching template from blob storage:`, error);
+    throw new Error(`Template file missing: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

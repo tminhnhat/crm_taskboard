@@ -129,15 +129,27 @@ export async function POST(req: NextRequest) {
     if (error instanceof Error) {
       const errorMsg = error.message.toLowerCase();
       
-      if (errorMsg.includes('template không tìm thấy') || errorMsg.includes('template file missing')) {
+      if (errorMsg.includes('template không tìm thấy') || errorMsg.includes('template file missing') || errorMsg.includes('template not found')) {
         userMessage = 'Template file not found. Please upload the required template in the Templates section.';
         statusCode = 404;
+      } else if (errorMsg.includes('template file is empty') || errorMsg.includes('invalid zip signature')) {
+        userMessage = 'Template file is corrupted or invalid. Please re-upload a valid DOCX template.';
+        statusCode = 400;
       } else if (errorMsg.includes('template format error') || errorMsg.includes('template initialization failed')) {
         userMessage = 'Template file is corrupted or invalid. Please re-upload a valid DOCX template.';
         statusCode = 400;
       } else if (errorMsg.includes('multi error') || errorMsg.includes('template processing failed')) {
         userMessage = 'Template processing failed. The template file may be corrupted or incompatible. Please re-upload the template.';
         statusCode = 400;
+      } else if (errorMsg.includes('customer not found')) {
+        userMessage = 'Customer information not found. Please ensure the customer exists in the system.';
+        statusCode = 404;
+      } else if (errorMsg.includes('blob_read_write_token not configured')) {
+        userMessage = 'File storage configuration error. Please contact system administrator.';
+        statusCode = 500;
+      } else if (errorMsg.includes('không thể tải template')) {
+        userMessage = 'Unable to access template file. Please check the template file and try again.';
+        statusCode = 500;
       } else if (errorMsg.includes('customer not found')) {
         userMessage = 'Customer data not found. Please ensure the customer exists in the database.';
         statusCode = 404;
