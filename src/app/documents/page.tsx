@@ -100,8 +100,9 @@ function DocumentsContent() {
     { value: 'giay_de_nghi_vay_von', label: 'Giấy đề nghị vay vốn' },
     { value: 'bien_ban_dinh_gia', label: 'Biên bản định giá' },
     { value: 'hop_dong_the_chap', label: 'Hợp đồng thế chấp' },
-    { value: 'bang_tinh_lai', label: 'Bảng tính lãi' },
-    { value: 'lich_tra_no', label: 'Lịch trả nợ' }
+    { value: 'don_dang_ky_the_chap', label: 'Đơn đăng ký thế chấp' },
+    { value: 'hop_dong_thu_phi', label: 'Hợp đồng thu phí' },
+    { value: 'tai_lieu_khac', label: 'Tài liệu khác' }
   ];
 
   // Kiểm tra template khả dụng dựa trên template_type
@@ -121,24 +122,17 @@ function DocumentsContent() {
       return;
     }
 
-    // Enhanced template validation
+    // Enhanced template validation - all documents now require templates
     const templatesForType = templates.filter(tpl => tpl.template_type === formData.documentType);
     const hasTemplate = templatesForType.length > 0;
     
-    if (formData.exportType === 'docx' && !hasTemplate) {
+    if (!hasTemplate) {
       const selectedType = documentTypes.find(dt => dt.value === formData.documentType);
-      const message = `Không thể tạo tài liệu Word cho "${selectedType?.label || formData.documentType}" vì chưa có template.\n\n` +
-                     `Bạn có thể:\n` +
-                     `1. Chọn định dạng Excel (.xlsx) thay thế\n` +
-                     `2. Tải lên template trong trang Templates\n\n` +
-                     `Bạn có muốn chuyển sang Excel không?`;
+      const message = `Không thể tạo tài liệu cho "${selectedType?.label || formData.documentType}" vì chưa có template.\n\n` +
+                     `Vui lòng tải lên template trong trang Templates trước khi tạo tài liệu.`;
       
-      if (confirm(message)) {
-        setFormData(prev => ({ ...prev, exportType: 'xlsx' }));
-        return;
-      } else {
-        return;
-      }
+      alert(message);
+      return;
     }
 
     if (formData.sendViaEmail && !formData.emailAddress) {
@@ -197,7 +191,7 @@ function DocumentsContent() {
           customerId: document.customer_id,
           collateralId: document.collateral_id,
           assessmentId: document.assessment_id,
-          exportType: document.file_name.split('.').pop() || 'docx'
+          exportType: document.file_name.split('.').pop() as 'docx' | 'xlsx' || 'docx'
         });
       }
     } catch (error) {
@@ -436,9 +430,9 @@ function DocumentsContent() {
                               ))
                             }
                           </div>
-                          {formData.exportType === 'xlsx' && (
+                          {templates.filter(tpl => tpl.template_type === formData.documentType).length > 1 && (
                             <p className="text-xs text-gray-500 mt-2">
-                              Lưu ý: Templates Word sẽ được chuyển đổi để tạo file Excel
+                              {templates.filter(tpl => tpl.template_type === formData.documentType).length - 1} template khác có sẵn
                             </p>
                           )}
                         </div>
@@ -451,7 +445,7 @@ function DocumentsContent() {
                             Chưa có template
                           </div>
                           <p className="text-xs text-orange-700 mb-2">
-                            Để tạo file Word (.docx), bạn cần upload template trước.
+                            Để tạo tài liệu, bạn cần upload template trước.
                           </p>
                           <a 
                             href="/templates" 
@@ -460,11 +454,9 @@ function DocumentsContent() {
                           >
                             → Tải lên template ngay
                           </a>
-                          {formData.exportType === 'docx' && (
-                            <p className="text-xs text-red-600 mt-2 font-medium">
-                              ⚠️ Không thể tạo file Word mà không có template
-                            </p>
-                          )}
+                          <p className="text-xs text-red-600 mt-2 font-medium">
+                            ⚠️ Không thể tạo tài liệu mà không có template
+                          </p>
                         </div>
                       )}
                     </div>
@@ -538,6 +530,9 @@ function DocumentsContent() {
                     <option value="docx">Word (.docx)</option>
                     <option value="xlsx">Excel (.xlsx)</option>
                   </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Hỗ trợ tạo file Word (.docx) và Excel (.xlsx) từ template
+                  </p>
                 </div>
 
                 {/* Email Options */}

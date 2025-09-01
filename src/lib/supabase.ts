@@ -33,10 +33,11 @@ export type DocumentType =
   | 'giay_de_nghi_vay_von'
   | 'bien_ban_dinh_gia'
   | 'hop_dong_the_chap'
-  | 'bang_tinh_lai'
-  | 'lich_tra_no'
+  | 'don_dang_ky_the_chap'
+  | 'hop_dong_thu_phi'
+  | 'tai_lieu_khac'
 
-export type DocumentExportType = 'docx' | 'pdf' | 'xlsx'
+export type DocumentExportType = 'docx' | 'xlsx'
 
 export interface DocumentTemplate {
   template_id: number;

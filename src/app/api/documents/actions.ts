@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendDocumentByEmail } from '@/lib/documentService';
+import { sendDocumentByEmailFromBlob } from '@/lib/documentService';
 
 /**
  * Send document by email
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       }
 
       const filePath = `${process.cwd()}/ketqua/${fileName}`;
-      await sendDocumentByEmail(filePath, email);
+      await sendDocumentByEmailFromBlob(fileName, email);
       
       return NextResponse.json({ 
         success: true, 
