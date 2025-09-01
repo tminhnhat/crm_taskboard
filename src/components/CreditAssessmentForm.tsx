@@ -156,8 +156,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
       { key: 'credit_card_liability_desc', label: 'Mô tả nợ phải trả thẻ TD', type: 'textarea' },
       { key: 'other_liability', label: 'Nợ phải trả khác', type: 'number' },
       { key: 'other_liability_desc', label: 'Mô tả nợ phải trả khác', type: 'textarea' },
-      { key: 'total_liability', label: 'Tổng nợ phải trả', type: 'number', readOnly: true },
-      { key: 'residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
+      { key: 'total_liability', label: 'Tổng nợ phải trả', type: 'number', readOnly: true }
     ]
   },
   monthly_expenses: {
@@ -168,6 +167,13 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
       { key: 'medical_expense', label: 'Chi phí y tế', type: 'number' },
       { key: 'other_expense', label: 'Chi phí khác', type: 'number' },
       { key: 'total_expenses', label: 'Tổng chi phí', type: 'number', readOnly: true }
+    ]
+  },
+  residual_income: {
+    title: '5. Thu nhập còn lại',
+    icon: ChartBarIcon,
+    fields: [
+      { key: 'residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
     ]
   }
 }
