@@ -360,13 +360,52 @@ export default function CreditAssessmentFormFull({
   }
 
   const handleSectionDataChange = (section: string, data: Record<string, any>) => {
-    setFormState(prev => ({
-      ...prev,
-      assessment_details: {
-        ...prev.assessment_details,
-        [section]: data
+      let newData = { ...data };
+      // Tính tổng chi phí sinh hoạt
+      if (section === 'monthly_expenses') {
+        const food = parseFloat(newData.food_expense) || 0;
+        const medical = parseFloat(newData.medical_expense) || 0;
+        const other = parseFloat(newData.other_expense) || 0;
+        newData.total_expenses = food + medical + other;
       }
-    }))
+
+      // Tính tổng nguồn trả nợ
+      if (section === 'repayment_sources') {
+        const fromCustomer = parseFloat(newData.from_customer_salary) || 0;
+        const fromSpouse = parseFloat(newData.from_spouse_salary) || 0;
+        const fromAsset = parseFloat(newData.from_asset_rental) || 0;
+        const fromBusiness = parseFloat(newData.from_business) || 0;
+        const fromOther = parseFloat(newData.from_other) || 0;
+        newData.total_repayment_sources = fromCustomer + fromSpouse + fromAsset + fromBusiness + fromOther;
+      }
+
+      // Tính tổng nợ phải trả và thu nhập còn lại
+      if (section === 'liabilities') {
+        const expectedLoan = parseFloat(newData.expected_loan_liability) || 0;
+        const otherBank = parseFloat(newData.other_bank_liability) || 0;
+        const creditCard = parseFloat(newData.credit_card_liability) || 0;
+        const otherLiability = parseFloat(newData.other_liability) || 0;
+        newData.total_liability = expectedLoan + otherBank + creditCard + otherLiability;
+
+        // Tính residual_income nếu có repayment_sources
+        let repaymentSources = 0;
+        // Lấy từ state assessment_details nếu có
+        if (formState.assessment_details?.repayment_sources?.total_repayment_sources !== undefined) {
+          repaymentSources = parseFloat(formState.assessment_details.repayment_sources.total_repayment_sources) || 0;
+        }
+        if (formState.assessment_details?.monthly_expenses?.total_expenses !== undefined) {
+          totalExpenses = parseFloat(formState.assessment_details.monthly_expenses.total_expenses) || 0;
+        }
+        newData.residual_income = repaymentSources - newData.total_liability - totalExpenses;
+      }
+
+      setFormState(prev => ({
+        ...prev,
+        assessment_details: {
+          ...prev.assessment_details,
+          [section]: newData
+        }
+      }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
