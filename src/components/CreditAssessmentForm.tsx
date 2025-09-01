@@ -140,7 +140,8 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
       { key: 'from_business', label: 'Từ hoạt động kinh doanh', type: 'number' },
       { key: 'from_business_desc', label: 'Mô tả nguồn hoạt động kinh doanh', type: 'textarea' },
       { key: 'from_other', label: 'Từ nguồn khác', type: 'number' },
-      { key: 'from_other_desc', label: 'Mô tả nguồn khác', type: 'textarea' }
+      { key: 'from_other_desc', label: 'Mô tả nguồn khác', type: 'textarea' },
+      { key: 'total_repayment_sources', label: 'Tổng nguồn trả nợ', type: 'number', readOnly: true }
     ]
   },
   liabilities: {
@@ -155,7 +156,18 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
       { key: 'credit_card_liability_desc', label: 'Mô tả nợ phải trả thẻ TD', type: 'textarea' },
       { key: 'other_liability', label: 'Nợ phải trả khác', type: 'number' },
       { key: 'other_liability_desc', label: 'Mô tả nợ phải trả khác', type: 'textarea' },
+      { key: 'total_liability', label: 'Tổng nợ phải trả', type: 'number', readOnly: true },
       { key: 'residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
+    ]
+  },
+  monthly_expenses: {
+    title: '4. Chi phí sinh hoạt hàng tháng',
+    icon: ChartBarIcon,
+    fields: [
+      { key: 'food_expense', label: 'Chi phí ăn uống', type: 'number' },
+      { key: 'medical_expense', label: 'Chi phí y tế', type: 'number' },
+      { key: 'other_expense', label: 'Chi phí khác', type: 'number' },
+      { key: 'total_expenses', label: 'Tổng chi phí', type: 'number', readOnly: true }
     ]
   }
 }
