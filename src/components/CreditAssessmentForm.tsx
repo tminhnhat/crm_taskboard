@@ -209,23 +209,22 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
     onChange(newMetadata)
   }
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-7 mb-8 border-2 border-transparent hover:border-blue-400 transition-all duration-300 group relative overflow-hidden" style={{boxShadow:'0 8px 32px 0 rgba(60,130,220,0.12)'}}>
-      <div className="absolute inset-0 pointer-events-none group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-blue-100 opacity-60 transition-all duration-300 z-0" />
-      <div className="flex items-center mb-6 relative z-10">
-        <div className="bg-gradient-to-br from-blue-100 to-blue-300 rounded-full p-2 mr-3 shadow">
-          <Icon className="h-6 w-6 text-blue-600" />
+    <div className="bg-white rounded-lg shadow border border-gray-200 p-6 mb-6">
+      <div className="flex items-center mb-4">
+        <div className="bg-blue-100 rounded-lg p-2 mr-3">
+          <Icon className="h-5 w-5 text-blue-600" />
         </div>
-        <h4 className="text-xl font-bold text-blue-700 tracking-tight drop-shadow">{title}</h4>
+        <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {fields.map(field => (
-          <div key={field.key} className="mb-2">
-            <label className="block text-base font-medium text-gray-700 mb-2">{field.label}</label>
+          <div key={field.key} className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
             {field.type === 'select' ? (
               <select
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
-                className="block w-full rounded-lg border-blue-200 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Chọn {field.label}</option>
                 {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -235,14 +234,14 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
                 rows={3}
-                className="block w-full rounded-lg border-blue-200 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             ) : field.type === 'boolean' ? (
               <input
                 type="checkbox"
                 checked={!!metadata[field.key]}
                 onChange={e => handleFieldChange(field.key, e.target.checked)}
-                className="h-5 w-5 text-blue-600 border-blue-200 rounded"
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
             ) : (
               <input
@@ -250,13 +249,12 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, field.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
                 readOnly={field.readOnly}
-                className={`block w-full rounded-lg border-blue-200 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base ${field.readOnly ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold border-blue-400' : ''}`}
-                style={field.readOnly ? { fontSize: '1.1rem' } : {}}
+                className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${field.readOnly ? 'bg-gray-50 text-gray-900 font-semibold' : ''}`}
               />
             )}
             {/* Highlight for total fields */}
             {field.readOnly && (
-              <span className="text-xs text-blue-500 font-semibold">Tự động tính</span>
+              <span className="text-xs text-blue-600 font-medium mt-1 block">Tự động tính</span>
             )}
           </div>
         ))}
@@ -446,200 +444,216 @@ export default function CreditAssessmentFormFull({
   // --- Render ---
   return (
     <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" open={isOpen} onClose={onClose}>
-  <div className="min-h-screen px-4 py-8 text-center bg-gradient-to-br from-blue-100 via-white to-blue-200 flex flex-col items-center justify-center">
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+      <div className="min-h-screen px-4 py-8 text-center bg-black bg-opacity-50 flex flex-col items-center justify-center">
+        <Dialog.Overlay className="fixed inset-0 bg-black opacity-50" />
         <div className="inline-block w-full max-w-4xl my-8 p-0 text-left align-middle transition-all transform">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-extrabold text-blue-700 mb-2 drop-shadow">Thẩm định tín dụng</h2>
-            <p className="text-lg text-gray-500">Vui lòng nhập đầy đủ thông tin để đánh giá khoản vay</p>
-          </div>
-          <div className="flex justify-between items-center mb-4">
-            <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
-              {assessment ? 'Chỉnh sửa thẩm định' : 'Thẩm định mới'}
-            </Dialog.Title>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white rounded-xl shadow p-6 mb-6 border border-gray-100">
+          <div className="bg-white rounded-lg shadow-xl">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Trạng thái</label>
-                <select
-                  name="status"
-                  value={formState.status}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="draft">Nháp</option>
-                  <option value="approve">Phê duyệt</option>
-                </select>
+                <h2 className="text-xl font-semibold text-gray-900">Thẩm định tín dụng</h2>
+                <p className="text-sm text-gray-600 mt-1">{assessment ? 'Chỉnh sửa thông tin thẩm định' : 'Tạo thẩm định mới'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Khách hàng</label>
-                <select
-                  name="customer_id"
-                  value={formState.customer_id}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="">Chọn khách hàng</option>
-                  {customers.map(customer => (
-                    <option key={customer.customer_id} value={customer.customer_id}>
-                      {customer.full_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-                {/* Spouse select - moved here after customer field */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
-                  <select
-                    value={formState.assessment_details.spouse_info?.customer_id || ''}
-                    onChange={e => {
-                      const selectedId = e.target.value
-                      const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId)
-                      if (selectedCustomer) {
-                        const mapped = {
-                          customer_id: selectedCustomer.customer_id,
-                          full_name: selectedCustomer.full_name,
-                          date_of_birth: selectedCustomer.date_of_birth,
-                          gender: selectedCustomer.gender,
-                          id_number: selectedCustomer.id_number,
-                          id_issue_date: selectedCustomer.id_issue_date,
-                          id_issue_authority: selectedCustomer.id_issue_authority,
-                          phone: selectedCustomer.phone,
-                          address: selectedCustomer.address,
-                          account_number: selectedCustomer.account_number,
-                          cif_number: selectedCustomer.cif_number
-                        }
-                        handleSectionDataChange('spouse_info', mapped)
-                      } else {
-                        handleSectionDataChange('spouse_info', {})
-                      }
-                    }}
-                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Chọn khách hàng làm vợ/chồng</option>
-                    {customers.map(c => (
-                      <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
-                    ))}
-                  </select>
-                </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Nhân viên</label>
-                <select
-                  name="staff_id"
-                  value={formState.staff_id}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="">Chọn nhân viên</option>
-                  {staff.map(s => (
-                    <option key={s.staff_id} value={s.staff_id}>{s.full_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Sản phẩm</label>
-                <select
-                  name="product_id"
-                  value={formState.product_id}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="">Chọn sản phẩm</option>
-                  {products.map(product => (
-                    <option key={product.product_id} value={product.product_id}>{product.product_name}</option>
-                  ))}
-                </select>
-              </div>
-                {/* Loan Type Field - moved here after product_id */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Loại khoản vay</label>
-                  <select
-                    name="loan_type"
-                    value={formState.loan_type}
-                    onChange={handleInputChange}
-                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  >
-                    <option value="">Chọn loại khoản vay</option>
-                    <option value="Kinh doanh">Kinh doanh</option>
-                    <option value="Tiêu dùng">Tiêu dùng</option>
-                    <option value="Thẻ tín dụng">Thẻ tín dụng</option>
-                  </select>
-                </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phòng ban</label>
-                <input
-                  type="text"
-                  name="department"
-                  value={formState.department}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Lãnh đạo phòng</label>
-                <select
-                  name="department_head"
-                  value={formState.department_head}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="">Chọn lãnh đạo phòng</option>
-                  {staff.map(s => (
-                    <option key={s.staff_id} value={s.full_name}>{s.full_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phí thẩm định</label>
-                <input
-                  type="number"
-                  name="fee_amount"
-                  value={formState.fee_amount}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                />
-              </div>
-            </div>
-            {/* Render all metadata sections dynamically */}
-            {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
-              let initialData = formState.assessment_details[sectionKey] || {};
-              // Format date fields for spouse_info
-              if (sectionKey === 'spouse_info') {
-                initialData = {
-                  ...initialData,
-                  date_of_birth: initialData.date_of_birth ? toVNDate(initialData.date_of_birth) : '',
-                  id_issue_date: initialData.id_issue_date ? toVNDate(initialData.id_issue_date) : ''
-                };
-              }
-              return (
-                <MetadataSection
-                  key={sectionKey}
-                  title={section.title}
-                  icon={section.icon}
-                  initialData={initialData}
-                  fields={section.fields}
-                  onChange={data => handleSectionDataChange(sectionKey, data)}
-                />
-              );
-            })}
-            <div className="flex justify-end space-x-4 mt-8">
-              <button type="button" onClick={onClose} className="px-5 py-2 text-base font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl shadow">Hủy</button>
-              <button type="submit" disabled={isLoading} className="px-5 py-2 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl shadow disabled:opacity-50 flex items-center gap-2">
-                {isLoading && <span className="animate-spin h-5 w-5 border-2 border-white border-t-blue-400 rounded-full inline-block"></span>}
-                {isLoading ? 'Đang xử lý...' : assessment ? 'Cập nhật' : 'Tạo mới'}
+              <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
-          </form>
+            <div className="max-h-[80vh] overflow-y-auto p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                    <select
+                      name="status"
+                      value={formState.status}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="draft">Nháp</option>
+                      <option value="approve">Phê duyệt</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Khách hàng</label>
+                    <select
+                      name="customer_id"
+                      value={formState.customer_id}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Chọn khách hàng</option>
+                      {customers.map(customer => (
+                        <option key={customer.customer_id} value={customer.customer_id}>
+                          {customer.full_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Spouse select - moved here after customer field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Chọn vợ/chồng từ khách hàng</label>
+                    <select
+                      value={formState.assessment_details.spouse_info?.customer_id || ''}
+                      onChange={e => {
+                        const selectedId = e.target.value
+                        const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId)
+                        if (selectedCustomer) {
+                          const mapped = {
+                            customer_id: selectedCustomer.customer_id,
+                            full_name: selectedCustomer.full_name,
+                            date_of_birth: selectedCustomer.date_of_birth,
+                            gender: selectedCustomer.gender,
+                            id_number: selectedCustomer.id_number,
+                            id_issue_date: selectedCustomer.id_issue_date,
+                            id_issue_authority: selectedCustomer.id_issue_authority,
+                            phone: selectedCustomer.phone,
+                            address: selectedCustomer.address,
+                            account_number: selectedCustomer.account_number,
+                            cif_number: selectedCustomer.cif_number
+                          }
+                          handleSectionDataChange('spouse_info', mapped)
+                        } else {
+                          handleSectionDataChange('spouse_info', {})
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Chọn khách hàng làm vợ/chồng</option>
+                      {customers.map(c => (
+                        <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nhân viên</label>
+                    <select
+                      name="staff_id"
+                      value={formState.staff_id}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Chọn nhân viên</option>
+                      {staff.map(s => (
+                        <option key={s.staff_id} value={s.staff_id}>{s.full_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Sản phẩm</label>
+                    <select
+                      name="product_id"
+                      value={formState.product_id}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Chọn sản phẩm</option>
+                      {products.map(product => (
+                        <option key={product.product_id} value={product.product_id}>{product.product_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Loan Type Field - moved here after product_id */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Loại khoản vay</label>
+                    <select
+                      name="loan_type"
+                      value={formState.loan_type}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Chọn loại khoản vay</option>
+                      <option value="Kinh doanh">Kinh doanh</option>
+                      <option value="Tiêu dùng">Tiêu dùng</option>
+                      <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phòng ban</label>
+                    <input
+                      type="text"
+                      name="department"
+                      value={formState.department}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Lãnh đạo phòng</label>
+                    <select
+                      name="department_head"
+                      value={formState.department_head}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Chọn lãnh đạo phòng</option>
+                      {staff.map(s => (
+                        <option key={s.staff_id} value={s.full_name}>{s.full_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phí thẩm định</label>
+                    <input
+                      type="number"
+                      name="fee_amount"
+                      value={formState.fee_amount}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                {/* Render all metadata sections dynamically */}
+                {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
+                  let initialData = formState.assessment_details[sectionKey] || {};
+                  // Format date fields for spouse_info
+                  if (sectionKey === 'spouse_info') {
+                    initialData = {
+                      ...initialData,
+                      date_of_birth: initialData.date_of_birth ? toVNDate(initialData.date_of_birth) : '',
+                      id_issue_date: initialData.id_issue_date ? toVNDate(initialData.id_issue_date) : ''
+                    };
+                  }
+                  return (
+                    <MetadataSection
+                      key={sectionKey}
+                      title={section.title}
+                      icon={section.icon}
+                      initialData={initialData}
+                      fields={section.fields}
+                      onChange={data => handleSectionDataChange(sectionKey, data)}
+                    />
+                  );
+                })}
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                  <button 
+                    type="button" 
+                    onClick={onClose} 
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:ring-2 focus:ring-gray-500"
+                  >
+                    Hủy
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={isLoading} 
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isLoading && (
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    {isLoading ? 'Đang xử lý...' : assessment ? 'Cập nhật' : 'Tạo mới'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </Dialog>

@@ -76,67 +76,98 @@ export default function AssessmentsPage() {
   })
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+    <div className="container mx-auto p-6 max-w-7xl">
       <Navigation />
-  <main className="max-w-7xl mx-auto py-10 px-4 sm:px-8 lg:px-16">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+      <div className="mb-8">
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-extrabold text-blue-700 mb-2 drop-shadow">Thẩm định tín dụng</h1>
-            <p className="text-lg text-gray-500">Quản lý các thẩm định tín dụng cho khách hàng</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Thẩm định tín dụng</h1>
+            <p className="text-gray-600">
+              Quản lý và theo dõi các thẩm định tín dụng cho khách hàng.
+            </p>
           </div>
-          <button
-            onClick={() => {
-              setSelectedAssessment(null)
-              setShowForm(true)
-            }}
-            className="px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl shadow-lg"
-          >
-            + Thẩm định mới
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setSelectedAssessment(null)
+                setShowForm(true)
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Thẩm định mới
+            </button>
+          </div>
         </div>
+      </div>
 
-        {/* Search Bar */}
-        <div className="mb-10 flex justify-center">
-          <div className="flex items-center w-full max-w-xl">
-            <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-blue-400" />
-              </div>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Tìm kiếm thẩm định..."
-                className="block w-full pl-10 pr-3 py-3 border border-blue-200 rounded-xl leading-5 bg-white placeholder-blue-400 focus:outline-none focus:placeholder-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base shadow"
-              />
+      {/* Search Bar */}
+      <div className="mb-6 flex justify-center">
+        <div className="flex items-center w-full max-w-xl">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
             </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Tìm kiếm thẩm định..."
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
         </div>
+      </div>
 
-        {/* Assessment List */}
-        <div className="bg-white p-8 rounded-2xl shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredAssessments.map(assessment => (
-              <CreditAssessmentCard
-                key={assessment.assessment_id}
-                assessment={assessment}
-                onView={() => {
-                  setSelectedAssessment(assessment)
-                  setShowForm(true)
-                }}
-                onEdit={() => {
-                  setSelectedAssessment(assessment)
-                  setShowForm(true)
-                }}
-                onDelete={() => {
-                  setSelectedAssessment(assessment)
-                  setShowDeleteDialog(true)
-                }}
-              />
-            ))}
-          </div>
+      {/* Assessment List */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-medium text-gray-900">Danh sách thẩm định</h2>
         </div>
-      </main>
+        <div className="p-6">
+          {filteredAssessments.length === 0 ? (
+            <div className="text-center py-12">
+              <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có thẩm định nào</h3>
+              <p className="text-gray-500 mb-4">Bắt đầu bằng cách tạo thẩm định đầu tiên</p>
+              <button
+                onClick={() => {
+                  setSelectedAssessment(null)
+                  setShowForm(true)
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium"
+              >
+                Thẩm định mới
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredAssessments.map(assessment => (
+                <CreditAssessmentCard
+                  key={assessment.assessment_id}
+                  assessment={assessment}
+                  onView={() => {
+                    setSelectedAssessment(assessment)
+                    setShowForm(true)
+                  }}
+                  onEdit={() => {
+                    setSelectedAssessment(assessment)
+                    setShowForm(true)
+                  }}
+                  onDelete={() => {
+                    setSelectedAssessment(assessment)
+                    setShowDeleteDialog(true)
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Assessment Form Dialog */}
       {showForm && (
@@ -162,33 +193,33 @@ export default function AssessmentsPage() {
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
       >
-        <div className="min-h-screen px-4 text-center">
-          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+        <div className="min-h-screen px-4 py-8 text-center bg-black bg-opacity-50 flex items-center justify-center">
+          <Dialog.Overlay className="fixed inset-0 bg-black opacity-50" />
           
-          <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+          <div className="inline-block w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
             <Dialog.Title
               as="h3"
-              className="text-lg font-medium leading-6 text-gray-900"
+              className="text-lg font-semibold text-gray-900"
             >
               Xác nhận xóa
             </Dialog.Title>
             <div className="mt-2">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-600">
                 Bạn có chắc chắn muốn xóa thẩm định này? Hành động này không thể hoàn tác.
               </p>
             </div>
 
-            <div className="mt-4 flex justify-end space-x-3">
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
                 onClick={() => setShowDeleteDialog(false)}
               >
                 Hủy
               </button>
               <button
                 type="button"
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
                 onClick={handleDeleteAssessment}
               >
                 Xóa
