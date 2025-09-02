@@ -160,18 +160,22 @@ export default function CollateralForm({
       className="fixed inset-0 z-10 overflow-y-auto"
     >
       <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
 
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
           &#8203;
         </span>
 
-        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6">
-          <div className="absolute top-0 right-0 pt-4 pr-4">
+        <div className="inline-block align-bottom bg-white rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full sm:p-8 border border-gray-100 relative">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-5 rounded-bl-full"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-500 to-teal-500 opacity-5 rounded-tr-full"></div>
+          
+          <div className="absolute top-0 right-0 pt-6 pr-6">
             <button
               type="button"
               onClick={onClose}
-              className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 rounded-xl p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <span className="sr-only">Đóng</span>
               <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -179,24 +183,46 @@ export default function CollateralForm({
           </div>
 
           <div className="sm:flex sm:items-start">
-            <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-              <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                {collateral ? 'Cập Nhật Tài Sản' : 'Thêm Tài Sản Mới'}
-              </Dialog.Title>
+            <div className="mt-3 text-center sm:mt-0 sm:text-left w-full relative z-10">
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 shadow-lg">
+                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0l2-2m-2 2l-2-2m-14 0l2-2m0 0l-2-2m2 2h14" />
+                  </svg>
+                </div>
+                <div>
+                  <Dialog.Title as="h3" className="text-2xl font-bold text-gray-900">
+                    💎 {collateral ? 'Cập Nhật Tài Sản' : 'Thêm Tài Sản Mới'}
+                  </Dialog.Title>
+                  <p className="text-gray-600 mt-1">
+                    {collateral ? 'Cập nhật thông tin tài sản đảm bảo' : 'Tạo mới tài sản đảm bảo cho khách hàng'}
+                  </p>
+                </div>
+              </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Basic Information Section */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                  <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg p-2 mr-3">
+                      <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    📋 Thông Tin Cơ Bản
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Customer Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Khách hàng
+          <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+            👤 Khách hàng
           </label>
           <select
             name="customer_id"
             value={formState.customer_id}
             onChange={handleInputChange}
             required
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-3 transition-all duration-200 hover:border-blue-300"
           >
             <option value="">Chọn khách hàng</option>
             {customers.map((customer: Customer) => (
@@ -209,31 +235,31 @@ export default function CollateralForm({
 
         {/* Collateral Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Loại tài sản
+          <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+            💎 Loại tài sản
           </label>
           <select
             name="collateral_type"
             value={formState.collateral_type}
             onChange={handleInputChange}
             required
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-3 transition-all duration-200 hover:border-blue-300"
           >
             <option value="">Chọn loại tài sản</option>
-            <option value="real_estate">Bất động sản</option>
-            <option value="vehicle">Phương tiện</option>
-            <option value="savings">Sổ tiết kiệm</option>
-            <option value="stocks">Cổ phiếu</option>
-            <option value="bonds">Trái phiếu</option>
-            <option value="machinery">Máy móc thiết bị</option>
-            <option value="other">Khác</option>
+            <option value="real_estate">🏠 Bất động sản</option>
+            <option value="vehicle">🚗 Phương tiện</option>
+            <option value="savings">💰 Sổ tiết kiệm</option>
+            <option value="stocks">📈 Cổ phiếu</option>
+            <option value="bonds">📊 Trái phiếu</option>
+            <option value="machinery">⚙️ Máy móc thiết bị</option>
+            <option value="other">📦 Khác</option>
           </select>
         </div>
 
         {/* Value */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Giá trị (VNĐ)
+          <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+            💰 Giá trị (VNĐ)
           </label>
           <input
             type="number"
@@ -243,12 +269,12 @@ export default function CollateralForm({
             required
             min="0"
             step="1000000"
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-3 transition-all duration-200 hover:border-blue-300"
           />
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
             {formState.value && (
               <>
-                Định dạng: {new Intl.NumberFormat('vi-VN', {
+                💵 Định dạng: {new Intl.NumberFormat('vi-VN', {
                   style: 'currency',
                   currency: 'VND'
                 }).format(parseFloat(formState.value))}
@@ -257,13 +283,42 @@ export default function CollateralForm({
           </p>
         </div>
 
-        {/* Valuation Date */}
+        {/* Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ngày định giá
+          <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+            📊 Trạng thái
           </label>
-          <div className="relative">
-            <div className="flex gap-2 items-center">
+          <select
+            name="status"
+            value={formState.status}
+            onChange={handleInputChange}
+            className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-3 transition-all duration-200 hover:border-blue-300"
+          >
+            <option value="active">✅ Đang hoạt động</option>
+            <option value="released">🔓 Đã giải chấp</option>
+          </select>
+        </div>
+      </div>
+                </div>
+
+                {/* Valuation & Details Section */}
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200">
+                  <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <div className="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg p-2 mr-3">
+                      <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 6v1a2 2 0 002 2h4a2 2 0 002-2v-1m-6 0V9a2 2 0 012-2h4a2 2 0 012 2v2M3 15a6 6 0 1012 0v-1M9 15h6" />
+                      </svg>
+                    </div>
+                    🗓️ Định Giá & Chi Tiết
+                  </h4>
+
+                  {/* Valuation Date */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+                      📅 Ngày định giá
+                    </label>
+                    <div className="relative">
+                      <div className="flex gap-2 items-center">
               <input
                 type="text"
                 name="valuation_date"
@@ -323,7 +378,7 @@ export default function CollateralForm({
                   }
                 }}
                 placeholder="dd/mm/yyyy"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 px-4 py-3 transition-all duration-200 hover:border-emerald-300"
                 maxLength={10}
               />
               <button
@@ -340,75 +395,66 @@ export default function CollateralForm({
                     valuation_date: isoDate
                   }));
                 }}
-                className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                Hôm nay
+                📅 Hôm nay
               </button>
             </div>
           </div>
           {formState.valuation_date && !formState.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/) && (
-            <p className="mt-1 text-sm text-red-500">
-              Vui lòng chọn ngày hợp lệ
+            <p className="mt-2 text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">
+              ⚠️ Vui lòng chọn ngày hợp lệ
             </p>
           )}
         </div>
 
-        {/* Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Trạng thái
+        {/* Location */}
+        <div className="mb-6">
+          <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+            📍 Địa điểm
           </label>
-          <select
-            name="status"
-            value={formState.status}
+          <input
+            type="text"
+            name="location"
+            value={formState.location}
             onChange={handleInputChange}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="active">Đang hoạt động</option>
-            <option value="released">Đã giải chấp</option>
-          </select>
+            placeholder="Địa chỉ/vị trí của tài sản"
+            className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 px-4 py-3 transition-all duration-200 hover:border-emerald-300"
+          />
         </div>
-      </div>
 
-      {/* Location */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Địa điểm
-        </label>
-        <input
-          type="text"
-          name="location"
-          value={formState.location}
-          onChange={handleInputChange}
-          placeholder="Địa chỉ/vị trí của tài sản"
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-      </div>
+        {/* Description */}
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+            📋 Mô tả
+          </label>
+          <textarea
+            name="description"
+            value={formState.description}
+            onChange={handleInputChange}
+            rows={3}
+            placeholder="Mô tả chi tiết về tài sản"
+            className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 px-4 py-3 transition-all duration-200 hover:border-emerald-300"
+          />
+        </div>
+                </div>
 
-      {/* Description */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Mô tả
-        </label>
-        <textarea
-          name="description"
-          value={formState.description}
-          onChange={handleInputChange}
-          rows={3}
-          placeholder="Mô tả chi tiết về tài sản"
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-      </div>
+      {/* Owner Info Section */}
+      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200">
+        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+          <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg p-2 mr-3">
+            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          👥 Thông Tin Chủ Sở Hữu
+        </h4>
 
-      {/* Owner Info */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-gray-700">Thông tin chủ sở hữu</h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Primary Owner Info */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Chủ sở hữu chính
+            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+              👤 Chủ sở hữu chính
             </label>
             <select
               name="owner_info_primary"
@@ -430,7 +476,7 @@ export default function CollateralForm({
                   })
                 }))
               }}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-purple-500 px-4 py-3 transition-all duration-200 hover:border-purple-300"
             >
               <option value="">Chọn chủ sở hữu chính</option>
               {customers.map((customer: Customer) => (
@@ -439,22 +485,22 @@ export default function CollateralForm({
                 </option>
               ))}
             </select>
-            {/* New fields for owner_info metadata */}
+            {/* Enhanced info display */}
             {(() => { const info = JSON.parse(formState.owner_info || '{}'); return (
-              <div className="mt-2 space-y-1">
-                <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={info.id_number || ''} readOnly placeholder="Số CMND/CCCD" />
-                <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={info.id_issue_date || ''} readOnly placeholder="Ngày cấp" />
-                <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={info.id_issue_authority || ''} readOnly placeholder="Nơi cấp" />
-                <input type="text" className="block w-full border rounded px-2 py-1 text-sm mb-1" value={info.address || ''} readOnly placeholder="Địa chỉ" />
-                <input type="text" className="block w-full border rounded px-2 py-1 text-sm" value={info.phone || ''} readOnly placeholder="Số điện thoại" />
+              <div className="mt-3 space-y-2">
+                {info.id_number && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">🆔 CMND/CCCD:</span> <span className="text-gray-800">{info.id_number}</span></div>}
+                {info.id_issue_date && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">📅 Ngày cấp:</span> <span className="text-gray-800">{info.id_issue_date}</span></div>}
+                {info.id_issue_authority && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">🏢 Nơi cấp:</span> <span className="text-gray-800">{info.id_issue_authority}</span></div>}
+                {info.address && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">🏠 Địa chỉ:</span> <span className="text-gray-800">{info.address}</span></div>}
+                {info.phone && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">📞 SĐT:</span> <span className="text-gray-800">{info.phone}</span></div>}
               </div>
             )})()}
           </div>
 
           {/* Spouse Info */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Vợ/Chồng đồng sở hữu
+            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+              💑 Vợ/Chồng đồng sở hữu
             </label>
             <select
               name="owner_info_spouse"
@@ -476,7 +522,7 @@ export default function CollateralForm({
                   })
                 }))
               }}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-purple-500 px-4 py-3 transition-all duration-200 hover:border-purple-300"
             >
               <option value="">Chọn vợ/chồng (nếu có)</option>
               {customers
@@ -487,16 +533,16 @@ export default function CollateralForm({
                   </option>
                 ))}
             </select>
-            {/* Spouse info fields */}
+            {/* Enhanced spouse info display */}
             {(() => {
               const info = JSON.parse(formState.owner_info || '{}');
-              return (
-                <div className="mt-2 grid grid-cols-1 gap-1">
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={info.spouse_id_number || ''} readOnly placeholder="Số CMND/CCCD (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={info.spouse_id_issue_date || ''} readOnly placeholder="Ngày cấp (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={info.spouse_id_issue_authority || ''} readOnly placeholder="Nơi cấp (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={info.spouse_address || ''} readOnly placeholder="Địa chỉ (Vợ/Chồng)" />
-                  <input type="text" className="border rounded px-2 py-1 text-sm" value={info.spouse_phone || ''} readOnly placeholder="Số điện thoại (Vợ/Chồng)" />
+              return info.spouse_id && (
+                <div className="mt-3 space-y-2">
+                  {info.spouse_id_number && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">🆔 CMND/CCCD:</span> <span className="text-gray-800">{info.spouse_id_number}</span></div>}
+                  {info.spouse_id_issue_date && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">📅 Ngày cấp:</span> <span className="text-gray-800">{info.spouse_id_issue_date}</span></div>}
+                  {info.spouse_id_issue_authority && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">🏢 Nơi cấp:</span> <span className="text-gray-800">{info.spouse_id_issue_authority}</span></div>}
+                  {info.spouse_address && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">🏠 Địa chỉ:</span> <span className="text-gray-800">{info.spouse_address}</span></div>}
+                  {info.spouse_phone && <div className="bg-white rounded-lg border px-3 py-2 text-sm"><span className="font-medium text-gray-600">📞 SĐT:</span> <span className="text-gray-800">{info.spouse_phone}</span></div>}
                 </div>
               );
             })()}
@@ -505,8 +551,8 @@ export default function CollateralForm({
 
         {/* Additional Owner Info */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Thông tin bổ sung
+          <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+            📝 Thông tin bổ sung
           </label>
           <textarea
             name="owner_info_notes"
@@ -523,16 +569,21 @@ export default function CollateralForm({
             }}
             rows={2}
             placeholder="Thông tin bổ sung về chủ sở hữu (nếu có)"
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-purple-500 px-4 py-3 transition-all duration-200 hover:border-purple-300"
           />
         </div>
       </div>
 
-      {/* Metadata Form */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Thông tin chi tiết
-        </h3>
+      {/* Metadata Form Section */}
+      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200">
+        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+          <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg p-2 mr-3">
+            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          📄 Thông Tin Chi Tiết
+        </h4>
         {formState.collateral_type && (
           <MetadataForm
             initialData={formState.metadata}
@@ -554,11 +605,17 @@ export default function CollateralForm({
         )}
       </div>
 
-      {/* Custom JSON Input */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Thông tin tùy chỉnh
-        </h3>
+      {/* Custom JSON Input Section */}
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
+        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+          <div className="bg-gradient-to-br from-gray-500 to-gray-600 rounded-lg p-2 mr-3">
+            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          ⚙️ Thông Tin Tùy Chỉnh
+        </h4>
         <div className="space-y-2">
           <JsonInputHelper
             value={JSON.stringify(formState.metadata.custom || {}, null, 2)}
@@ -575,28 +632,28 @@ export default function CollateralForm({
               }
             }}
           />
-          <p className="text-sm text-gray-500">
-            Thêm các trường thông tin tùy chỉnh theo nhu cầu
+          <p className="text-sm text-gray-500 bg-white rounded-lg px-3 py-2 border border-gray-200">
+            💡 Thêm các trường thông tin tùy chỉnh theo nhu cầu
           </p>
         </div>
       </div>
 
-                {/* Form Actions */}
-                <div className="flex justify-end space-x-4">
+                {/* Enhanced Form Actions */}
+                <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={onClose}
                     disabled={isLoading}
-                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Hủy
+                    ❌ Hủy
                   </button>
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? 'Đang lưu...' : collateral ? 'Cập nhật' : 'Tạo mới'}
+                    {isLoading ? '⏳ Đang lưu...' : collateral ? '✅ Cập nhật' : '✨ Tạo mới'}
                   </button>
                 </div>
               </form>
