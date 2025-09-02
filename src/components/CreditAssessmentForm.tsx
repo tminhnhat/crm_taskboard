@@ -562,6 +562,22 @@ export default function CreditAssessmentFormFull({
                   ))}
                 </select>
               </div>
+              {/* Loan Type Field - moved here */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700">Loại khoản vay</label>
+                <select
+                  name="loan_type"
+                  value={formState.loan_type}
+                  onChange={handleInputChange}
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Chọn loại khoản vay</option>
+                  <option value="Kinh doanh">Kinh doanh</option>
+                  <option value="Tiêu dùng">Tiêu dùng</option>
+                  <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Phòng ban</label>
                 <input
