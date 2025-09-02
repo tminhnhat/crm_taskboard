@@ -271,27 +271,27 @@ export default function CreditAssessmentFormFull({
   // --- State ---
   const [formState, setFormState] = useState(() => {
     const details = assessment?.assessment_details || {}
-    let loan_type = details.loan_info?.['loan_type.category'] || details.loan_info?.loan_type?.category || ''
-    return {
-      customer_id: assessment?.customer_id?.toString() || '',
-      staff_id: assessment?.staff_id?.toString() || '',
-      product_id: assessment?.product_id?.toString() || '',
-      department: assessment?.department || '',
-      department_head: assessment?.department_head || '',
-      fee_amount: assessment?.fee_amount?.toString() || '',
-      status: assessment?.status || 'draft',
-      loan_type,
-      assessment_details: {
-        ...details,
-        spouse_info: details.spouse_info || {},
-        loan_info: details.loan_info || {},
-        business_plan: details.business_plan || {},
-        financial_reports: details.financial_reports || {},
-        assessment_details: details.assessment_details || {},
-        repayment_sources: details.repayment_sources || {},
-        liabilities: details.liabilities || {}
+      let loan_type = details.loan_info?.['loan_type.category'] || details.loan_info?.loan_type?.category || ''
+      return {
+        customer_id: assessment?.customer_id?.toString() || '',
+        staff_id: assessment?.staff_id?.toString() || '',
+        product_id: assessment?.product_id?.toString() || '',
+        loan_type,
+        department: assessment?.department || '',
+        department_head: assessment?.department_head || '',
+        fee_amount: assessment?.fee_amount?.toString() || '',
+        status: assessment?.status || 'draft',
+        assessment_details: {
+          ...details,
+          spouse_info: details.spouse_info || {},
+          loan_info: details.loan_info || {},
+          business_plan: details.business_plan || {},
+          financial_reports: details.financial_reports || {},
+          assessment_details: details.assessment_details || {},
+          repayment_sources: details.repayment_sources || {},
+          liabilities: details.liabilities || {}
+        }
       }
-    }
   })
 
   // --- Template selection ---
@@ -308,11 +308,11 @@ export default function CreditAssessmentFormFull({
         customer_id: assessment.customer_id?.toString() || '',
         staff_id: assessment.staff_id?.toString() || '',
         product_id: assessment.product_id?.toString() || '',
+        loan_type,
         department: assessment.department || '',
         department_head: assessment.department_head || '',
         fee_amount: assessment.fee_amount?.toString() || '',
         status: assessment.status || 'draft',
-        loan_type,
         assessment_details: {
           ...details,
           spouse_info: details.spouse_info || {},
@@ -329,11 +329,11 @@ export default function CreditAssessmentFormFull({
         customer_id: '',
         staff_id: '',
         product_id: '',
+        loan_type: '',
         department: '',
         department_head: '',
         fee_amount: '',
         status: 'draft',
-        loan_type: '',
         assessment_details: {
           spouse_info: {},
           loan_info: {},
@@ -487,6 +487,50 @@ export default function CreditAssessmentFormFull({
                     </option>
                   ))}
                 </select>
+              </div>
+              {/* Spouse select and metadata section - moved here */}
+              <div className="md:col-span-2 mb-6">
+                <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
+                <select
+                  value={formState.assessment_details.spouse_info?.customer_id || ''}
+                  onChange={e => {
+                    const selectedId = e.target.value
+                    const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId)
+                    if (selectedCustomer) {
+                      const mapped = {
+                        customer_id: selectedCustomer.customer_id,
+                        full_name: selectedCustomer.full_name,
+                        date_of_birth: selectedCustomer.date_of_birth,
+                        gender: selectedCustomer.gender,
+                        id_number: selectedCustomer.id_number,
+                        id_issue_date: selectedCustomer.id_issue_date,
+                        id_issue_authority: selectedCustomer.id_issue_authority,
+                        phone: selectedCustomer.phone,
+                        address: selectedCustomer.address,
+                        account_number: selectedCustomer.account_number,
+                        cif_number: selectedCustomer.cif_number
+                      }
+                      handleSectionDataChange('spouse_info', mapped)
+                    } else {
+                      handleSectionDataChange('spouse_info', {})
+                    }
+                  }}
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Chọn khách hàng làm vợ/chồng</option>
+                  {customers.map(c => (
+                    <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
+                  ))}
+                </select>
+                {/* Spouse metadata section */}
+                <MetadataSection
+                  key="spouse_info"
+                  title={selectedTemplates.spouse_info.title}
+                  icon={selectedTemplates.spouse_info.icon}
+                  initialData={formState.assessment_details.spouse_info || {}}
+                  fields={selectedTemplates.spouse_info.fields}
+                  onChange={data => handleSectionDataChange('spouse_info', data)}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Nhân viên</label>
