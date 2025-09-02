@@ -562,22 +562,6 @@ export default function CreditAssessmentFormFull({
                   ))}
                 </select>
               </div>
-              {/* Loan Type Field - moved here */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700">Loại khoản vay</label>
-                <select
-                  name="loan_type"
-                  value={formState.loan_type}
-                  onChange={handleInputChange}
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  <option value="">Chọn loại khoản vay</option>
-                  <option value="Kinh doanh">Kinh doanh</option>
-                  <option value="Tiêu dùng">Tiêu dùng</option>
-                  <option value="Thẻ tín dụng">Thẻ tín dụng</option>
-                </select>
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Phòng ban</label>
                 <input
@@ -613,57 +597,6 @@ export default function CreditAssessmentFormFull({
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 />
               </div>
-            </div>
-            {/* Loan Type Field */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700">Loại khoản vay</label>
-              <select
-                name="loan_type"
-                value={formState.loan_type}
-                onChange={handleInputChange}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                <option value="">Chọn loại khoản vay</option>
-                <option value="Kinh doanh">Kinh doanh</option>
-                <option value="Tiêu dùng">Tiêu dùng</option>
-                <option value="Thẻ tín dụng">Thẻ tín dụng</option>
-              </select>
-            </div>
-            {/* Spouse select and metadata section */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
-              <select
-                value={formState.assessment_details.spouse_info?.customer_id || ''}
-                onChange={e => {
-                  const selectedId = e.target.value
-                  const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId)
-                  if (selectedCustomer) {
-                    const mapped = {
-                      customer_id: selectedCustomer.customer_id,
-                      full_name: selectedCustomer.full_name,
-                      date_of_birth: selectedCustomer.date_of_birth,
-                      gender: selectedCustomer.gender,
-                      id_number: selectedCustomer.id_number,
-                      id_issue_date: selectedCustomer.id_issue_date,
-                      id_issue_authority: selectedCustomer.id_issue_authority,
-                      phone: selectedCustomer.phone,
-                      address: selectedCustomer.address,
-                      account_number: selectedCustomer.account_number,
-                      cif_number: selectedCustomer.cif_number
-                    }
-                    handleSectionDataChange('spouse_info', mapped)
-                  } else {
-                    handleSectionDataChange('spouse_info', {})
-                  }
-                }}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Chọn khách hàng làm vợ/chồng</option>
-                {customers.map(c => (
-                  <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
-                ))}
-              </select>
             </div>
             {/* Render all metadata sections dynamically */}
             {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
