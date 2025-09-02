@@ -1,27 +1,44 @@
+import React from 'react';
 import { Task, TaskStatusEnum } from '@/lib/supabase'
 import { toVNDate } from '@/lib/date'
+import {
+  CardContent,
+  Typography,
+  Box,
+  Stack,
+  Select,
+  MenuItem,
+  FormControl,
+} from '@mui/material'
 import { 
-  CalendarIcon, 
-  ClockIcon, 
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  PlayIcon,
-  PauseIcon
-} from '@heroicons/react/24/outline'
+  Schedule,
+  PlayArrow,
+  Pause,
+  CheckCircle,
+  Cancel,
+  Delete,
+  Warning,
+  Event,
+  AccessTime,
+  Edit,
+  DeleteOutline
+} from '@mui/icons-material'
+import {
+  StyledCard,
+  PriorityChip,
+  StatusChip,
+  ActionButton,
+  InfoBox,
+  CardHeader,
+  CardActions,
+  StyledSelect
+} from './StyledComponents'
 
 interface TaskCardProps {
   task: Task
   onEdit: (task: Task) => void
   onDelete: (taskId: number) => void
   onStatusChange: (taskId: number, status: TaskStatusEnum) => void
-}
-
-const priorityColors = {
-  'Do first': 'bg-red-100 text-red-800',
-  'Schedule': 'bg-yellow-100 text-yellow-800',
-  'Delegate': 'bg-blue-100 text-blue-800',
-  'Eliminate': 'bg-gray-100 text-gray-800'
 }
 
 const priorityLabels = {
@@ -31,22 +48,13 @@ const priorityLabels = {
   'Eliminate': 'Loại bỏ'
 }
 
-const statusColors = {
-  needsAction: 'bg-gray-100 text-gray-800',
-  inProgress: 'bg-blue-100 text-blue-800',
-  onHold: 'bg-yellow-100 text-yellow-800',
-  completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
-  deleted: 'bg-red-200 text-red-900'
-}
-
 const statusIcons = {
-  needsAction: ClockIcon,
-  inProgress: PlayIcon,
-  onHold: PauseIcon,
-  completed: CheckCircleIcon,
-  cancelled: XCircleIcon,
-  deleted: XCircleIcon
+  needsAction: Schedule,
+  inProgress: PlayArrow,
+  onHold: Pause,
+  completed: CheckCircle,
+  cancelled: Cancel,
+  deleted: Delete
 }
 
 const statusLabels = {
@@ -95,97 +103,125 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{task.task_name}</h3>
-            {isOverdue && (
-              <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+    <StyledCard>
+      <CardContent>
+        <CardHeader>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Typography variant="h6" component="h3" sx={{ fontWeight: 600 }}>
+                {task.task_name}
+              </Typography>
+              {isOverdue && (
+                <Warning color="error" fontSize="small" />
+              )}
+            </Box>
+            
+            {task.task_note && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {task.task_note}
+              </Typography>
             )}
-          </div>
+            
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+              <StatusChip 
+                icon={<StatusIcon />} 
+                label={statusLabels[task.task_status]}
+                status={task.task_status}
+                size="small"
+              />
+              {task.task_priority && (
+                <PriorityChip 
+                  label={priorityLabels[task.task_priority]}
+                  priority={task.task_priority}
+                  size="small"
+                />
+              )}
+              {task.task_type && (
+                <PriorityChip 
+                  label={taskTypeLabels[task.task_type] || task.task_type}
+                  size="small"
+                />
+              )}
+            </Stack>
+            
+            <Stack spacing={1}>
+              {task.task_due_date && (
+                <InfoBox sx={{ color: isOverdue ? 'error.main' : 'text.secondary' }}>
+                  <Event fontSize="small" />
+                  <Typography variant="body2">
+                    Hạn: {formatDateDisplay(task.task_due_date)}
+                  </Typography>
+                </InfoBox>
+              )}
+              {task.task_date_start && (
+                <InfoBox>
+                  <Event fontSize="small" />
+                  <Typography variant="body2">
+                    Bắt đầu: {formatDateDisplay(task.task_date_start)}
+                    {task.task_start_time && ` lúc ${task.task_start_time}`}
+                  </Typography>
+                </InfoBox>
+              )}
+              {task.task_date_finish && (
+                <InfoBox sx={{ color: 'success.main' }}>
+                  <CheckCircle fontSize="small" />
+                  <Typography variant="body2">
+                    Hoàn thành: {formatDateDisplay(task.task_date_finish)}
+                    {task.task_time_finish && ` lúc ${task.task_time_finish}`}
+                  </Typography>
+                </InfoBox>
+              )}
+              {task.task_time_process && (
+                <InfoBox>
+                  <AccessTime fontSize="small" />
+                  <Typography variant="body2">
+                    Thời gian dự kiến: {task.task_time_process}
+                  </Typography>
+                </InfoBox>
+              )}
+            </Stack>
+          </Box>
           
-          {task.task_note && (
-            <p className="text-gray-600 text-sm mb-3">{task.task_note}</p>
-          )}
-          
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[task.task_status]}`}>
-              <StatusIcon className="h-3 w-3 mr-1" />
-              {statusLabels[task.task_status]}
-            </span>
-            {task.task_priority && (
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityColors[task.task_priority]}`}>
-                {priorityLabels[task.task_priority]}
-              </span>
-            )}
-            {task.task_type && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                {taskTypeLabels[task.task_type] || task.task_type}
-              </span>
-            )}
-          </div>
-          
-          <div className="space-y-1 text-sm text-gray-500">
-            {task.task_due_date && (
-              <div className={`flex items-center ${isOverdue ? 'text-red-600' : 'text-gray-500'}`}>
-                <CalendarIcon className="h-4 w-4 mr-1" />
-                Hạn: {formatDateDisplay(task.task_due_date)}
-              </div>
-            )}
-            {task.task_date_start && (
-              <div className="flex items-center">
-                <CalendarIcon className="h-4 w-4 mr-1" />
-                Bắt đầu: {formatDateDisplay(task.task_date_start)}
-                {task.task_start_time && ` lúc ${task.task_start_time}`}
-              </div>
-            )}
-            {task.task_date_finish && (
-              <div className="flex items-center text-green-600">
-                <CheckCircleIcon className="h-4 w-4 mr-1" />
-                Hoàn thành: {formatDateDisplay(task.task_date_finish)}
-                {task.task_time_finish && ` lúc ${task.task_time_finish}`}
-              </div>
-            )}
-            {task.task_time_process && (
-              <div className="flex items-center">
-                <ClockIcon className="h-4 w-4 mr-1" />
-                Thời gian dự kiến: {task.task_time_process}
-              </div>
-            )}
-          </div>
-        </div>
+          <Box sx={{ ml: 2, minWidth: 140 }}>
+            <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+              <StyledSelect
+                value={task.task_status}
+                onChange={(e) => onStatusChange(task.task_id, e.target.value as TaskStatusEnum)}
+              >
+                <MenuItem value="needsAction">Cần thực hiện</MenuItem>
+                <MenuItem value="inProgress">Đang thực hiện</MenuItem>
+                <MenuItem value="onHold">Tạm dừng</MenuItem>
+                <MenuItem value="completed">Hoàn thành</MenuItem>
+                <MenuItem value="cancelled">Hủy bỏ</MenuItem>
+                <MenuItem value="deleted">Đã xóa</MenuItem>
+              </StyledSelect>
+            </FormControl>
+          </Box>
+        </CardHeader>
         
-        <div className="flex flex-col gap-2 ml-4">
-          <select
-            value={task.task_status}
-            onChange={(e) => onStatusChange(task.task_id, e.target.value as TaskStatusEnum)}
-            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="needsAction">Cần thực hiện</option>
-            <option value="inProgress">Đang thực hiện</option>
-            <option value="onHold">Tạm dừng</option>
-            <option value="completed">Hoàn thành</option>
-            <option value="cancelled">Hủy bỏ</option>
-            <option value="deleted">Đã xóa</option>
-          </select>
-          
-          <div className="flex gap-1">
-            <button
+        <CardActions>
+          <Box>
+            <ActionButton
+              startIcon={<Edit />}
               onClick={() => onEdit(task)}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              color="primary"
+              variant="outlined"
+              size="small"
             >
               Sửa
-            </button>
-            <button
-              onClick={() => onDelete(task.task_id)}
-              className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
-            >
-              Xóa
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+            </ActionButton>
+          </Box>
+          <ActionButton
+            startIcon={<DeleteOutline />}
+            onClick={() => onDelete(task.task_id)}
+            color="error"
+            variant="outlined"
+            size="small"
+          >
+            Xóa
+          </ActionButton>
+        </CardActions>
+      </CardContent>
+    </StyledCard>
   )
 }
