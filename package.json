@@ -9,8 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.2.0",
+    "@mui/icons-material": "^7.3.2",
+    "@mui/material": "^7.3.2",
     "@supabase/supabase-js": "^2.51.0",
     "@vercel/blob": "^1.1.1",
     "@vercel/kv": "^3.0.0",

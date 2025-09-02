@@ -3,6 +3,25 @@ import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Task, TaskStatusEnum, TaskPriority } from '@/lib/supabase'
 import { toVNDate, toISODate, isValidDate } from '@/lib/date'
+import {
+  Dialog as MuiDialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Box,
+  Typography,
+  IconButton,
+  Chip
+} from '@mui/material'
+import {
+  Close as CloseIcon
+} from '@mui/icons-material'
 
 interface TaskFormProps {
   isOpen: boolean
@@ -147,390 +166,217 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
   }
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+    <MuiDialog 
+      open={isOpen} 
+      onClose={onClose} 
+      maxWidth="md" 
+      fullWidth
+      PaperProps={{
+        sx: { maxHeight: '90vh' }
+      }}
+    >
+      <DialogTitle>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6">
+            {task ? 'Sửa công việc' : 'Tạo công việc mới'}
+          </Typography>
+          <IconButton
+            onClick={onClose}
+            size="small"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
       
-      <div className="fixed inset-0 flex items-start justify-center p-4 sm:items-center">
-        <Dialog.Panel className="mx-auto max-w-2xl w-full bg-white rounded-xl shadow-lg max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
-            <Dialog.Title className="text-lg font-medium text-gray-900">
-              {task ? 'Sửa công việc' : 'Tạo công việc mới'}
-            </Dialog.Title>
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
+      <form onSubmit={handleSubmit}>
+        <DialogContent dividers sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <TextField
+              label="Tên công việc"
+              value={formData.task_name}
+              onChange={(e) => setFormData(prev => ({ ...prev, task_name: e.target.value }))}
+              required
+              fullWidth
+              variant="outlined"
+            />
 
-          <form onSubmit={handleSubmit} className="p-6 overflow-y-auto">
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="task_name" className="block text-sm font-medium text-gray-700">
-                  Tên công việc
-                </label>
-                <input
-                  type="text"
-                  id="task_name"
-                  value={formData.task_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, task_name: e.target.value }))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="task_type" className="block text-sm font-medium text-gray-700">
-                  Loại công việc
-                </label>
-                <select
-                  id="task_type"
-                  value={formData.task_type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, task_type: e.target.value }))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                >
-                  <option value="">Chọn loại công việc</option>
-                  <option value="disbursement">Giải ngân</option>
-                  <option value="guarantee issuance">Phát hành bảo lãnh</option>
-                  <option value="credit assessment">Thẩm định tín dụng</option>
-                  <option value="asset appraisal">Thẩm định tài sản</option>
-                  <option value="document preparation">Soạn hồ sơ</option>
-                  <option value="customer development">Phát triển khách hàng</option>
-                  <option value="customer care">Chăm sóc khách hàng</option>
-                  <option value="meeting">Cuộc họp</option>
-                  <option value="project">Dự án</option>
-                  <option value="reminder">Nhắc nhở</option>
-                  <option value="call">Gọi điện</option>
-                  <option value="email">Email</option>
-                  <option value="training">Đào tạo</option>
-                  <option value="research">Nghiên cứu</option>
-                  <option value="maintenance">Bảo trì</option>
-                  <option value="other">Khác</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="task_priority" className="block text-sm font-medium text-gray-700">
-                  Độ ưu tiên
-                </label>
-                <select
-                  id="task_priority"
-                  value={formData.task_priority}
-                  onChange={(e) => setFormData(prev => ({ ...prev, task_priority: e.target.value as TaskPriority }))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                >
-                  <option value="">Chọn độ ưu tiên</option>
-                  <option value="Do first">Làm ngay</option>
-                  <option value="Schedule">Lên lịch</option>
-                  <option value="Delegate">Phân công</option>
-                  <option value="Eliminate">Loại bỏ</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="task_time_process" className="block text-sm font-medium text-gray-700">
-                    Thời gian xử lý
-                  </label>
-                  <input
-                    type="text"
-                    id="task_time_process"
-                    value={formData.task_time_process_display}
-                    onChange={(e) => handleTimeProcessChange(e.target.value)}
-                    placeholder="Ví dụ: 2 giờ 30 phút"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  />
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => handleTimeProcessChange("30 phút")}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      30 phút
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleTimeProcessChange("1 giờ")}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      1 giờ
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleTimeProcessChange("2 giờ")}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      2 giờ
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleTimeProcessChange("4 giờ")}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      4 giờ
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="task_start_time" className="block text-sm font-medium text-gray-700">
-                    Giờ bắt đầu
-                  </label>
-                  <input
-                    type="text"
-                    id="task_start_time"
-                    value={formData.task_start_time}
-                    onChange={(e) => setFormData(prev => ({ ...prev, task_start_time: e.target.value }))}
-                    placeholder="HH:mm"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  />
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, task_start_time: '08:00' }))}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      8:00
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, task_start_time: '09:00' }))}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      9:00
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, task_start_time: '13:30' }))}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      13:30
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, task_start_time: '14:00' }))}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      14:00
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="task_date_start" className="block text-sm font-medium text-gray-700">
-                    Ngày bắt đầu
-                  </label>
-                  <input
-                    type="text"
-                    id="task_date_start"
-                    value={formData.task_date_start}
-                    onChange={(e) => handleDateChange('task_date_start', e.target.value)}
-                    placeholder="dd/mm/yyyy"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  />
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const today = new Date()
-                        setFormData(prev => ({
-                          ...prev,
-                          task_date_start: toVNDate(today.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      Hôm nay
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const tomorrow = new Date()
-                        tomorrow.setDate(tomorrow.getDate() + 1)
-                        setFormData(prev => ({
-                          ...prev,
-                          task_date_start: toVNDate(tomorrow.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      Ngày mai
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const date = new Date()
-                        date.setDate(date.getDate() + 3)
-                        setFormData(prev => ({
-                          ...prev,
-                          task_date_start: toVNDate(date.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      3 ngày
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const date = new Date()
-                        date.setDate(date.getDate() + 4)
-                        setFormData(prev => ({
-                          ...prev,
-                          task_date_start: toVNDate(date.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      4 ngày
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const date = new Date()
-                        date.setDate(date.getDate() + 5)
-                        setFormData(prev => ({
-                          ...prev,
-                          task_date_start: toVNDate(date.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      5 ngày
-                    </button>
-                  </div>
-                  {formData.task_date_start && !isValidDate(formData.task_date_start) && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="task_due_date" className="block text-sm font-medium text-gray-700">
-                    Ngày hết hạn
-                  </label>
-                  <input
-                    type="text"
-                    id="task_due_date"
-                    value={formData.task_due_date}
-                    onChange={(e) => handleDateChange('task_due_date', e.target.value)}
-                    placeholder="dd/mm/yyyy"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  />
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const today = new Date()
-                        setFormData(prev => ({
-                          ...prev,
-                          task_due_date: toVNDate(today.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      Hôm nay
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const tomorrow = new Date()
-                        tomorrow.setDate(tomorrow.getDate() + 1)
-                        setFormData(prev => ({
-                          ...prev,
-                          task_due_date: toVNDate(tomorrow.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      Ngày mai
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const date = new Date()
-                        date.setDate(date.getDate() + 3)
-                        setFormData(prev => ({
-                          ...prev,
-                          task_due_date: toVNDate(date.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      3 ngày
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const date = new Date()
-                        date.setDate(date.getDate() + 4)
-                        setFormData(prev => ({
-                          ...prev,
-                          task_due_date: toVNDate(date.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      4 ngày
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const date = new Date()
-                        date.setDate(date.getDate() + 5)
-                        setFormData(prev => ({
-                          ...prev,
-                          task_due_date: toVNDate(date.toISOString().split('T')[0])
-                        }))
-                      }}
-                      className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                      5 ngày
-                    </button>
-                  </div>
-                  {formData.task_due_date && !isValidDate(formData.task_due_date) && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="task_note" className="block text-sm font-medium text-gray-700">
-                  Ghi chú
-                </label>
-                <textarea
-                  id="task_note"
-                  rows={3}
-                  value={formData.task_note}
-                  onChange={(e) => setFormData(prev => ({ ...prev, task_note: e.target.value }))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Loại công việc</InputLabel>
+              <Select
+                value={formData.task_type}
+                onChange={(e) => setFormData(prev => ({ ...prev, task_type: e.target.value }))}
+                label="Loại công việc"
               >
-                Hủy bỏ
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                <MenuItem value="">Chọn loại công việc</MenuItem>
+                <MenuItem value="disbursement">Giải ngân</MenuItem>
+                <MenuItem value="guarantee issuance">Phát hành bảo lãnh</MenuItem>
+                <MenuItem value="credit assessment">Thẩm định tín dụng</MenuItem>
+                <MenuItem value="asset appraisal">Thẩm định tài sản</MenuItem>
+                <MenuItem value="document preparation">Soạn hồ sơ</MenuItem>
+                <MenuItem value="customer development">Phát triển khách hàng</MenuItem>
+                <MenuItem value="customer care">Chăm sóc khách hàng</MenuItem>
+                <MenuItem value="meeting">Cuộc họp</MenuItem>
+                <MenuItem value="project">Dự án</MenuItem>
+                <MenuItem value="reminder">Nhắc nhở</MenuItem>
+                <MenuItem value="call">Gọi điện</MenuItem>
+                <MenuItem value="email">Email</MenuItem>
+                <MenuItem value="training">Đào tạo</MenuItem>
+                <MenuItem value="research">Nghiên cứu</MenuItem>
+                <MenuItem value="maintenance">Bảo trì</MenuItem>
+                <MenuItem value="other">Khác</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Độ ưu tiên</InputLabel>
+              <Select
+                value={formData.task_priority}
+                onChange={(e) => setFormData(prev => ({ ...prev, task_priority: e.target.value as TaskPriority }))}
+                label="Độ ưu tiên"
               >
-                {task ? 'Cập nhật công việc' : 'Tạo công việc'}
-              </button>
-            </div>
-          </form>
-        </Dialog.Panel>
-      </div>
-    </Dialog>
+                <MenuItem value="">Chọn độ ưu tiên</MenuItem>
+                <MenuItem value="Do first">Làm ngay</MenuItem>
+                <MenuItem value="Schedule">Lên lịch</MenuItem>
+                <MenuItem value="Delegate">Phân công</MenuItem>
+                <MenuItem value="Eliminate">Loại bỏ</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              <Box>
+                <TextField
+                  label="Thời gian xử lý"
+                  value={formData.task_time_process_display}
+                  onChange={(e) => handleTimeProcessChange(e.target.value)}
+                  placeholder="Ví dụ: 2 giờ 30 phút"
+                  fullWidth
+                  variant="outlined"
+                />
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  {['30 phút', '1 giờ', '2 giờ', '4 giờ'].map((time) => (
+                    <Chip
+                      key={time}
+                      label={time}
+                      onClick={() => handleTimeProcessChange(time)}
+                      clickable
+                      size="small"
+                      variant="outlined"
+                    />
+                  ))}
+                </Box>
+              </Box>
+
+              <Box>
+                <TextField
+                  label="Giờ bắt đầu"
+                  value={formData.task_start_time}
+                  onChange={(e) => setFormData(prev => ({ ...prev, task_start_time: e.target.value }))}
+                  placeholder="HH:mm"
+                  fullWidth
+                  variant="outlined"
+                />
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  {['08:00', '09:00', '13:30', '14:00'].map((time) => (
+                    <Chip
+                      key={time}
+                      label={time}
+                      onClick={() => setFormData(prev => ({ ...prev, task_start_time: time }))}
+                      clickable
+                      size="small"
+                      variant="outlined"
+                    />
+                  ))}
+                </Box>
+              </Box>
+
+              <Box>
+                <TextField
+                  label="Ngày bắt đầu"
+                  value={formData.task_date_start}
+                  onChange={(e) => handleDateChange('task_date_start', e.target.value)}
+                  placeholder="dd/mm/yyyy"
+                  fullWidth
+                  variant="outlined"
+                  error={!!(formData.task_date_start && !isValidDate(formData.task_date_start))}
+                  helperText={formData.task_date_start && !isValidDate(formData.task_date_start) ? 
+                    'Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy' : ''}
+                />
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  {['Hôm nay', 'Ngày mai', '3 ngày', '4 ngày', '5 ngày'].map((label, index) => (
+                    <Chip
+                      key={label}
+                      label={label}
+                      onClick={() => {
+                        const date = new Date()
+                        date.setDate(date.getDate() + index)
+                        setFormData(prev => ({
+                          ...prev,
+                          task_date_start: toVNDate(date.toISOString().split('T')[0])
+                        }))
+                      }}
+                      clickable
+                      size="small"
+                      variant="outlined"
+                    />
+                  ))}
+                </Box>
+              </Box>
+              <Box>
+                <TextField
+                  label="Ngày hết hạn"
+                  value={formData.task_due_date}
+                  onChange={(e) => handleDateChange('task_due_date', e.target.value)}
+                  placeholder="dd/mm/yyyy"
+                  fullWidth
+                  variant="outlined"
+                  error={!!(formData.task_due_date && !isValidDate(formData.task_due_date))}
+                  helperText={formData.task_due_date && !isValidDate(formData.task_due_date) ? 
+                    'Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy' : ''}
+                />
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  {['Hôm nay', 'Ngày mai', '3 ngày', '4 ngày', '5 ngày'].map((label, index) => (
+                    <Chip
+                      key={label}
+                      label={label}
+                      onClick={() => {
+                        const date = new Date()
+                        date.setDate(date.getDate() + index)
+                        setFormData(prev => ({
+                          ...prev,
+                          task_due_date: toVNDate(date.toISOString().split('T')[0])
+                        }))
+                      }}
+                      clickable
+                      size="small"
+                      variant="outlined"
+                    />
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+
+            <TextField
+              label="Ghi chú"
+              value={formData.task_note}
+              onChange={(e) => setFormData(prev => ({ ...prev, task_note: e.target.value }))}
+              multiline
+              rows={3}
+              fullWidth
+              variant="outlined"
+            />
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={onClose} variant="outlined" color="inherit">
+            Hủy bỏ
+          </Button>
+          <Button type="submit" variant="contained" color="primary">
+            {task ? 'Cập nhật công việc' : 'Tạo công việc'}
+          </Button>
+        </DialogActions>
+      </form>
+    </MuiDialog>
   )
 }

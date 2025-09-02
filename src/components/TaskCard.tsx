@@ -9,6 +9,23 @@ import {
   PlayIcon,
   PauseIcon
 } from '@heroicons/react/24/outline'
+import {
+  Card,
+  CardContent,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  Chip,
+  Typography,
+  Box,
+  IconButton
+} from '@mui/material'
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Warning as WarningIcon
+} from '@mui/icons-material'
 
 interface TaskCardProps {
   task: Task
@@ -18,10 +35,10 @@ interface TaskCardProps {
 }
 
 const priorityColors = {
-  'Do first': 'bg-red-100 text-red-800',
-  'Schedule': 'bg-yellow-100 text-yellow-800',
-  'Delegate': 'bg-blue-100 text-blue-800',
-  'Eliminate': 'bg-gray-100 text-gray-800'
+  'Do first': 'error' as const,
+  'Schedule': 'warning' as const,
+  'Delegate': 'info' as const,
+  'Eliminate': 'default' as const
 }
 
 const priorityLabels = {
@@ -32,12 +49,12 @@ const priorityLabels = {
 }
 
 const statusColors = {
-  needsAction: 'bg-gray-100 text-gray-800',
-  inProgress: 'bg-blue-100 text-blue-800',
-  onHold: 'bg-yellow-100 text-yellow-800',
-  completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
-  deleted: 'bg-red-200 text-red-900'
+  needsAction: 'default' as const,
+  inProgress: 'primary' as const,
+  onHold: 'warning' as const,
+  completed: 'success' as const,
+  cancelled: 'error' as const,
+  deleted: 'error' as const
 }
 
 const statusIcons = {
@@ -95,97 +112,126 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{task.task_name}</h3>
-            {isOverdue && (
-              <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+    <Card sx={{ '&:hover': { boxShadow: 3 }, transition: 'box-shadow 0.2s' }}>
+      <CardContent>
+        <Box display="flex" alignItems="flex-start" justifyContent="space-between">
+          <Box flex={1}>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <Typography variant="h6" component="h3" color="text.primary">
+                {task.task_name}
+              </Typography>
+              {isOverdue && (
+                <WarningIcon color="error" fontSize="small" />
+              )}
+            </Box>
+            
+            {task.task_note && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {task.task_note}
+              </Typography>
             )}
-          </div>
+            
+            <Box display="flex" alignItems="center" gap={1} mb={2} flexWrap="wrap">
+              <Chip 
+                icon={<StatusIcon style={{ fontSize: '1rem' }} />}
+                label={statusLabels[task.task_status]}
+                color={statusColors[task.task_status]}
+                size="small"
+              />
+              {task.task_priority && (
+                <Chip
+                  label={priorityLabels[task.task_priority]}
+                  color={priorityColors[task.task_priority]}
+                  size="small"
+                />
+              )}
+              {task.task_type && (
+                <Chip
+                  label={taskTypeLabels[task.task_type] || task.task_type}
+                  color="secondary"
+                  size="small"
+                />
+              )}
+            </Box>
+            
+            <Box sx={{ '& > *': { mb: 0.5 } }}>
+              {task.task_due_date && (
+                <Box display="flex" alignItems="center" color={isOverdue ? 'error.main' : 'text.secondary'}>
+                  <CalendarIcon style={{ fontSize: '1rem', marginRight: 4 }} />
+                  <Typography variant="body2" color="inherit">
+                    Hạn: {formatDateDisplay(task.task_due_date)}
+                  </Typography>
+                </Box>
+              )}
+              {task.task_date_start && (
+                <Box display="flex" alignItems="center" color="text.secondary">
+                  <CalendarIcon style={{ fontSize: '1rem', marginRight: 4 }} />
+                  <Typography variant="body2" color="inherit">
+                    Bắt đầu: {formatDateDisplay(task.task_date_start)}
+                    {task.task_start_time && ` lúc ${task.task_start_time}`}
+                  </Typography>
+                </Box>
+              )}
+              {task.task_date_finish && (
+                <Box display="flex" alignItems="center" color="success.main">
+                  <CheckCircleIcon style={{ fontSize: '1rem', marginRight: 4 }} />
+                  <Typography variant="body2" color="inherit">
+                    Hoàn thành: {formatDateDisplay(task.task_date_finish)}
+                    {task.task_time_finish && ` lúc ${task.task_time_finish}`}
+                  </Typography>
+                </Box>
+              )}
+              {task.task_time_process && (
+                <Box display="flex" alignItems="center" color="text.secondary">
+                  <ClockIcon style={{ fontSize: '1rem', marginRight: 4 }} />
+                  <Typography variant="body2" color="inherit">
+                    Thời gian dự kiến: {task.task_time_process}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
           
-          {task.task_note && (
-            <p className="text-gray-600 text-sm mb-3">{task.task_note}</p>
-          )}
-          
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[task.task_status]}`}>
-              <StatusIcon className="h-3 w-3 mr-1" />
-              {statusLabels[task.task_status]}
-            </span>
-            {task.task_priority && (
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityColors[task.task_priority]}`}>
-                {priorityLabels[task.task_priority]}
-              </span>
-            )}
-            {task.task_type && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                {taskTypeLabels[task.task_type] || task.task_type}
-              </span>
-            )}
-          </div>
-          
-          <div className="space-y-1 text-sm text-gray-500">
-            {task.task_due_date && (
-              <div className={`flex items-center ${isOverdue ? 'text-red-600' : 'text-gray-500'}`}>
-                <CalendarIcon className="h-4 w-4 mr-1" />
-                Hạn: {formatDateDisplay(task.task_due_date)}
-              </div>
-            )}
-            {task.task_date_start && (
-              <div className="flex items-center">
-                <CalendarIcon className="h-4 w-4 mr-1" />
-                Bắt đầu: {formatDateDisplay(task.task_date_start)}
-                {task.task_start_time && ` lúc ${task.task_start_time}`}
-              </div>
-            )}
-            {task.task_date_finish && (
-              <div className="flex items-center text-green-600">
-                <CheckCircleIcon className="h-4 w-4 mr-1" />
-                Hoàn thành: {formatDateDisplay(task.task_date_finish)}
-                {task.task_time_finish && ` lúc ${task.task_time_finish}`}
-              </div>
-            )}
-            {task.task_time_process && (
-              <div className="flex items-center">
-                <ClockIcon className="h-4 w-4 mr-1" />
-                Thời gian dự kiến: {task.task_time_process}
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex flex-col gap-2 ml-4">
-          <select
-            value={task.task_status}
-            onChange={(e) => onStatusChange(task.task_id, e.target.value as TaskStatusEnum)}
-            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="needsAction">Cần thực hiện</option>
-            <option value="inProgress">Đang thực hiện</option>
-            <option value="onHold">Tạm dừng</option>
-            <option value="completed">Hoàn thành</option>
-            <option value="cancelled">Hủy bỏ</option>
-            <option value="deleted">Đã xóa</option>
-          </select>
-          
-          <div className="flex gap-1">
-            <button
-              onClick={() => onEdit(task)}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              Sửa
-            </button>
-            <button
-              onClick={() => onDelete(task.task_id)}
-              className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
-            >
-              Xóa
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+          <Box display="flex" flexDirection="column" gap={1} ml={2}>
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <Select
+                value={task.task_status}
+                onChange={(e) => onStatusChange(task.task_id, e.target.value as TaskStatusEnum)}
+                variant="outlined"
+                size="small"
+              >
+                <MenuItem value="needsAction">Cần thực hiện</MenuItem>
+                <MenuItem value="inProgress">Đang thực hiện</MenuItem>
+                <MenuItem value="onHold">Tạm dừng</MenuItem>
+                <MenuItem value="completed">Hoàn thành</MenuItem>
+                <MenuItem value="cancelled">Hủy bỏ</MenuItem>
+                <MenuItem value="deleted">Đã xóa</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <Box display="flex" gap={0.5}>
+              <Button
+                onClick={() => onEdit(task)}
+                startIcon={<EditIcon />}
+                size="small"
+                variant="text"
+                color="primary"
+              >
+                Sửa
+              </Button>
+              <Button
+                onClick={() => onDelete(task.task_id)}
+                startIcon={<DeleteIcon />}
+                size="small"
+                variant="text"
+                color="error"
+              >
+                Xóa
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
   )
 }
