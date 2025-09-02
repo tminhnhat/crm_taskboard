@@ -1,13 +1,35 @@
+import React from 'react';
 import { Product } from '@/lib/supabase'
+import {
+  CardContent,
+  Typography,
+  Box,
+  Stack,
+  Select,
+  MenuItem,
+  FormControl,
+  Chip,
+  Divider
+} from '@mui/material'
 import { 
-  CubeIcon,
-  TagIcon,
-  DocumentTextIcon,
-  BanknotesIcon,
-  PercentBadgeIcon,
-  ClockIcon,
-  CurrencyDollarIcon
-} from '@heroicons/react/24/outline'
+  Inventory,
+  Tag,
+  Description,
+  MonetizationOn,
+  Percent,
+  Schedule,
+  CurrencyExchange,
+  Edit,
+  DeleteOutline
+} from '@mui/icons-material'
+import {
+  StyledCard,
+  ActionButton,
+  InfoBox,
+  CardHeader,
+  CardActions,
+  StyledSelect
+} from './StyledComponents'
 
 interface ProductCardProps {
   product: Product
@@ -16,33 +38,31 @@ interface ProductCardProps {
   onStatusChange: (productId: number, status: string) => void
 }
 
-const statusColors = {
-  active: 'bg-green-100 text-green-800',
-  inactive: 'bg-gray-100 text-gray-800'
-}
-
-const productTypeColors = {
-  'Savings Account': 'bg-blue-100 text-blue-800',
-  'Current Account': 'bg-purple-100 text-purple-800',
-  'Term Deposit': 'bg-green-100 text-green-800',
-  'Personal Loan': 'bg-orange-100 text-orange-800',
-  'Home Loan': 'bg-red-100 text-red-800',
-  'Auto Loan': 'bg-yellow-100 text-yellow-800',
-  'Business Loan': 'bg-indigo-100 text-indigo-800',
-  'Credit Card': 'bg-pink-100 text-pink-800',
-  'Debit Card': 'bg-gray-100 text-gray-800',
-  'Life Insurance': 'bg-teal-100 text-teal-800',
-  'Health Insurance': 'bg-emerald-100 text-emerald-800',
-  'Property Insurance': 'bg-cyan-100 text-cyan-800',
-  'Auto Insurance': 'bg-lime-100 text-lime-800',
-  'Investment': 'bg-violet-100 text-violet-800',
-  'Foreign Exchange': 'bg-amber-100 text-amber-800',
-  'Money Transfer': 'bg-rose-100 text-rose-800',
-  'Cash Management': 'bg-slate-100 text-slate-800',
-  'Trade Finance': 'bg-stone-100 text-stone-800',
-  'Payment Services': 'bg-neutral-100 text-neutral-800',
-  'Safe Deposit Box': 'bg-zinc-100 text-zinc-800',
-  'Financial Advisory': 'bg-sky-100 text-sky-800'
+const getProductTypeColor = (productType: string) => {
+  const colorMap: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' } = {
+    'Savings Account': 'primary',
+    'Current Account': 'secondary',
+    'Term Deposit': 'success',
+    'Personal Loan': 'warning',
+    'Home Loan': 'error',
+    'Auto Loan': 'warning',
+    'Business Loan': 'primary',
+    'Credit Card': 'secondary',
+    'Debit Card': 'info',
+    'Life Insurance': 'success',
+    'Health Insurance': 'success',
+    'Property Insurance': 'info',
+    'Auto Insurance': 'info',
+    'Investment': 'secondary',
+    'Foreign Exchange': 'warning',
+    'Money Transfer': 'primary',
+    'Cash Management': 'info',
+    'Trade Finance': 'secondary',
+    'Payment Services': 'primary',
+    'Safe Deposit Box': 'info',
+    'Financial Advisory': 'secondary'
+  }
+  return colorMap[productType] || 'default'
 }
 
 export default function ProductCard({ product, onEdit, onDelete, onStatusChange }: ProductCardProps) {
@@ -60,126 +80,190 @@ export default function ProductCard({ product, onEdit, onDelete, onStatusChange 
     }).format(amount)
   }
 
+  const getStatusColor = (status: string) => {
+    return status === 'active' ? 'success' : 'default'
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
-            <CubeIcon className="h-6 w-6 text-blue-600" />
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">{product.product_name}</h3>
-              {product.product_type && (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${
-                  productTypeColors[product.product_type as keyof typeof productTypeColors] || 'bg-gray-100 text-gray-800'
-                }`}>
-                  <TagIcon className="h-3 w-3 mr-1" />
-                  {product.product_type}
-                </span>
+    <StyledCard>
+      <CardContent>
+        <CardHeader>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+              <Inventory color="primary" sx={{ mt: 0.5 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
+                  {product.product_name}
+                </Typography>
+                {product.product_type && (
+                  <Chip 
+                    icon={<Tag />}
+                    label={product.product_type}
+                    color={getProductTypeColor(product.product_type) as any}
+                    size="small"
+                    sx={{ mb: 1 }}
+                  />
+                )}
+              </Box>
+            </Box>
+            
+            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+              <Chip 
+                label={product.status === 'active' ? 'Hoạt Động' : 'Tạm Ngưng'}
+                color={getStatusColor(product.status) as any}
+                size="small"
+              />
+            </Stack>
+            
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, 
+              gap: 2, 
+              mb: 2 
+            }}>
+              {product.interest_rate && (
+                <InfoBox>
+                  <Percent fontSize="small" color="success" />
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ color: 'text.secondary' }}>Lãi suất:</Box>
+                    <Box component="span" sx={{ ml: 1, fontWeight: 600, color: 'success.main' }}>
+                      {product.interest_rate}%/năm
+                    </Box>
+                  </Typography>
+                </InfoBox>
               )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex flex-col gap-2">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            statusColors[product.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'
-          }`}>
-            {product.status === 'active' ? 'Hoạt Động' : 'Tạm Ngưng'}
-          </span>
-        </div>
-      </div>
+              
+              {product.terms_months && (
+                <InfoBox>
+                  <Schedule fontSize="small" color="primary" />
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ color: 'text.secondary' }}>Thời hạn:</Box>
+                    <Box component="span" sx={{ ml: 1, fontWeight: 600, color: 'primary.main' }}>
+                      {product.terms_months} tháng
+                    </Box>
+                  </Typography>
+                </InfoBox>
+              )}
+              
+              {(product.minimum_amount || product.maximum_amount) && (
+                <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
+                  <InfoBox>
+                    <MonetizationOn fontSize="small" color="secondary" />
+                    <Typography variant="body2">
+                      <Box component="span" sx={{ color: 'text.secondary' }}>Hạn mức:</Box>
+                      <Box component="span" sx={{ ml: 1, fontWeight: 600, color: 'secondary.main' }}>
+                        {product.minimum_amount && formatCurrency(product.minimum_amount, product.currency || 'VND')}
+                        {product.minimum_amount && product.maximum_amount && ' - '}
+                        {product.maximum_amount && formatCurrency(product.maximum_amount, product.currency || 'VND')}
+                      </Box>
+                    </Typography>
+                  </InfoBox>
+                </Box>
+              )}
+              
+              {product.fees && (
+                <InfoBox>
+                  <CurrencyExchange fontSize="small" color="warning" />
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ color: 'text.secondary' }}>Phí:</Box>
+                    <Box component="span" sx={{ ml: 1, fontWeight: 600, color: 'warning.main' }}>
+                      {formatCurrency(product.fees, product.currency || 'VND')}
+                    </Box>
+                  </Typography>
+                </InfoBox>
+              )}
+            </Box>
+            
+            <Stack spacing={2}>
+              {product.description && (
+                <Box>
+                  <InfoBox>
+                    <Description fontSize="small" color="action" />
+                    <Typography variant="body2" sx={{ 
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                    }}>
+                      {product.description}
+                    </Typography>
+                  </InfoBox>
+                </Box>
+              )}
 
-      {/* Banking Details */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        {product.interest_rate && (
-          <div className="flex items-center text-sm">
-            <PercentBadgeIcon className="h-4 w-4 text-green-600 mr-2" />
-            <span className="text-gray-600">Lãi suất:</span>
-            <span className="ml-1 font-semibold text-green-600">{product.interest_rate}%/năm</span>
-          </div>
-        )}
-        
-        {product.terms_months && (
-          <div className="flex items-center text-sm">
-            <ClockIcon className="h-4 w-4 text-blue-600 mr-2" />
-            <span className="text-gray-600">Thời hạn:</span>
-            <span className="ml-1 font-semibold text-blue-600">{product.terms_months} tháng</span>
-          </div>
-        )}
-        
-        {(product.minimum_amount || product.maximum_amount) && (
-          <div className="col-span-2">
-            <div className="flex items-center text-sm">
-              <BanknotesIcon className="h-4 w-4 text-purple-600 mr-2" />
-              <span className="text-gray-600">Hạn mức:</span>
-              <span className="ml-1 font-semibold text-purple-600">
-                {product.minimum_amount && formatCurrency(product.minimum_amount, product.currency || 'VND')}
-                {product.minimum_amount && product.maximum_amount && ' - '}
-                {product.maximum_amount && formatCurrency(product.maximum_amount, product.currency || 'VND')}
-              </span>
-            </div>
-          </div>
-        )}
-        
-        {product.fees && (
-          <div className="flex items-center text-sm">
-            <CurrencyDollarIcon className="h-4 w-4 text-orange-600 mr-2" />
-            <span className="text-gray-600">Phí:</span>
-            <span className="ml-1 font-semibold text-orange-600">
-              {formatCurrency(product.fees, product.currency || 'VND')}
-            </span>
-          </div>
-        )}
-      </div>
-      
-      {product.description && (
-        <div className="mb-3">
-          <div className="flex items-start">
-            <DocumentTextIcon className="h-4 w-4 text-gray-500 mr-2 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-gray-600 line-clamp-3">{product.description}</p>
-          </div>
-        </div>
-      )}
+              {product.requirements && (
+                <Box>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5, display: 'block' }}>
+                    Điều kiện:
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ 
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}>
+                    {product.requirements}
+                  </Typography>
+                </Box>
+              )}
 
-      {product.requirements && (
-        <div className="mb-3">
-          <p className="text-xs font-medium text-gray-700 mb-1">Điều kiện:</p>
-          <p className="text-xs text-gray-600 line-clamp-2">{product.requirements}</p>
-        </div>
-      )}
-
-      {product.benefits && (
-        <div className="mb-3">
-          <p className="text-xs font-medium text-gray-700 mb-1">Ưu đãi:</p>
-          <p className="text-xs text-gray-600 line-clamp-2">{product.benefits}</p>
-        </div>
-      )}
-
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex gap-2">
-          <button
+              {product.benefits && (
+                <Box>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5, display: 'block' }}>
+                    Ưu đãi:
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ 
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}>
+                    {product.benefits}
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+          </Box>
+          
+          <Box sx={{ ml: 2, minWidth: 120 }}>
+            <FormControl fullWidth size="small">
+              <StyledSelect
+                value={product.status}
+                onChange={(e) => onStatusChange(product.product_id, e.target.value as string)}
+              >
+                <MenuItem value="active">Hoạt Động</MenuItem>
+                <MenuItem value="inactive">Tạm Ngưng</MenuItem>
+              </StyledSelect>
+            </FormControl>
+          </Box>
+        </CardHeader>
+        
+        <Divider sx={{ my: 2 }} />
+        
+        <CardActions>
+          <ActionButton
+            startIcon={<Edit />}
             onClick={() => onEdit(product)}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            color="primary"
+            variant="outlined"
+            size="small"
           >
             Chỉnh Sửa
-          </button>
-          <button
+          </ActionButton>
+          <ActionButton
+            startIcon={<DeleteOutline />}
             onClick={() => onDelete(product.product_id)}
-            className="text-red-600 hover:text-red-800 text-sm font-medium"
+            color="error"
+            variant="outlined"
+            size="small"
           >
             Xóa
-          </button>
-        </div>
-        
-        <select
-          value={product.status}
-          onChange={(e) => onStatusChange(product.product_id, e.target.value)}
-          className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="active">Hoạt Động</option>
-          <option value="inactive">Tạm Ngưng</option>
-        </select>
-      </div>
-    </div>
+          </ActionButton>
+        </CardActions>
+      </CardContent>
+    </StyledCard>
   )
 }
