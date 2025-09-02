@@ -18,7 +18,7 @@ export default function CreditAssessmentCard({
   onDelete,
 }: CreditAssessmentCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group relative overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 group relative overflow-hidden h-full flex flex-col">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-5 rounded-bl-full transition-opacity group-hover:opacity-10"></div>
       
@@ -30,62 +30,62 @@ export default function CreditAssessmentCard({
             </svg>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{assessment.customer?.full_name}</h3>
+            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate max-w-48">{assessment.customer?.full_name}</h3>
             <div className="flex items-center space-x-2 mt-1">
               <div className="h-1 w-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
-              <span className="text-sm text-gray-500 font-medium">Ngày tạo: {toVNDate(assessment.created_at)}</span>
+              <span className="text-sm text-gray-500 font-medium whitespace-nowrap">Ngày tạo: {toVNDate(assessment.created_at)}</span>
             </div>
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 flex-shrink-0">
           <button
             onClick={() => onView(assessment)}
-            className="p-3 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-xl border border-blue-200 hover:border-blue-300 transition-all duration-200 hover:shadow-md group"
+            className="p-2.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg border border-blue-200 hover:border-blue-300 transition-all duration-200 hover:shadow-md group"
             title="Xem chi tiết"
           >
-            <EyeIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            <EyeIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
           </button>
           <button
             onClick={() => onEdit(assessment)}
-            className="p-3 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-xl border border-emerald-200 hover:border-emerald-300 transition-all duration-200 hover:shadow-md group"
+            className="p-2.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg border border-emerald-200 hover:border-emerald-300 transition-all duration-200 hover:shadow-md group"
             title="Chỉnh sửa"
           >
-            <PencilIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            <PencilIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
           </button>
           <button
             onClick={() => onDelete(assessment)}
-            className="p-3 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-xl border border-red-200 hover:border-red-300 transition-all duration-200 hover:shadow-md group"
+            className="p-2.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-all duration-200 hover:shadow-md group"
             title="Xóa"
           >
-            <TrashIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            <TrashIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-6 flex-grow">
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 group-hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">👨‍💼 Nhân viên thẩm định</p>
-          <p className="text-sm text-gray-900 font-bold">{assessment.staff?.full_name}</p>
+          <p className="text-sm text-gray-900 font-bold truncate" title={assessment.staff?.full_name}>{assessment.staff?.full_name}</p>
         </div>
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 group-hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">🏦 Sản phẩm</p>
-          <p className="text-sm text-gray-900 font-bold">{assessment.product?.product_name}</p>
+          <p className="text-sm text-gray-900 font-bold truncate" title={assessment.product?.product_name}>{assessment.product?.product_name}</p>
         </div>
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 group-hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">🏢 Phòng ban</p>
-          <p className="text-sm text-gray-900 font-bold">{assessment.department}</p>
+          <p className="text-sm text-gray-900 font-bold truncate" title={assessment.department}>{assessment.department}</p>
         </div>
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 group-hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">💰 Phí thẩm định</p>
-          <p className="text-sm text-gray-900 font-bold">{formatCurrency(assessment.fee_amount)}</p>
+          <p className="text-sm text-gray-900 font-bold truncate" title={formatCurrency(assessment.fee_amount)}>{formatCurrency(assessment.fee_amount)}</p>
         </div>
       </div>
 
-      <div className="pt-5 border-t border-gray-200">
+      <div className="pt-5 border-t border-gray-200 mt-auto">
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng thái:</p>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border-2 transition-all ${
+          <div className="flex items-center space-x-3 min-w-0">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider flex-shrink-0">Trạng thái:</p>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border-2 transition-all truncate ${
               assessment.status === 'approve' 
                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-400 shadow-lg' 
                 : assessment.status === 'rejected' 
@@ -100,9 +100,9 @@ export default function CreditAssessmentCard({
               {assessment.status === 'in_review' && '⏳ Đang xem xét'}
             </span>
           </div>
-          <div className="text-right">
+          <div className="text-right flex-shrink-0 ml-4">
             <p className="text-xs text-gray-500 font-medium">Cập nhật</p>
-            <p className="text-xs text-gray-700 font-bold">{toVNDate(assessment.updated_at)}</p>
+            <p className="text-xs text-gray-700 font-bold whitespace-nowrap">{toVNDate(assessment.updated_at)}</p>
           </div>
         </div>
       </div>
