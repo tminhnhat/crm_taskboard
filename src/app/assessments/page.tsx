@@ -76,9 +76,9 @@ export default function AssessmentsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200">
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       <Navigation />
-      <main className="max-w-7xl mx-auto py-10 px-4 sm:px-8 lg:px-16">
+  <main className="max-w-7xl mx-auto py-10 px-4 sm:px-8 lg:px-16">
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
           <div>
             <h1 className="text-4xl font-extrabold text-blue-700 mb-2 drop-shadow">Thẩm định tín dụng</h1>
@@ -89,7 +89,7 @@ export default function AssessmentsPage() {
               setSelectedAssessment(null)
               setShowForm(true)
             }}
-            className="px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl shadow"
+            className="px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl shadow-lg"
           >
             + Thẩm định mới
           </button>
@@ -107,15 +107,15 @@ export default function AssessmentsPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm kiếm thẩm định..."
-                className="block w-full pl-10 pr-3 py-3 border border-blue-200 rounded-xl leading-5 bg-white placeholder-blue-400 focus:outline-none focus:placeholder-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                className="block w-full pl-10 pr-3 py-3 border border-blue-200 rounded-xl leading-5 bg-white placeholder-blue-400 focus:outline-none focus:placeholder-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base shadow"
               />
             </div>
           </div>
         </div>
 
         {/* Assessment List */}
-        <div className="bg-white p-8 rounded-3xl shadow-xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredAssessments.map(assessment => (
               <CreditAssessmentCard
                 key={assessment.assessment_id}

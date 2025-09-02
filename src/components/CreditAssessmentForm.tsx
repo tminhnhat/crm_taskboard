@@ -209,23 +209,23 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
     onChange(newMetadata)
   }
   return (
-    <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8 border-2 border-transparent hover:border-blue-400 transition-all duration-300 group relative overflow-hidden" style={{boxShadow:'0 8px 32px 0 rgba(60,130,220,0.12)'}}>
+    <div className="bg-white rounded-2xl shadow-xl p-7 mb-8 border-2 border-transparent hover:border-blue-400 transition-all duration-300 group relative overflow-hidden" style={{boxShadow:'0 8px 32px 0 rgba(60,130,220,0.12)'}}>
       <div className="absolute inset-0 pointer-events-none group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-blue-100 opacity-60 transition-all duration-300 z-0" />
       <div className="flex items-center mb-6 relative z-10">
-        <div className="bg-gradient-to-br from-blue-100 to-blue-300 rounded-full p-3 mr-4 shadow">
-          <Icon className="h-7 w-7 text-blue-600" />
+        <div className="bg-gradient-to-br from-blue-100 to-blue-300 rounded-full p-2 mr-3 shadow">
+          <Icon className="h-6 w-6 text-blue-600" />
         </div>
-        <h4 className="text-2xl font-bold text-blue-700 tracking-tight drop-shadow">{title}</h4>
+        <h4 className="text-xl font-bold text-blue-700 tracking-tight drop-shadow">{title}</h4>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
         {fields.map(field => (
-          <div key={field.key} className="mb-3">
+          <div key={field.key} className="mb-2">
             <label className="block text-base font-medium text-gray-700 mb-2">{field.label}</label>
             {field.type === 'select' ? (
               <select
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
-                className="block w-full rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
+                className="block w-full rounded-lg border-blue-200 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
               >
                 <option value="">Chọn {field.label}</option>
                 {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -235,14 +235,14 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, e.target.value)}
                 rows={3}
-                className="block w-full rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
+                className="block w-full rounded-lg border-blue-200 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
               />
             ) : field.type === 'boolean' ? (
               <input
                 type="checkbox"
                 checked={!!metadata[field.key]}
                 onChange={e => handleFieldChange(field.key, e.target.checked)}
-                className="h-5 w-5 text-blue-600 border-gray-300 rounded"
+                className="h-5 w-5 text-blue-600 border-blue-200 rounded"
               />
             ) : (
               <input
@@ -250,8 +250,8 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
                 value={metadata[field.key] || ''}
                 onChange={e => handleFieldChange(field.key, field.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
                 readOnly={field.readOnly}
-                className={`block w-full rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base ${field.readOnly ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold border-blue-400' : ''}`}
-                style={field.readOnly ? { fontSize: '1.2rem' } : {}}
+                className={`block w-full rounded-lg border-blue-200 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base ${field.readOnly ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold border-blue-400' : ''}`}
+                style={field.readOnly ? { fontSize: '1.1rem' } : {}}
               />
             )}
             {/* Highlight for total fields */}
@@ -493,6 +493,41 @@ export default function CreditAssessmentFormFull({
                   ))}
                 </select>
               </div>
+                {/* Spouse select - moved here after customer field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
+                  <select
+                    value={formState.assessment_details.spouse_info?.customer_id || ''}
+                    onChange={e => {
+                      const selectedId = e.target.value
+                      const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId)
+                      if (selectedCustomer) {
+                        const mapped = {
+                          customer_id: selectedCustomer.customer_id,
+                          full_name: selectedCustomer.full_name,
+                          date_of_birth: selectedCustomer.date_of_birth,
+                          gender: selectedCustomer.gender,
+                          id_number: selectedCustomer.id_number,
+                          id_issue_date: selectedCustomer.id_issue_date,
+                          id_issue_authority: selectedCustomer.id_issue_authority,
+                          phone: selectedCustomer.phone,
+                          address: selectedCustomer.address,
+                          account_number: selectedCustomer.account_number,
+                          cif_number: selectedCustomer.cif_number
+                        }
+                        handleSectionDataChange('spouse_info', mapped)
+                      } else {
+                        handleSectionDataChange('spouse_info', {})
+                      }
+                    }}
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Chọn khách hàng làm vợ/chồng</option>
+                    {customers.map(c => (
+                      <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
+                    ))}
+                  </select>
+                </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Nhân viên</label>
                 <select
@@ -523,6 +558,22 @@ export default function CreditAssessmentFormFull({
                   ))}
                 </select>
               </div>
+                {/* Loan Type Field - moved here after product_id */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Loại khoản vay</label>
+                  <select
+                    name="loan_type"
+                    value={formState.loan_type}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Chọn loại khoản vay</option>
+                    <option value="Kinh doanh">Kinh doanh</option>
+                    <option value="Tiêu dùng">Tiêu dùng</option>
+                    <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+                  </select>
+                </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Phòng ban</label>
                 <input
@@ -558,57 +609,6 @@ export default function CreditAssessmentFormFull({
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 />
               </div>
-            </div>
-            {/* Loan Type Field */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700">Loại khoản vay</label>
-              <select
-                name="loan_type"
-                value={formState.loan_type}
-                onChange={handleInputChange}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                <option value="">Chọn loại khoản vay</option>
-                <option value="Kinh doanh">Kinh doanh</option>
-                <option value="Tiêu dùng">Tiêu dùng</option>
-                <option value="Thẻ tín dụng">Thẻ tín dụng</option>
-              </select>
-            </div>
-            {/* Spouse select and metadata section */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
-              <select
-                value={formState.assessment_details.spouse_info?.customer_id || ''}
-                onChange={e => {
-                  const selectedId = e.target.value
-                  const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId)
-                  if (selectedCustomer) {
-                    const mapped = {
-                      customer_id: selectedCustomer.customer_id,
-                      full_name: selectedCustomer.full_name,
-                      date_of_birth: selectedCustomer.date_of_birth,
-                      gender: selectedCustomer.gender,
-                      id_number: selectedCustomer.id_number,
-                      id_issue_date: selectedCustomer.id_issue_date,
-                      id_issue_authority: selectedCustomer.id_issue_authority,
-                      phone: selectedCustomer.phone,
-                      address: selectedCustomer.address,
-                      account_number: selectedCustomer.account_number,
-                      cif_number: selectedCustomer.cif_number
-                    }
-                    handleSectionDataChange('spouse_info', mapped)
-                  } else {
-                    handleSectionDataChange('spouse_info', {})
-                  }
-                }}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Chọn khách hàng làm vợ/chồng</option>
-                {customers.map(c => (
-                  <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
-                ))}
-              </select>
             </div>
             {/* Render all metadata sections dynamically */}
             {Object.entries(selectedTemplates).map(([sectionKey, section]) => {

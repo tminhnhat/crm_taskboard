@@ -18,11 +18,11 @@ export default function CreditAssessmentCard({
   onDelete,
 }: CreditAssessmentCardProps) {
   return (
-    <div className="bg-white rounded-3xl shadow-2xl p-7 border-2 border-transparent hover:border-blue-400 transition-all duration-300 group relative overflow-hidden hover:scale-[1.02]" style={{boxShadow:'0 8px 32px 0 rgba(60,130,220,0.12)'}}>
+    <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-transparent hover:border-blue-400 transition-all duration-300 group relative overflow-hidden hover:scale-[1.02]" style={{boxShadow:'0 8px 32px 0 rgba(60,130,220,0.12)'}}>
       <div className="absolute inset-0 pointer-events-none group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-blue-100 opacity-60 transition-all duration-300 z-0" />
       <div className="flex justify-between items-start relative z-10">
         <div>
-          <h3 className="text-xl font-bold text-blue-700 mb-1 drop-shadow">{assessment.customer?.full_name}</h3>
+          <h3 className="text-lg font-bold text-blue-700 mb-1 drop-shadow">{assessment.customer?.full_name}</h3>
           <p className="text-sm text-gray-500">Ngày tạo: {toVNDate(assessment.created_at)}</p>
         </div>
         <div className="flex space-x-2">
