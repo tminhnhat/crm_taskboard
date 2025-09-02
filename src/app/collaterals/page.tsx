@@ -180,9 +180,9 @@ export default function CollateralsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container mx-auto p-8 max-w-7xl">
           <LoadingSpinner />
         </div>
       </div>
@@ -191,11 +191,21 @@ export default function CollateralsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-red-600">Lỗi: {error}</p>
+        <div className="container mx-auto p-8 max-w-7xl">
+          <div className="bg-white rounded-2xl shadow-xl border border-red-200 p-8">
+            <div className="flex items-center">
+              <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-3 shadow-lg">
+                <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-bold text-gray-900 mb-1">❌ Có lỗi xảy ra</h3>
+                <p className="text-red-600">{error}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -203,105 +213,216 @@ export default function CollateralsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Tài Sản Đảm Bảo</h1>
-            <p className="text-gray-600 mt-1">Quản lý tài sản đảm bảo và định giá của khách hàng</p>
+      <div className="container mx-auto p-8 max-w-7xl">
+        {/* Enhanced header section */}
+        <div className="mb-10">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-5 rounded-bl-full"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-emerald-500 to-teal-500 opacity-5 rounded-tr-full"></div>
+            
+            <div className="flex justify-between items-center relative z-10">
+              <div className="flex items-center space-x-6">
+                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-4 shadow-lg">
+                  <CubeIcon className="h-10 w-10 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold text-gray-900 mb-2">💎 Tài Sản Đảm Bảo</h1>
+                  <p className="text-gray-600 text-lg">Quản lý tài sản đảm bảo và định giá của khách hàng một cách hiệu quả</p>
+                  <div className="mt-3 flex items-center space-x-4 text-sm">
+                    <div className="flex items-center text-green-600">
+                      <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                      <span className="font-medium">Cập nhật realtime</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleNewCollateral}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  ✨ Thêm Tài Sản
+                </button>
+              </div>
+            </div>
           </div>
-          <button
-            onClick={handleNewCollateral}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Thêm Tài Sản
-          </button>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <CubeIcon className="h-8 w-8 text-blue-600" />
+        {/* Enhanced Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 relative overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-10 rounded-bl-full transition-opacity group-hover:opacity-20"></div>
+            <div className="flex items-center relative z-10">
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 shadow-lg">
+                <CubeIcon className="h-8 w-8 text-white" />
+              </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Tổng Tài Sản</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">📦 Tổng Tài Sản</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                <p className="text-sm text-blue-600 font-medium">Đang hoạt động</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <HomeIcon className="h-8 w-8 text-indigo-600" />
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 relative overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 opacity-10 rounded-bl-full transition-opacity group-hover:opacity-20"></div>
+            <div className="flex items-center relative z-10">
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl p-3 shadow-lg">
+                <HomeIcon className="h-8 w-8 text-white" />
+              </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Loại Phổ Biến</p>
-                <p className="text-sm font-bold text-indigo-600">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">🏠 Loại Phổ Biến</p>
+                <p className="text-lg font-bold text-emerald-600 mt-1">
                   {stats.mostCommonType || 'Không có'}
+                </p>
+                <p className="text-sm text-emerald-600 font-medium">Được ưa chuộng</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 relative overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-500 opacity-10 rounded-bl-full transition-opacity group-hover:opacity-20"></div>
+            <div className="flex items-center relative z-10">
+              <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl p-3 shadow-lg">
+                <ChartBarIcon className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">💰 Tổng Giá Trị</p>
+                <p className="text-lg font-bold text-purple-600 mt-1">
+                  {formatCurrency(filteredCollaterals.reduce((sum, c) => sum + (c.value || 0), 0))}
+                </p>
+                <p className="text-sm text-purple-600 font-medium">Tài sản hiện có</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Filters Section */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mb-8 overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">🔍 Bộ Lọc Tìm Kiếm</h2>
+            <p className="text-gray-600">Lọc và tìm kiếm tài sản đảm bảo theo nhiều tiêu chí</p>
+          </div>
+          <div className="p-8">
+            <CollateralFilters
+              onFiltersChange={handleFiltersChange}
+              availableCustomers={availableCustomers}
+            />
+          </div>
+        </div>
+
+        {/* Enhanced Results Summary */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg p-2">
+                <ChartBarIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-lg font-bold text-gray-900">
+                  Hiển thị {filteredCollaterals.length} trong tổng số {collaterals.length} tài sản
+                </p>
+                <p className="text-sm text-gray-600">
+                  {filteredCollaterals.length > 0 
+                    ? `Tổng giá trị: ${formatCurrency(filteredCollaterals.reduce((sum, c) => sum + (c.value || 0), 0))}`
+                    : 'Không có dữ liệu phù hợp'
+                  }
                 </p>
               </div>
             </div>
+            {filters.search || filters.type || filters.status || filters.customerId || filters.valueRange || filters.dateRange ? (
+              <button
+                onClick={() => setFilters({
+                  search: '',
+                  type: '',
+                  status: 'active',
+                  customerId: '',
+                  valueRange: '',
+                  dateRange: ''
+                })}
+                className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200"
+              >
+                🧹 Xóa bộ lọc
+              </button>
+            ) : null}
           </div>
         </div>
 
-        {/* Filters */}
-        <CollateralFilters
-          onFiltersChange={handleFiltersChange}
-          availableCustomers={availableCustomers}
-        />
-
-        {/* Results Summary */}
-        <div className="flex justify-between items-center mb-6">
-          <p className="text-gray-600">
-            Hiển thị {filteredCollaterals.length} trong tổng số {collaterals.length} tài sản đảm bảo
-          </p>
-          <div className="flex items-center space-x-4">
-            <ChartBarIcon className="h-5 w-5 text-gray-400" />
-            <span className="text-sm text-gray-600">
-              {filteredCollaterals.length > 0 
-                ? `Tổng giá trị đã lọc: ${formatCurrency(filteredCollaterals.reduce((sum, c) => sum + (c.value || 0), 0))}`
-                : 'Không có dữ liệu'
-              }
-            </span>
-          </div>
-        </div>
-
-        {/* Collaterals Grid */}
-        {filteredCollaterals.length === 0 ? (
-          <div className="text-center py-12">
-            <HomeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy tài sản đảm bảo nào</h3>
-            <p className="text-gray-500 mb-6">
-              {filters.search || filters.type || filters.status || filters.customerId || filters.valueRange || filters.dateRange
-                ? 'Hãy thử điều chỉnh bộ lọc để xem thêm kết quả.'
-                : 'Bắt đầu bằng cách thêm tài sản đảm bảo đầu tiên của bạn.'
-              }
-            </p>
-            <button
-              onClick={handleNewCollateral}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Thêm Tài Sản
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredCollaterals.map((collateral: Collateral) => (
-                <CollateralCard
-                  key={collateral.collateral_id}
-                  collateral={collateral}
-                  onEdit={handleEditCollateral}
-                  onDelete={handleDeleteCollateral}
-                />
-              ))}
+        {/* Enhanced Collaterals Grid */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {filteredCollaterals.length === 0 ? (
+            <div className="text-center py-16 px-8">
+              <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                <HomeIcon className="h-12 w-12 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                {filters.search || filters.type || filters.status || filters.customerId || filters.valueRange || filters.dateRange
+                  ? '🔍 Không tìm thấy kết quả phù hợp'
+                  : '💎 Chưa có tài sản đảm bảo nào'
+                }
+              </h3>
+              <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+                {filters.search || filters.type || filters.status || filters.customerId || filters.valueRange || filters.dateRange
+                  ? 'Hãy thử điều chỉnh bộ lọc để xem thêm kết quả hoặc tạo tài sản đảm bảo mới.'
+                  : 'Bắt đầu xây dựng danh mục tài sản đảm bảo bằng cách thêm tài sản đầu tiên của bạn.'
+                }
+              </p>
+              {filters.search || filters.type || filters.status || filters.customerId || filters.valueRange || filters.dateRange ? (
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => setFilters({
+                      search: '',
+                      type: '',
+                      status: 'active',
+                      customerId: '',
+                      valueRange: '',
+                      dateRange: ''
+                    })}
+                    className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    🧹 Xóa bộ lọc
+                  </button>
+                  <button
+                    onClick={handleNewCollateral}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    ✨ Tạo thêm tài sản
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleNewCollateral}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                >
+                  ✨ Tạo tài sản đầu tiên
+                </button>
+              )}
             </div>
-          </>
-        )}
+          ) : (
+            <div className="p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                {filteredCollaterals.map((collateral: Collateral) => (
+                  <CollateralCard
+                    key={collateral.collateral_id}
+                    collateral={collateral}
+                    onEdit={handleEditCollateral}
+                    onDelete={handleDeleteCollateral}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Collateral Form Modal */}
         <CollateralForm

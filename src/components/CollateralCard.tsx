@@ -207,114 +207,102 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
   const [expandedSections, setExpandedSections] = useState<string[]>([])
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-4 border border-gray-200">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 group relative overflow-hidden h-full flex flex-col">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-5 rounded-bl-full transition-opacity group-hover:opacity-10"></div>
+      
       {/* Header */}
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <DocumentChartBarIcon className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                {collateral.collateral_type ? (
-                  <span>{getCollateralTypeInVietnamese(collateral.collateral_type)}</span>
-                ) : (
-                  'Tài sản thế chấp'
-                )}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">Loại tài sản thế chấp</p>
-            </div>
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <div className="flex items-start space-x-4">
+          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 shadow-lg">
+            <DocumentChartBarIcon className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900">
+              {collateral.collateral_type ? (
+                <span>💎 {getCollateralTypeInVietnamese(collateral.collateral_type)}</span>
+              ) : (
+                '💎 Tài sản thế chấp'
+              )}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">ID: #{collateral.collateral_id}</p>
           </div>
         </div>
         <div className="flex space-x-2">
           <button
             onClick={() => onEdit(collateral)}
-            className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
+            className="p-2.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg border border-blue-200 hover:border-blue-300 transition-all duration-200 hover:shadow-md group"
           >
-            <PencilIcon className="h-5 w-5" />
+            <PencilIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
           </button>
           <button
             onClick={() => onDelete(collateral)}
-            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+            className="p-2.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-all duration-200 hover:shadow-md group"
           >
-            <TrashIcon className="h-5 w-5" />
+            <TrashIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
           </button>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="space-y-4">
+      {/* Enhanced Content */}
+      <div className="space-y-4 flex-grow">
         {/* Customer Information */}
         {collateral.customer && (
-          <div className="flex items-start">
-            <div className="flex-grow">
-              <div className="flex items-center">
-                <span className="text-sm text-gray-500">Khách hàng:</span>
-                <span className="ml-2 font-semibold text-gray-900">
-                  {collateral.customer.full_name}
-                </span>
-              </div>
-              {collateral.customer.phone && (
-                <div className="text-sm text-gray-600">
-                  SĐT: {collateral.customer.phone}
-                </div>
-              )}
-              {collateral.customer.address && (
-                <div className="text-sm text-gray-600">
-                  Địa chỉ: {collateral.customer.address}
-                </div>
-              )}
-              {collateral.customer.cif_number && (
-                <div className="text-sm text-gray-500 mt-1">
-                  Số CIF: {collateral.customer.cif_number}
-                </div>
-              )}
-            </div>
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 group-hover:shadow-md transition-shadow">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">👤 Khách hàng</p>
+            <p className="text-sm text-gray-900 font-bold truncate" title={collateral.customer.full_name}>
+              {collateral.customer.full_name}
+            </p>
+            {collateral.customer.phone && (
+              <p className="text-xs text-gray-600 mt-1">📞 {collateral.customer.phone}</p>
+            )}
+            {collateral.customer.cif_number && (
+              <p className="text-xs text-gray-500 mt-1">🆔 CIF: {collateral.customer.cif_number}</p>
+            )}
           </div>
         )}
 
-        {/* Value */}
-        <div className="flex items-center">
-          <BanknotesIcon className="h-5 w-5 text-gray-400 mr-2" />
-          <span className="text-sm text-gray-500">Giá trị:</span>
-          <span className="ml-2 text-lg font-semibold text-gray-900">
-            {collateral.value !== null ? new Intl.NumberFormat('vi-VN', {
+        <div className="grid grid-cols-2 gap-4">
+          {/* Value */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 group-hover:shadow-md transition-shadow">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">💰 Giá trị</p>
+            <p className="text-sm text-gray-900 font-bold truncate" title={collateral.value !== null ? new Intl.NumberFormat('vi-VN', {
               style: 'currency',
               currency: 'VND'
-            }).format(collateral.value) : 'Chưa có giá trị'}
-          </span>
-        </div>
+            }).format(collateral.value) : 'Chưa có giá trị'}>
+              {collateral.value !== null ? new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+              }).format(collateral.value) : 'Chưa có giá trị'}
+            </p>
+          </div>
 
-        {/* Valuation Date */}
-        <div className="flex items-center">
-          <CalendarIcon className="h-5 w-5 text-gray-400 mr-2" />
-          <span className="text-sm text-gray-500">Ngày định giá:</span>
-          <span className="ml-2 text-gray-700">
-            {collateral.valuation_date ? new Date(collateral.valuation_date).toLocaleDateString('vi-VN') : 'Chưa định giá'}
-          </span>
+          {/* Valuation Date */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 group-hover:shadow-md transition-shadow">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">📅 Định giá</p>
+            <p className="text-sm text-gray-900 font-bold truncate" title={collateral.valuation_date ? new Date(collateral.valuation_date).toLocaleDateString('vi-VN') : 'Chưa định giá'}>
+              {collateral.valuation_date ? new Date(collateral.valuation_date).toLocaleDateString('vi-VN') : 'Chưa định giá'}
+            </p>
+          </div>
         </div>
 
         {/* Description */}
         {collateral.description && (
-          <div>
-            <span className="text-sm text-gray-500">Mô tả:</span>
-            <p className="text-gray-700 mt-1">{collateral.description}</p>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+            <p className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">📋 Mô tả</p>
+            <p className="text-sm text-gray-700 line-clamp-2">{collateral.description}</p>
           </div>
         )}
 
         {/* Location */}
         {collateral.location && (
-          <div>
-            <span className="text-sm text-gray-500">Địa điểm:</span>
-            <div className="flex items-start mt-1">
-              <MapPinIcon className="h-5 w-5 text-gray-400 mr-1 flex-shrink-0 mt-0.5" />
-              <p className="text-gray-700">{collateral.location}</p>
-            </div>
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200">
+            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">📍 Địa điểm</p>
+            <p className="text-sm text-gray-700 line-clamp-2">{collateral.location}</p>
           </div>
         )}
 
-        {/* Metadata Sections */}
+        {/* Enhanced Metadata Sections */}
         {collateral.metadata && typeof collateral.metadata === 'object' && 
           Object.entries(collateral.metadata as Record<string, Record<string, unknown>>).map(([key, data]) => {
             const IconComponent = getMetadataIcon(key);
@@ -326,12 +314,17 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                   onClick={() => setExpandedSections(prev => 
                     isExpanded ? prev.filter(k => k !== key) : [...prev, key]
                   )}
-                  className="w-full flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg hover:from-blue-100 hover:to-indigo-100 transition-all border border-blue-200 hover:border-blue-300"
                 >
-                  <div className="flex items-center space-x-2">
-                    <IconComponent className="h-5 w-5 text-gray-500" />
-                    <span className="font-medium text-gray-700">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg p-2">
+                      <IconComponent className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="font-bold text-gray-700">
                       {formatFieldLabel(key)}
+                    </span>
+                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                      {Object.keys(data).length} mục
                     </span>
                   </div>
                   <ChevronDownIcon 
@@ -342,28 +335,28 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                 </button>
 
                 {isExpanded && (
-                  <div className="mt-2 bg-white rounded-lg border border-gray-100">
+                  <div className="mt-3 bg-white rounded-lg border border-gray-200 shadow-inner">
                     {Object.entries(data).map(([fieldKey, value], index) => (
                       <div 
                         key={fieldKey} 
-                        className={`flex items-start p-3 ${
+                        className={`flex items-start p-4 ${
                           index !== Object.entries(data).length - 1 ? 'border-b border-gray-100' : ''
                         }`}
                       >
-                        <div className="w-1/3">
-                          <span className="text-sm font-medium text-gray-600">
+                        <div className="w-1/3 pr-4">
+                          <span className="text-sm font-bold text-gray-600">
                             {formatFieldLabel(fieldKey)}
                           </span>
                         </div>
-                        <div className="flex-1 pl-4">
+                        <div className="flex-1">
                           {typeof value === 'boolean' ? (
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
                               value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             }`}>
-                              {value ? 'Có' : 'Không'}
+                              {value ? '✅ Có' : '❌ Không'}
                             </span>
                           ) : typeof value === 'number' ? (
-                            <span className="text-sm text-gray-800">
+                            <span className="text-sm text-gray-800 font-medium">
                               {value.toLocaleString('vi-VN')}
                             </span>
                           ) : typeof value === 'string' ? (
@@ -380,8 +373,8 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                                 if (!isNaN(date.getTime())) {
                                   const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
                                   return (
-                                    <span className="text-sm text-gray-800">
-                                      {formattedDate}
+                                    <span className="text-sm text-gray-800 bg-blue-50 px-2 py-1 rounded font-medium">
+                                      📅 {formattedDate}
                                     </span>
                                   )
                                 }
@@ -394,9 +387,9 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                                     href={value}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium break-all"
                                   >
-                                    {value}
+                                    🔗 {value}
                                   </a>
                                 )
                               }
