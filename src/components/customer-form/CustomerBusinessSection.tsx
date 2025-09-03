@@ -71,10 +71,10 @@ export default function CustomerBusinessSection({
           fullWidth
           label="Ngày Đăng Ký"
           value={formData.registration_date || ''}
-          onChange={(e) => onDateChange('registration_date', e)}
+          onChange={(e) => onDateChange('registration_date', e as React.ChangeEvent<HTMLInputElement>)}
           placeholder="dd/mm/yyyy"
           inputProps={{ maxLength: 10 }}
-          error={formData.registration_date && !validateDateFormat(formData.registration_date)}
+          error={!!(formData.registration_date && !validateDateFormat(formData.registration_date))}
           helperText={formData.registration_date && !validateDateFormat(formData.registration_date) ? "Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy" : ""}
         />
 

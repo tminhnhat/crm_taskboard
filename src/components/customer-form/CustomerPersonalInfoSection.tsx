@@ -37,10 +37,10 @@ export default function CustomerPersonalInfoSection({
           fullWidth
           label="Ngày Sinh"
           value={formData.date_of_birth || ''}
-          onChange={(e) => onDateChange('date_of_birth', e)}
+          onChange={(e) => onDateChange('date_of_birth', e as React.ChangeEvent<HTMLInputElement>)}
           placeholder="dd/mm/yyyy"
           inputProps={{ maxLength: 10 }}
-          error={formData.date_of_birth && !validateDateFormat(formData.date_of_birth)}
+          error={!!(formData.date_of_birth && !validateDateFormat(formData.date_of_birth))}
           helperText={formData.date_of_birth && !validateDateFormat(formData.date_of_birth) ? "Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy" : ""}
         />
 
@@ -75,10 +75,10 @@ export default function CustomerPersonalInfoSection({
           fullWidth
           label="Ngày Cấp CCCD"
           value={formData.id_issue_date || ''}
-          onChange={(e) => onDateChange('id_issue_date', e)}
+          onChange={(e) => onDateChange('id_issue_date', e as React.ChangeEvent<HTMLInputElement>)}
           placeholder="dd/mm/yyyy"
           inputProps={{ maxLength: 10 }}
-          error={formData.id_issue_date && !validateDateFormat(formData.id_issue_date)}
+          error={!!(formData.id_issue_date && !validateDateFormat(formData.id_issue_date))}
           helperText={formData.id_issue_date && !validateDateFormat(formData.id_issue_date) ? "Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy" : ""}
         />
 

@@ -11,7 +11,6 @@ import {
   Button,
   Typography,
   Divider,
-  Grid,
   InputAdornment
 } from '@mui/material'
 import { Product } from '@/lib/supabase'
@@ -166,45 +165,40 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
               Thông Tin Tài Chính
             </Typography>
 
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  size="small"
-                  fullWidth
-                  type="number"
-                  inputProps={{ step: 0.01 }}
-                  label="Lãi Suất"
-                  name="interest_rate"
-                  value={formData.interest_rate}
-                  onChange={handleChange}
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">%/năm</InputAdornment>,
-                  }}
-                  placeholder="VD: 8.5"
-                />
-              </Grid>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              <TextField
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ step: 0.01 }}
+                label="Lãi Suất"
+                name="interest_rate"
+                value={formData.interest_rate}
+                onChange={handleChange}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">%/năm</InputAdornment>,
+                }}
+                placeholder="VD: 8.5"
+              />
 
-              <Grid item xs={12} md={6}>
-                <FormControl size="small" fullWidth>
-                  <InputLabel>Đơn Vị Tiền Tệ</InputLabel>
-                  <Select
-                    name="currency"
-                    value={formData.currency}
-                    label="Đơn Vị Tiền Tệ"
-                    onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
-                  >
-                    <MenuItem value="VND">VND</MenuItem>
-                    <MenuItem value="USD">USD</MenuItem>
-                    <MenuItem value="EUR">EUR</MenuItem>
-                    <MenuItem value="JPY">JPY</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Đơn Vị Tiền Tệ</InputLabel>
+                <Select
+                  name="currency"
+                  value={formData.currency}
+                  label="Đơn Vị Tiền Tệ"
+                  onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+                >
+                  <MenuItem value="VND">VND</MenuItem>
+                  <MenuItem value="USD">USD</MenuItem>
+                  <MenuItem value="EUR">EUR</MenuItem>
+                  <MenuItem value="JPY">JPY</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
 
             {/* Amount Limits */}
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   size="small"
                   fullWidth
@@ -215,29 +209,25 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                   onChange={handleChange}
                   placeholder="VD: 100000"
                 />
-              </Grid>
 
-              <Grid item xs={12} md={6}>
-                <TextField
-                  size="small"
-                  fullWidth
-                  type="number"
-                  label="Số Tiền Tối Đa"
-                  name="maximum_amount"
-                  value={formData.maximum_amount}
-                  onChange={handleChange}
-                  placeholder="VD: 5000000000"
-                />
-              </Grid>
-            </Grid>
+              <TextField
+                size="small"
+                fullWidth
+                type="number"
+                label="Số Tiền Tối Đa"
+                name="maximum_amount"
+                value={formData.maximum_amount}
+                onChange={handleChange}
+                placeholder="VD: 5000000000"
+              />
+            </Box>
 
             {/* Terms and Fees */}
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  size="small"
-                  fullWidth
-                  type="number"
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              <TextField
+                size="small"
+                fullWidth
+                type="number"
                   label="Thời Hạn"
                   name="terms_months"
                   value={formData.terms_months}
@@ -247,22 +237,19 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                   }}
                   placeholder="VD: 12"
                 />
-              </Grid>
               
-              <Grid item xs={12} md={6}>
-                <TextField
-                  size="small"
-                  fullWidth
-                  type="number"
-                  inputProps={{ step: 0.01 }}
-                  label="Phí Dịch Vụ"
-                  name="fees"
-                  value={formData.fees}
-                  onChange={handleChange}
-                  placeholder="VD: 50000"
-                />
-              </Grid>
-            </Grid>
+              <TextField
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ step: 0.01 }}
+                label="Phí Dịch Vụ"
+                name="fees"
+                value={formData.fees}
+                onChange={handleChange}
+                placeholder="VD: 50000"
+              />
+            </Box>
 
             {/* Description and Details */}
             <Divider />
