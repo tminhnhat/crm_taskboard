@@ -1,23 +1,36 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  Paper,
+  useTheme,
+  Pagination
+} from '@mui/material'
+import { 
+  Add as AddIcon,
+  Inventory as InventoryIcon,
+  TrendingUp as TrendingUpIcon,
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
+  AttachMoney as MoneyIcon,
+  Assessment as AssessmentIcon,
+  Security as SecurityIcon,
+  Settings as SettingsIcon
+} from '@mui/icons-material'
 import { useProducts } from '@/hooks/useProducts'
 import { Product } from '@/lib/supabase'
 import Navigation from '@/components/Navigation'
 import ProductCard from '@/components/ProductCard'
 import ProductForm from '@/components/ProductForm'
 import ProductFilters from '@/components/ProductFilters'
-import LoadingSpinner from '@/components/LoadingSpinner'
-import { 
-  PlusIcon, 
-  CubeIcon,
-  ChartBarIcon,
-  ExclamationTriangleIcon,
-  BanknotesIcon,
-  DocumentChartBarIcon,
-  ShieldCheckIcon,
-  CogIcon
-} from '@heroicons/react/24/outline'
+import { ProductCardSkeleton } from '@/components/LoadingSpinner'
 
 export default function ProductsPage() {
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
@@ -150,28 +163,36 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <LoadingSpinner />
-        </div>
-      </div>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {[...Array(4)].map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </Box>
+        </Container>
+      </Box>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex items-center">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
-              <p className="text-red-800">Lỗi khi tải danh sách sản phẩm: {error}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <Box sx={{ maxWidth: '7xl', mx: 'auto', px: { xs: 2, sm: 3, lg: 4 }, py: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Lỗi khi tải danh sách sản phẩm: {error}
+              </Alert>
+              <Typography color="text.secondary">
+                Vui lòng kiểm tra cấu hình Supabase trong file .env.local
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     )
   }
 

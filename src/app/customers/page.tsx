@@ -1,12 +1,35 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { PlusIcon, QrCodeIcon } from '@heroicons/react/24/outline'
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  Paper,
+  IconButton,
+  Tooltip,
+  useTheme,
+  Pagination
+} from '@mui/material'
+import { 
+  Add as AddIcon,
+  QrCode as QrCodeIcon,
+  TrendingUp as TrendingUpIcon,
+  Business as BusinessIcon,
+  Person as PersonIcon,
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+  Refresh as RefreshIcon
+} from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
 import CustomerCard from '@/components/CustomerCard'
 import CustomerForm from '@/components/CustomerForm'
 import CustomerFilters from '@/components/CustomerFilters'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import { CustomerCardSkeleton } from '@/components/LoadingSpinner'
 import QRPaymentGenerator from '@/components/QRPaymentGenerator'
 import { useCustomers } from '@/hooks/useCustomers'
 import type { CustomerType } from '@/lib/supabase'
@@ -191,156 +214,411 @@ export default function CustomersPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-red-600 mb-4">Lỗi khi tải danh sách khách hàng: {error}</p>
-              <p className="text-gray-600">Vui lòng kiểm tra cấu hình Supabase của bạn</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <Box sx={{ maxWidth: '7xl', mx: 'auto', px: { xs: 2, sm: 3, lg: 4 }, py: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Lỗi khi tải danh sách khách hàng: {error}
+              </Alert>
+              <Typography color="text.secondary">
+                Vui lòng kiểm tra cấu hình Supabase trong file .env.local
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Navigation */}
       <Navigation />
 
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h2 className="text-2xl font-bold text-gray-900">Quản Lý Khách Hàng</h2>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => handleOpenQRGenerator()}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <QrCodeIcon className="h-4 w-4 mr-2" />
-                Tạo QR Thanh Toán
-              </button>
-              <button
+      <Paper elevation={0} sx={{ 
+        bgcolor: 'background.paper', 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.05)'
+      }}>
+        <Container maxWidth="xl">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            py: 4 
+          }}>
+            <Box>
+              <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
+                mb: 1, 
+                color: 'text.primary',
+                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                👥 Quản Lý Khách Hàng
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Quản lý và theo dõi thông tin khách hàng một cách chuyên nghiệp
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Tooltip title="Tạo QR thanh toán">
+                <Button
+                  variant="outlined"
+                  startIcon={<QrCodeIcon />}
+                  onClick={() => handleOpenQRGenerator()}
+                  sx={{ 
+                    borderColor: 'divider',
+                    color: 'text.primary',
+                    '&:hover': { 
+                      borderColor: 'primary.main',
+                      bgcolor: 'action.hover'
+                    }
+                  }}
+                >
+                  QR Thanh Toán
+                </Button>
+              </Tooltip>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
                 onClick={() => setIsFormOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                size="large"
+                sx={{ 
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
+                  '&:hover': {
+                    boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
                 Khách Hàng Mới
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Paper>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-            <div className="text-sm text-gray-600">Tổng Cộng</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <div className="text-sm text-gray-600">Đang Hoạt Động</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-gray-600">{stats.inactive}</div>
-            <div className="text-sm text-gray-600">Không Hoạt Động</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.individual}</div>
-            <div className="text-sm text-gray-600">Cá Nhân</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-purple-600">{stats.corporate}</div>
-            <div className="text-sm text-gray-600">Doanh Nghiệp</div>
-          </div>
-        </div>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Statistics Cards */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" fontWeight="600" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TrendingUpIcon color="primary" />
+            Thống Kê Khách Hàng
+          </Typography>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(5, 1fr)' 
+            }, 
+            gap: 3
+          }}>
+            {/* Total Customers */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(52, 71, 103, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                    color: 'white'
+                  }}>
+                    <TrendingUpIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.total}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Tổng Cộng
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Active Customers */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(130, 214, 22, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #82d616 0%, #a8e6cf 100%)',
+                    color: 'white'
+                  }}>
+                    <CheckCircleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.active}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Đang Hoạt Động
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Inactive Customers */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(123, 128, 154, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #7b809a 0%, #9ca3af 100%)',
+                    color: 'white'
+                  }}>
+                    <ErrorIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.inactive}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Không Hoạt Động
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Individual Customers */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(73, 163, 241, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #49a3f1 0%, #5dade2 100%)',
+                    color: 'white'
+                  }}>
+                    <PersonIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.individual}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Cá Nhân
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Corporate Customers */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(168, 85, 247, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #a855f7 0%, #d946ef 100%)',
+                    color: 'white'
+                  }}>
+                    <BusinessIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.corporate}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Doanh Nghiệp
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
 
-        {/* Filters */}
-        <CustomerFilters filters={filters} onFiltersChange={setFilters} />
+        {/* Filters Section */}
+        <Paper elevation={1} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+          <CustomerFilters filters={filters} onFiltersChange={setFilters} />
+        </Paper>
 
         {/* Customers List */}
-        {loading ? (
-          <LoadingSpinner />
-        ) : filteredCustomers.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              {customers.length === 0 ? 'Chưa có khách hàng nào. Tạo khách hàng đầu tiên của bạn!' : 'Không có khách hàng nào phù hợp với bộ lọc.'}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
-              {filteredCustomers
-                .slice((currentPage - 1) * customersPerPage, currentPage * customersPerPage)
-                .map((customer) => (
-                  <CustomerCard
-                    key={customer.customer_id}
-                    customer={customer}
-                    onEdit={handleEditCustomer}
-                    onDelete={handleDeleteCustomer}
-                    onStatusChange={handleStatusChange}
-                    onRecalculateNumerology={handleRecalculateNumerology}
-                    onGenerateQR={handleOpenQRGeneratorForCustomer}
+        <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+          {loading ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[...Array(4)].map((_, i) => (
+                <CustomerCardSkeleton key={i} />
+              ))}
+            </Box>
+          ) : filteredCustomers.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Box sx={{ 
+                width: 120, 
+                height: 120, 
+                bgcolor: 'grey.100', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 3
+              }}>
+                <PersonIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+              </Box>
+              <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                {customers.length === 0 ? 'Chưa có khách hàng nào' : 'Không có kết quả phù hợp'}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                {customers.length === 0 
+                  ? 'Tạo khách hàng đầu tiên của bạn để bắt đầu!' 
+                  : 'Thử điều chỉnh bộ lọc để tìm thấy khách hàng bạn cần.'
+                }
+              </Typography>
+              {customers.length === 0 && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => setIsFormOpen(true)}
+                  size="large"
+                >
+                  Tạo Khách Hàng Đầu Tiên
+                </Button>
+              )}
+            </Box>
+          ) : (
+            <>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Danh sách khách hàng ({filteredCustomers.length})
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Hiển thị {((currentPage - 1) * customersPerPage) + 1}-{Math.min(currentPage * customersPerPage, filteredCustomers.length)} trong tổng số {filteredCustomers.length} khách hàng
+                </Typography>
+              </Box>
+              
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, 
+                gap: 3,
+                mb: 4
+              }}>
+                {filteredCustomers
+                  .slice((currentPage - 1) * customersPerPage, currentPage * customersPerPage)
+                  .map((customer) => (
+                    <CustomerCard
+                      key={customer.customer_id}
+                      customer={customer}
+                      onEdit={handleEditCustomer}
+                      onDelete={handleDeleteCustomer}
+                      onStatusChange={handleStatusChange}
+                      onRecalculateNumerology={handleRecalculateNumerology}
+                      onGenerateQR={handleOpenQRGeneratorForCustomer}
+                    />
+                  ))}
+              </Box>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={(event, value) => setCurrentPage(value)}
+                    color="primary"
+                    size="large"
+                    showFirstButton
+                    showLastButton
                   />
-                ))}
-            </div>
-            
-            {/* Pagination */}
-            <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-              <div className="flex flex-1 justify-between sm:hidden">
-                <button
-                  onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  Trang trước
-                </button>
-                <button
-                  onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  Trang sau
-                </button>
-              </div>
-              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Hiển thị <span className="font-medium">{((currentPage - 1) * customersPerPage) + 1}</span> đến{' '}
-                    <span className="font-medium">
-                      {Math.min(currentPage * customersPerPage, filteredCustomers.length)}
-                    </span>{' '}
-                    trong tổng số <span className="font-medium">{filteredCustomers.length}</span> khách hàng
-                  </p>
-                </div>
-                <div>
-                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
-                          currentPage === page
-                            ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </nav>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </main>
+                </Box>
+              )}
+            </>
+          )}
+        </Paper>
+      </Container>
 
       {/* Customer Form Modal */}
       <CustomerForm
@@ -356,6 +634,6 @@ export default function CustomersPage() {
         onClose={handleCloseQRGenerator}
         prefilledCustomerId={selectedCustomerForQR}
       />
-    </div>
+    </Box>
   )
 }

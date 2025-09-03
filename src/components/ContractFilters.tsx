@@ -1,6 +1,25 @@
 'use client'
 
-import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import React from 'react'
+import {
+  Box,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  Typography,
+  Button,
+  Grid2 as Grid,
+  Stack,
+  Paper
+} from '@mui/material'
+import {
+  FilterList as FilterListIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon
+} from '@mui/icons-material'
 
 interface ContractFiltersProps {
   filters: {
