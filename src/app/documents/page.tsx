@@ -1,6 +1,50 @@
 'use client';
 
 import { useState, Suspense, useEffect } from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormControlLabel,
+  Checkbox,
+  Grid,
+  IconButton,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Alert,
+  AlertTitle,
+  CircularProgress,
+  useTheme
+} from '@mui/material';
+import {
+  Add,
+  Settings,
+  Download,
+  Email,
+  Delete,
+  Description,
+  CheckCircle,
+  OpenInNew,
+  Close,
+  Refresh
+} from '@mui/icons-material';
 import Navigation from '@/components/Navigation';
 import { useSearchParams } from 'next/navigation';
 import { useDocuments } from '@/hooks/useDocuments';
@@ -27,6 +71,8 @@ function DocumentsContent() {
   const [emailAddress, setEmailAddress] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const theme = useTheme();
+  
   // Lấy danh sách template metadata từ Supabase
   const { 
     documents, 
@@ -248,43 +294,45 @@ function DocumentsContent() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý Tài liệu</h1>
-            <p className="text-gray-600">
+    <Box sx={{ maxWidth: 1400, mx: 'auto', p: 3 }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+          <Box>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              Quản lý Tài liệu
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
               Tạo và quản lý tài liệu cho khách hàng, tài sản đảm bảo và thẩm định tín dụng.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <a
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Settings />}
               href="/templates"
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+              sx={{ borderRadius: 2 }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
               Quản lý Templates
-            </a>
-            <button
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
               onClick={() => setShowGenerateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
+              sx={{ borderRadius: 2 }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
               Tạo Tài liệu Mới
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Template Status Overview */}
-      <div className="mb-6 bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Tình trạng Templates</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {/* Group templates by type */}
+      <Card sx={{ mb: 3, p: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Tình trạng Templates
+        </Typography>
+        <Grid container spacing={2}>
           {Object.entries(
             templates.reduce((acc, template) => {
               const type = template.template_type;
@@ -295,529 +343,491 @@ function DocumentsContent() {
               return acc;
             }, {} as Record<string, any[]>)
           ).map(([type, templatesForType]) => (
-            <div key={type} className="p-3 rounded-lg border-2 border-green-200 bg-green-50">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-gray-600">{getDocumentTypeLabel(type)}</span>
-                <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="text-sm">
-                <span className="text-green-700">
+            <Grid key={type} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              <Card 
+                variant="outlined" 
+                sx={{ 
+                  p: 2, 
+                  borderColor: 'success.light',
+                  backgroundColor: 'success.50',
+                  borderWidth: 2
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {getDocumentTypeLabel(type)}
+                  </Typography>
+                  <CheckCircle sx={{ fontSize: 16, color: 'success.main' }} />
+                </Box>
+                <Typography variant="body2" color="success.main" fontWeight={500}>
                   {templatesForType.length} template{templatesForType.length > 1 ? 's' : ''}
-                </span>
-              </div>
-            </div>
+                </Typography>
+              </Card>
+            </Grid>
           ))}
           
-          {/* Show message if no templates */}
           {templates.length === 0 && (
-            <div className="col-span-full text-center py-8 text-gray-500">
-              <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="text-sm">Chưa có template nào</p>
-              <a href="/templates" className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2 inline-block">
-                Tải lên template đầu tiên →
-              </a>
-            </div>
+            <Grid size={{ xs: 12 }}>
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Description sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="body1" color="text.secondary" gutterBottom>
+                  Chưa có template nào
+                </Typography>
+                <Button
+                  variant="outlined"
+                  href="/templates"
+                  sx={{ mt: 1 }}
+                >
+                  Tải lên template đầu tiên →
+                </Button>
+              </Box>
+            </Grid>
           )}
-        </div>
-        <div className="mt-4 flex items-center justify-between text-sm">
-          <div className="text-gray-600">
+        </Grid>
+        
+        <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="body2" color="text.secondary">
             {templates.length} template{templates.length !== 1 ? 's' : ''} có sẵn cho {Object.keys(templates.reduce((acc, t) => ({...acc, [t.template_type]: true}), {})).length} loại tài liệu
-          </div>
-          <a href="/templates" className="text-blue-600 hover:text-blue-800 font-medium">
+          </Typography>
+          <Button size="small" href="/templates">
             Quản lý templates →
-          </a>
-        </div>
-      </div>
+          </Button>
+        </Box>
+      </Card>
 
       {documentsError && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Lỗi</h3>
-              <p className="mt-1 text-sm text-red-700">{documentsError}</p>
-            </div>
-          </div>
-        </div>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <AlertTitle>Lỗi</AlertTitle>
+          {documentsError}
+        </Alert>
       )}
 
-      {/* Generate Document Modal */}
-      {showGenerateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Tạo Tài liệu Mới</h3>
-              <button
-                onClick={() => setShowGenerateForm(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <form onSubmit={handleFormSubmit} className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Template *
-                  </label>
-                  <select
-                    value={formData.templateId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, templateId: e.target.value as any }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  >
-                    <option value="">-- Chọn template --</option>
-                    {templates.map(template => (
-                      <option key={template.template_id} value={template.template_id}>
-                        {template.template_name} ({template.template_type})
-                      </option>
-                    ))}
-                  </select>
-                  {templates.length === 0 && (
-                    <p className="mt-2 text-sm text-gray-500">
-                      Chưa có template nào. <a href="/templates" className="text-blue-600 hover:text-blue-800">Tải lên template</a>
-                    </p>
-                  )}
-                  {formData.templateId && (
-                    <div className="mt-2 p-3 rounded-lg bg-gray-50">
-                      {(() => {
-                        const selectedTemplate = templates.find(t => t.template_id === Number(formData.templateId));
-                        if (selectedTemplate) {
-                          return (
-                            <div>
-                              <div className="flex items-center text-green-600 text-sm mb-2">
-                                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                Template đã chọn:
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-700">
-                                  {selectedTemplate.template_name}
-                                </span>
-                                <a
-                                  href={selectedTemplate.file_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800"
-                                >
-                                  Xem template
-                                </a>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Loại: {selectedTemplate.template_type}
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Khách hàng *
-                  </label>
-                  <select
-                    value={formData.customerId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, customerId: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  >
-                    <option value="">-- Chọn khách hàng --</option>
-                    {customersList.map((customer: any) => (
-                      <option key={customer.customer_id} value={customer.customer_id}>
-                        {customer.full_name} ({customer.id_number})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tài sản đảm bảo (tùy chọn)
-                  </label>
-                  <select
-                    value={formData.collateralId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, collateralId: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">-- Không chọn --</option>
-                    {collateralsList.map((collateral: any) => (
-                      <option key={collateral.collateral_id} value={collateral.collateral_id}>
-                        {collateral.collateral_type} - {collateral.description}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Thẩm định tín dụng (tùy chọn)
-                  </label>
-                  <select
-                    value={formData.assessmentId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, assessmentId: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">-- Không chọn --</option>
-                    {assessmentsList.map((assessment: any) => (
-                      <option key={assessment.assessment_id} value={assessment.assessment_id}>
-                        {assessment.customer?.full_name} - {assessment.status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Định dạng
-                  </label>
-                  <select
-                    value={formData.exportType}
-                    onChange={(e) => setFormData(prev => ({ ...prev, exportType: e.target.value as 'docx' | 'xlsx' }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="docx">Word (.docx)</option>
-                    <option value="xlsx">Excel (.xlsx)</option>
-                  </select>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Hỗ trợ tạo file Word (.docx) và Excel (.xlsx) từ template
-                  </p>
-                </div>
-
-                {/* Email Options */}
-                <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.sendViaEmail}
-                      onChange={(e) => {
-                        const sendViaEmail = e.target.checked;
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          sendViaEmail,
-                          emailAddress: sendViaEmail ? (
-                            customersList.find(c => c.customer_id === parseInt(formData.customerId))?.email || ''
-                          ) : ''
-                        }));
-                      }}
-                      className="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm font-medium text-gray-700">Gửi tài liệu qua email</span>
-                  </label>
-                </div>
-
-                {formData.sendViaEmail && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Địa chỉ email người nhận *
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.emailAddress}
-                      onChange={(e) => setFormData(prev => ({ ...prev, emailAddress: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="example@email.com"
-                      required={formData.sendViaEmail}
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Email sẽ được gửi sau khi tạo tài liệu thành công
-                    </p>
-                  </div>
+      {/* Generate Document Dialog */}
+      <Dialog
+        open={showGenerateForm}
+        onClose={() => setShowGenerateForm(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            Tạo Tài liệu Mới
+            <IconButton onClick={() => setShowGenerateForm(false)} size="small">
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        
+        <form onSubmit={handleFormSubmit}>
+          <DialogContent sx={{ pt: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Template Selection */}
+              <FormControl fullWidth required>
+                <InputLabel>Template</InputLabel>
+                <Select
+                  value={formData.templateId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, templateId: e.target.value as any }))}
+                  label="Template"
+                >
+                  <MenuItem value="">-- Chọn template --</MenuItem>
+                  {templates.map(template => (
+                    <MenuItem key={template.template_id} value={template.template_id}>
+                      {template.template_name} ({template.template_type})
+                    </MenuItem>
+                  ))}
+                </Select>
+                {templates.length === 0 && (
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                    Chưa có template nào. <Button size="small" href="/templates">Tải lên template</Button>
+                  </Typography>
                 )}
-              </div>
+                {formData.templateId && (
+                  <Card variant="outlined" sx={{ mt: 2, p: 2, bgcolor: 'grey.50' }}>
+                    {(() => {
+                      const selectedTemplate = templates.find(t => t.template_id === Number(formData.templateId));
+                      if (selectedTemplate) {
+                        return (
+                          <Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main', mb: 1 }}>
+                              <CheckCircle sx={{ fontSize: 16, mr: 0.5 }} />
+                              <Typography variant="body2">Template đã chọn:</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2">{selectedTemplate.template_name}</Typography>
+                              <Button
+                                size="small"
+                                startIcon={<OpenInNew />}
+                                href={selectedTemplate.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Xem template
+                              </Button>
+                            </Box>
+                            <Typography variant="caption" color="text.secondary">
+                              Loại: {selectedTemplate.template_type}
+                            </Typography>
+                          </Box>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </Card>
+                )}
+              </FormControl>
 
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowGenerateForm(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium"
+              {/* Customer Selection */}
+              <FormControl fullWidth required>
+                <InputLabel>Khách hàng</InputLabel>
+                <Select
+                  value={formData.customerId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, customerId: e.target.value }))}
+                  label="Khách hàng"
                 >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={isGenerating}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isGenerating ? 'Đang tạo...' : (formData.sendViaEmail ? 'Tạo & Gửi Email' : 'Tạo Tài liệu')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                  <MenuItem value="">-- Chọn khách hàng --</MenuItem>
+                  {customersList.map((customer: any) => (
+                    <MenuItem key={customer.customer_id} value={customer.customer_id}>
+                      {customer.full_name} ({customer.id_number})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-      {/* Send Email Modal */}
-      {showSendmailModal && selectedDocumentForEmail && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Gửi Tài liệu qua Email</h3>
-              <button
+              {/* Collateral Selection */}
+              <FormControl fullWidth>
+                <InputLabel>Tài sản đảm bảo (tùy chọn)</InputLabel>
+                <Select
+                  value={formData.collateralId || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, collateralId: e.target.value }))}
+                  label="Tài sản đảm bảo (tùy chọn)"
+                >
+                  <MenuItem value="">-- Không chọn --</MenuItem>
+                  {collateralsList.map((collateral: any) => (
+                    <MenuItem key={collateral.collateral_id} value={collateral.collateral_id}>
+                      {collateral.collateral_type} - {collateral.description}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Assessment Selection */}
+              <FormControl fullWidth>
+                <InputLabel>Thẩm định tín dụng (tùy chọn)</InputLabel>
+                <Select
+                  value={formData.assessmentId || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, assessmentId: e.target.value }))}
+                  label="Thẩm định tín dụng (tùy chọn)"
+                >
+                  <MenuItem value="">-- Không chọn --</MenuItem>
+                  {assessmentsList.map((assessment: any) => (
+                    <MenuItem key={assessment.assessment_id} value={assessment.assessment_id}>
+                      {assessment.customer?.full_name} - {assessment.status}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Export Type */}
+              <FormControl fullWidth>
+                <InputLabel>Định dạng</InputLabel>
+                <Select
+                  value={formData.exportType}
+                  onChange={(e) => setFormData(prev => ({ ...prev, exportType: e.target.value as 'docx' | 'xlsx' }))}
+                  label="Định dạng"
+                >
+                  <MenuItem value="docx">Word (.docx)</MenuItem>
+                  <MenuItem value="xlsx">Excel (.xlsx)</MenuItem>
+                </Select>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                  Hỗ trợ tạo file Word (.docx) và Excel (.xlsx) từ template
+                </Typography>
+              </FormControl>
+
+              {/* Email Options */}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.sendViaEmail || false}
+                    onChange={(e) => {
+                      const sendViaEmail = e.target.checked;
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        sendViaEmail,
+                        emailAddress: sendViaEmail ? (
+                          customersList.find(c => c.customer_id === parseInt(formData.customerId))?.email || ''
+                        ) : ''
+                      }));
+                    }}
+                  />
+                }
+                label="Gửi tài liệu qua email"
+              />
+
+              {formData.sendViaEmail && (
+                <TextField
+                  fullWidth
+                  type="email"
+                  label="Địa chỉ email người nhận"
+                  value={formData.emailAddress || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, emailAddress: e.target.value }))}
+                  placeholder="example@email.com"
+                  required={formData.sendViaEmail}
+                  helperText="Email sẽ được gửi sau khi tạo tài liệu thành công"
+                />
+              )}
+            </Box>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 3, pt: 1 }}>
+            <Button onClick={() => setShowGenerateForm(false)} color="inherit">
+              Hủy
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isGenerating}
+              startIcon={isGenerating ? <CircularProgress size={16} /> : undefined}
+            >
+              {isGenerating ? 'Đang tạo...' : (formData.sendViaEmail ? 'Tạo & Gửi Email' : 'Tạo Tài liệu')}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Send Email Dialog */}
+      <Dialog
+        open={showSendmailModal}
+        onClose={() => {
+          setShowSendmailModal(false);
+          setSelectedDocumentForEmail(null);
+          setEmailAddress('');
+        }}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            Gửi Tài liệu qua Email
+            <IconButton
+              onClick={() => {
+                setShowSendmailModal(false);
+                setSelectedDocumentForEmail(null);
+                setEmailAddress('');
+              }}
+              size="small"
+            >
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        
+        {selectedDocumentForEmail && (
+          <form onSubmit={handleSendmailSubmit}>
+            <DialogContent sx={{ pt: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant="subtitle2" gutterBottom>Thông tin tài liệu:</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Loại:</strong> {getDocumentTypeLabel(selectedDocumentForEmail.document_type)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Tên file:</strong> {selectedDocumentForEmail.file_name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Khách hàng:</strong> {selectedDocumentForEmail.customer?.full_name}
+                  </Typography>
+                </Card>
+
+                <TextField
+                  fullWidth
+                  type="email"
+                  label="Địa chỉ email người nhận"
+                  value={emailAddress}
+                  onChange={(e) => setEmailAddress(e.target.value)}
+                  placeholder="example@email.com"
+                  required
+                  helperText={selectedDocumentForEmail.customer?.email ? 
+                    "Email mặc định từ thông tin khách hàng" : undefined}
+                />
+              </Box>
+            </DialogContent>
+
+            <DialogActions sx={{ p: 3, pt: 1 }}>
+              <Button
                 onClick={() => {
                   setShowSendmailModal(false);
                   setSelectedDocumentForEmail(null);
                   setEmailAddress('');
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                color="inherit"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <form onSubmit={handleSendmailSubmit} className="p-6">
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Thông tin tài liệu:</h4>
-                  <p className="text-sm text-gray-600">
-                    <strong>Loại:</strong> {getDocumentTypeLabel(selectedDocumentForEmail.document_type)}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <strong>Tên file:</strong> {selectedDocumentForEmail.file_name}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <strong>Khách hàng:</strong> {selectedDocumentForEmail.customer?.full_name}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Địa chỉ email người nhận *
-                  </label>
-                  <input
-                    type="email"
-                    value={emailAddress}
-                    onChange={(e) => setEmailAddress(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    placeholder="example@email.com"
-                    required
-                  />
-                  {selectedDocumentForEmail.customer?.email && (
-                    <p className="mt-1 text-xs text-gray-500">
-                      Email mặc định từ thông tin khách hàng
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSendmailModal(false);
-                    setSelectedDocumentForEmail(null);
-                    setEmailAddress('');
-                  }}
-                  className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 font-medium"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSending || !emailAddress}
-                  className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {isSending ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Đang gửi...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      Gửi Email
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                Hủy
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isSending || !emailAddress}
+                startIcon={isSending ? <CircularProgress size={16} /> : <Email />}
+              >
+                {isSending ? 'Đang gửi...' : 'Gửi Email'}
+              </Button>
+            </DialogActions>
+          </form>
+        )}
+      </Dialog>
 
       {/* Documents List */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Tài liệu đã tạo</h2>
-        </div>
+      <Card>
+        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="h6">Tài liệu đã tạo</Typography>
+        </Box>
 
         {documentsLoading ? (
-          <div className="flex justify-center items-center h-64">
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
             <LoadingSpinner message="Đang tải tài liệu..." />
-          </div>
+          </Box>
         ) : documents.length === 0 ? (
-          <div className="text-center py-12">
-            <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có tài liệu nào</h3>
-            <p className="text-gray-500 mb-4">Bắt đầu bằng cách tạo tài liệu đầu tiên</p>
-            <button
+          <Box sx={{ textAlign: 'center', py: 6 }}>
+            <Description sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h6" gutterBottom>Chưa có tài liệu nào</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Bắt đầu bằng cách tạo tài liệu đầu tiên
+            </Typography>
+            <Button
+              variant="contained"
               onClick={() => setShowGenerateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium"
             >
               Tạo Tài liệu Mới
-            </button>
-          </div>
+            </Button>
+          </Box>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Loại Tài liệu
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Khách hàng
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tên File
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Template
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ngày tạo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Thao tác
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Loại Tài liệu</TableCell>
+                  <TableCell>Khách hàng</TableCell>
+                  <TableCell>Tên File</TableCell>
+                  <TableCell>Template</TableCell>
+                  <TableCell>Ngày tạo</TableCell>
+                  <TableCell>Thao tác</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {documents.map((doc) => (
-                  <tr key={doc.document_id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {getDocumentTypeLabel(doc.document_type)}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{doc.customer?.full_name}</div>
-                      <div className="text-sm text-gray-500">{doc.customer?.id_number}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{doc.file_name}</div>
-                      <div className="text-sm text-gray-500">
+                  <TableRow key={doc.document_id} hover>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 1,
+                            bgcolor: 'primary.100',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <Description sx={{ fontSize: 16, color: 'primary.main' }} />
+                        </Box>
+                        <Typography variant="body2" fontWeight={500}>
+                          {getDocumentTypeLabel(doc.document_type)}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{doc.customer?.full_name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {doc.customer?.id_number}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{doc.file_name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
                         {doc.file_name.endsWith('.docx') ? 'Word' : doc.file_name.endsWith('.xlsx') ? 'Excel' : 'Unknown'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {(() => {
-                          const templatesForType = templates.filter(tpl => tpl.template_type === doc.document_type);
-                          if (templatesForType.length > 0) {
-                            return (
-                              <div className="space-y-1">
-                                {templatesForType.slice(0, 1).map(template => (
-                                  <div key={template.template_id} className="flex items-center">
-                                    <span className="text-green-700">{template.template_name}</span>
-                                    <a
-                                      href={template.file_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="ml-2 text-blue-600 hover:text-blue-800"
-                                      title="Xem template"
-                                    >
-                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                      </svg>
-                                    </a>
-                                  </div>
-                                ))}
-                                {templatesForType.length > 1 && (
-                                  <div className="text-xs text-gray-500">
-                                    +{templatesForType.length - 1} template khác
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          } else {
-                            return (
-                              <span className="text-gray-500 text-sm">Không có template</span>
-                            );
-                          }
-                        })()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(doc.created_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        <button
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const templatesForType = templates.filter(tpl => tpl.template_type === doc.document_type);
+                        if (templatesForType.length > 0) {
+                          return (
+                            <Box>
+                              {templatesForType.slice(0, 1).map(template => (
+                                <Box key={template.template_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="body2" color="success.main">
+                                    {template.template_name}
+                                  </Typography>
+                                  <IconButton
+                                    size="small"
+                                    href={template.file_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <OpenInNew sx={{ fontSize: 12 }} />
+                                  </IconButton>
+                                </Box>
+                              ))}
+                              {templatesForType.length > 1 && (
+                                <Typography variant="caption" color="text.secondary">
+                                  +{templatesForType.length - 1} template khác
+                                </Typography>
+                              )}
+                            </Box>
+                          );
+                        } else {
+                          return (
+                            <Typography variant="body2" color="text.secondary">Không có template</Typography>
+                          );
+                        }
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {formatDate(doc.created_at)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          size="small"
+                          startIcon={<Download />}
                           onClick={() => handleDownload(doc)}
-                          className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                          title="Tải xuống tài liệu"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
                           Tải xuống
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          size="small"
+                          color="success"
+                          startIcon={<Email />}
                           onClick={() => handleSendmail(doc)}
-                          className="text-green-600 hover:text-green-900 flex items-center gap-1"
-                          title="Gửi qua email"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
                           Gửi email
-                        </button>
-                        <button
+                        </Button>
+                        <IconButton
+                          size="small"
+                          color="error"
                           onClick={() => handleDelete(doc.document_id)}
-                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                          title="Xóa tài liệu"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Xóa
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                          <Delete />
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
-      </div>
-    </div>
+      </Card>
+    </Box>
   );
 }
 
