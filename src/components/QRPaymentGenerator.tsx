@@ -2,9 +2,41 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
-import { XMarkIcon, QrCodeIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  FormControlLabel,
+  Checkbox,
+  MenuItem,
+  Alert,
+  CircularProgress,
+  Paper,
+  IconButton,
+  useTheme,
+  useMediaQuery,
+  Autocomplete,
+  Chip
+} from '@mui/material'
+import {
+  Close as CloseIcon,
+  QrCode as QrCodeIcon,
+  Download as DownloadIcon,
+  OpenInNew as OpenInNewIcon,
+  AccountBalance as AccountBalanceIcon,
+  Person as PersonIcon,
+  AttachMoney as AttachMoneyIcon,
+  Description as DescriptionIcon,
+  Image as ImageIcon
+} from '@mui/icons-material'
 import { useCustomers } from '@/hooks/useCustomers'
 
 interface QRPaymentGeneratorProps {
@@ -28,7 +60,10 @@ export default function QRPaymentGenerator({
   onClose,
   prefilledCustomerId
 }: QRPaymentGeneratorProps) {
+  const theme = useTheme()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
   const { customers } = useCustomers()
+  
   const [formData, setFormData] = useState<QRPaymentData>({
     accountNumber: '',
     accountName: '',
@@ -92,7 +127,7 @@ export default function QRPaymentGenerator({
     fetchBackgrounds()
   }, [])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
     setFormData(prev => ({
       ...prev,
@@ -176,249 +211,342 @@ export default function QRPaymentGenerator({
     onClose()
   }
 
+  const selectedCustomer = formData.selectedCustomerId 
+    ? customers.find(c => c.customer_id === formData.selectedCustomerId)
+    : null
+
   return (
     <Dialog
-      as="div"
-      className="fixed inset-0 z-50 overflow-y-auto"
       open={isOpen}
       onClose={handleClose}
+      fullScreen={fullScreen}
+      maxWidth="lg"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: fullScreen ? 0 : 2,
+          boxShadow: theme.shadows[8],
+          minHeight: fullScreen ? '100vh' : 'auto'
+        }
+      }}
     >
-      <div className="min-h-screen px-4 text-center">
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        bgcolor: 'primary.main',
+        color: 'primary.contrastText',
+        p: 3
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <QrCodeIcon />
+          <Typography variant="h6">
+            Tạo Mã QR Thanh Toán Vietinbank
+          </Typography>
+        </Box>
+        <IconButton 
+          onClick={handleClose} 
+          sx={{ color: 'inherit' }}
+          size="small"
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
 
-        <div className="inline-block w-full max-w-4xl my-8 p-6 text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-          <div className="flex justify-between items-center mb-4">
-            <Dialog.Title as="h3" className="text-xl font-bold text-gray-900 flex items-center">
-              <QrCodeIcon className="h-6 w-6 mr-2" />
-              Tạo Mã QR Thanh Toán Vietinbank
-            </Dialog.Title>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Form Section */}
-            <div className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Thông tin tài khoản</h4>
-                
-                <div className="flex items-center mb-3">
-                  <input
-                    type="checkbox"
-                    id="useCustomerData"
-                    name="useCustomerData"
-                    checked={formData.useCustomerData}
-                    onChange={handleCheckboxChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+      <DialogContent sx={{ p: 3 }}>
+        <Grid container spacing={3}>
+          {/* Form Section */}
+          <Grid item xs={12} lg={6}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Customer Data Section */}
+              <Card sx={{ bgcolor: 'primary.50' }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
+                    Thông tin tài khoản
+                  </Typography>
+                  
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="useCustomerData"
+                        checked={formData.useCustomerData}
+                        onChange={handleCheckboxChange}
+                      />
+                    }
+                    label="Sử dụng thông tin từ khách hàng"
+                    sx={{ mb: 2 }}
                   />
-                  <label htmlFor="useCustomerData" className="ml-2 text-sm text-blue-700">
-                    Sử dụng thông tin từ khách hàng
-                  </label>
-                </div>
 
-                {formData.useCustomerData && (
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Chọn khách hàng
-                    </label>
-                    <select
-                      name="selectedCustomerId"
-                      value={formData.selectedCustomerId || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        selectedCustomerId: e.target.value ? parseInt(e.target.value) : undefined
-                      }))}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    >
-                      <option value="">Chọn khách hàng...</option>
-                      {customers.map((customer) => (
-                        <option key={customer.customer_id} value={customer.customer_id}>
-                          {customer.full_name} - {customer.phone}
-                          {customer.account_number && ` (STK: ${customer.account_number})`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Số tài khoản <span className="text-red-500">*</span>
-                  {formData.useCustomerData && !!formData.selectedCustomerId && (
-                    <span className="text-xs text-green-600 ml-2">(từ thông tin khách hàng)</span>
+                  {formData.useCustomerData && (
+                    <Autocomplete
+                      value={selectedCustomer}
+                      onChange={(event, newValue) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          selectedCustomerId: newValue?.customer_id || undefined
+                        }))
+                      }}
+                      options={customers}
+                      getOptionLabel={(option) => 
+                        `${option.full_name} - ${option.phone}${
+                          option.account_number ? ` (STK: ${option.account_number})` : ''
+                        }`
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Chọn khách hàng"
+                          variant="outlined"
+                          fullWidth
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: (
+                              <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                                <PersonIcon color="action" />
+                              </Box>
+                            ),
+                          }}
+                        />
+                      )}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              {option.full_name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {option.phone} {option.account_number && `• STK: ${option.account_number}`}
+                            </Typography>
+                          </Box>
+                        </li>
+                      )}
+                    />
                   )}
-                </label>
-                <input
-                  type="text"
-                  name="accountNumber"
-                  value={formData.accountNumber}
-                  onChange={handleInputChange}
-                  placeholder="Nhập số tài khoản Vietinbank"
-                  className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    formData.useCustomerData && !!formData.selectedCustomerId && formData.accountNumber 
-                      ? 'bg-green-50 border-green-300' 
-                      : ''
-                  }`}
-                  required
-                  readOnly={formData.useCustomerData && !!formData.selectedCustomerId && !!formData.accountNumber}
-                />
-                {formData.useCustomerData && !!formData.selectedCustomerId && !formData.accountNumber && (
-                  <p className="text-xs text-amber-600 mt-1">
-                    ⚠️ Khách hàng chưa có số tài khoản. Vui lòng nhập thủ công hoặc cập nhật thông tin khách hàng.
-                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Account Number */}
+              <TextField
+                name="accountNumber"
+                label="Số tài khoản"
+                value={formData.accountNumber}
+                onChange={handleInputChange}
+                required
+                fullWidth
+                variant="outlined"
+                placeholder="Nhập số tài khoản Vietinbank"
+                InputProps={{
+                  startAdornment: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                      <AccountBalanceIcon color="action" />
+                    </Box>
+                  ),
+                  readOnly: formData.useCustomerData && !!formData.selectedCustomerId && !!formData.accountNumber
+                }}
+                helperText={
+                  formData.useCustomerData && !!formData.selectedCustomerId
+                    ? formData.accountNumber 
+                      ? "Từ thông tin khách hàng"
+                      : "⚠️ Khách hàng chưa có số tài khoản. Vui lòng nhập thủ công."
+                    : "Trường này là bắt buộc"
+                }
+                sx={{
+                  '& .MuiInputBase-root': formData.useCustomerData && !!formData.selectedCustomerId && formData.accountNumber
+                    ? { bgcolor: 'success.50', borderColor: 'success.main' }
+                    : {}
+                }}
+              />
+
+              {/* Account Name */}
+              <TextField
+                name="accountName"
+                label="Tên chủ tài khoản"
+                value={formData.accountName}
+                onChange={handleInputChange}
+                required
+                fullWidth
+                variant="outlined"
+                placeholder="Nhập tên chủ tài khoản"
+                InputProps={{
+                  startAdornment: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                      <PersonIcon color="action" />
+                    </Box>
+                  ),
+                  readOnly: formData.useCustomerData && !!formData.selectedCustomerId
+                }}
+                helperText="Trường này là bắt buộc"
+              />
+
+              {/* Amount */}
+              <TextField
+                name="amount"
+                label="Số tiền (VNĐ)"
+                type="number"
+                value={formData.amount || ''}
+                onChange={handleInputChange}
+                fullWidth
+                variant="outlined"
+                placeholder="Nhập số tiền (tùy chọn)"
+                inputProps={{ min: 0 }}
+                InputProps={{
+                  startAdornment: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                      <AttachMoneyIcon color="action" />
+                    </Box>
+                  ),
+                }}
+              />
+
+              {/* Description */}
+              <TextField
+                name="description"
+                label="Nội dung chuyển khoản"
+                value={formData.description}
+                onChange={handleInputChange}
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                placeholder="Nhập nội dung chuyển khoản (tùy chọn)"
+                InputProps={{
+                  startAdornment: (
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mr: 1, pt: 1 }}>
+                      <DescriptionIcon color="action" />
+                    </Box>
+                  ),
+                }}
+              />
+
+              {/* Background Image */}
+              <TextField
+                name="backgroundImage"
+                label="Ảnh nền QR Code"
+                value={formData.backgroundImage || ''}
+                onChange={handleInputChange}
+                select
+                fullWidth
+                variant="outlined"
+                disabled={isLoadingBackgrounds}
+                InputProps={{
+                  startAdornment: (
+                    <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                      <ImageIcon color="action" />
+                    </Box>
+                  ),
+                }}
+                helperText={
+                  backgroundImages.length === 0 && !isLoadingBackgrounds
+                    ? "ℹ️ Chưa có ảnh nền nào trong thư mục qrimg của Vercel Blob"
+                    : formData.backgroundImage
+                    ? `✓ Sử dụng ảnh nền: ${formData.backgroundImage}`
+                    : undefined
+                }
+              >
+                <MenuItem value="">Không sử dụng ảnh nền (màu đặc)</MenuItem>
+                {isLoadingBackgrounds ? (
+                  <MenuItem disabled>Đang tải ảnh nền...</MenuItem>
+                ) : (
+                  backgroundImages.map((bg) => (
+                    <MenuItem key={bg.pathname} value={bg.name}>
+                      {bg.name}
+                    </MenuItem>
+                  ))
                 )}
-              </div>
+              </TextField>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tên chủ tài khoản <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="accountName"
-                  value={formData.accountName}
-                  onChange={handleInputChange}
-                  placeholder="Nhập tên chủ tài khoản"
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                  readOnly={formData.useCustomerData && !!formData.selectedCustomerId}
-                />
-              </div>
+              {/* Generate Button */}
+              <Button
+                onClick={generateQRCode}
+                variant="contained"
+                size="large"
+                disabled={isGenerating || !formData.accountNumber || !formData.accountName}
+                startIcon={isGenerating ? <CircularProgress size={20} /> : <QrCodeIcon />}
+                sx={{ py: 1.5 }}
+              >
+                {isGenerating ? 'Đang tạo...' : 'Tạo mã QR'}
+              </Button>
+            </Box>
+          </Grid>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Số tiền (VNĐ)
-                </label>
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount || ''}
-                  onChange={handleInputChange}
-                  placeholder="Nhập số tiền (tùy chọn)"
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  min="0"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nội dung chuyển khoản
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Nhập nội dung chuyển khoản (tùy chọn)"
-                  rows={3}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ảnh nền QR Code <span className="text-gray-500">(tùy chọn)</span>
-                </label>
-                <select
-                  name="backgroundImage"
-                  value={formData.backgroundImage || ''}
-                  onChange={handleInputChange}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  disabled={isLoadingBackgrounds}
-                >
-                  <option value="">Không sử dụng ảnh nền (màu đặc)</option>
-                  {isLoadingBackgrounds ? (
-                    <option disabled>Đang tải ảnh nền...</option>
-                  ) : (
-                    backgroundImages.map((bg) => (
-                      <option key={bg.pathname} value={bg.name}>
-                        {bg.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-                {backgroundImages.length === 0 && !isLoadingBackgrounds && (
-                  <p className="text-sm text-amber-600 mt-1">
-                    ℹ️ Chưa có ảnh nền nào trong thư mục qrimg của Vercel Blob
-                  </p>
-                )}
-                {formData.backgroundImage && (
-                  <p className="text-sm text-green-600 mt-1">
-                    ✓ Sử dụng ảnh nền: {formData.backgroundImage}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={generateQRCode}
-                  disabled={isGenerating || !formData.accountNumber || !formData.accountName}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <QrCodeIcon className="h-5 w-5 mr-2" />
-                  {isGenerating ? 'Đang tạo...' : 'Tạo mã QR'}
-                </button>
-              </div>
-            </div>
-
-            {/* Preview Section */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-4">Xem trước</h4>
+          {/* Preview Section */}
+          <Grid item xs={12} lg={6}>
+            <Paper sx={{ p: 3, bgcolor: 'grey.50', height: 'fit-content' }}>
+              <Typography variant="h6" sx={{ mb: 3 }}>
+                Xem trước
+              </Typography>
               
               {previewUrl ? (
-                <div className="text-center space-y-4">
-                  <div className="mx-auto border-2 border-gray-200 rounded-lg shadow-lg" style={{ maxHeight: '500px', maxWidth: '500px' }}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Paper 
+                    sx={{ 
+                      display: 'inline-block',
+                      p: 2,
+                      mb: 3,
+                      boxShadow: 4,
+                      maxWidth: '100%'
+                    }}
+                  >
                     <Image
                       src={previewUrl}
                       alt="QR Payment Code"
-                      width={500}
-                      height={500}
-                      className="w-full h-auto"
-                      style={{ objectFit: 'contain' }}
+                      width={400}
+                      height={400}
+                      style={{ 
+                        width: '100%', 
+                        height: 'auto',
+                        maxWidth: '400px'
+                      }}
                     />
-                  </div>
-                  <div className="flex space-x-2 justify-center">
-                    <button
+                  </Paper>
+                  
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Button
                       onClick={downloadQRCode}
-                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center"
+                      variant="contained"
+                      color="success"
+                      startIcon={<DownloadIcon />}
                     >
-                      <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
                       Tải xuống
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => window.open(previewUrl, '_blank')}
-                      className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                      variant="outlined"
+                      startIcon={<OpenInNewIcon />}
                     >
                       Xem toàn màn hình
-                    </button>
-                  </div>
-                </div>
+                    </Button>
+                  </Box>
+                </Box>
               ) : (
-                <div className="text-center text-gray-500 py-20">
-                  <QrCodeIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <p>Mã QR sẽ hiển thị tại đây sau khi tạo</p>
-                </div>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  color: 'text.secondary',
+                  py: 10
+                }}>
+                  <QrCodeIcon sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
+                  <Typography>
+                    Mã QR sẽ hiển thị tại đây sau khi tạo
+                  </Typography>
+                </Box>
               )}
-            </div>
-          </div>
+            </Paper>
+          </Grid>
+        </Grid>
 
-          <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h5 className="font-medium text-yellow-800 mb-2">Lưu ý:</h5>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• Mã QR được tạo có kích thước khổ giấy A6 (105 x 148 mm)</li>
-              <li>• Hình ảnh có độ phân giải cao phù hợp để in ấn</li>
-              <li>• Mã QR tương thích với các ứng dụng banking của Vietinbank</li>
-              <li>• Nếu không nhập số tiền, khách hàng có thể nhập số tiền khi quét mã</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+        {/* Info Alert */}
+        <Alert severity="info" sx={{ mt: 3 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Lưu ý:
+          </Typography>
+          <Box component="ul" sx={{ m: 0, pl: 2 }}>
+            <li>Mã QR được tạo có kích thước khổ giấy A6 (105 x 148 mm)</li>
+            <li>Hình ảnh có độ phân giải cao phù hợp để in ấn</li>
+            <li>Mã QR tương thích với các ứng dụng banking của Vietinbank</li>
+            <li>Nếu không nhập số tiền, khách hàng có thể nhập số tiền khi quét mã</li>
+          </Box>
+        </Alert>
+      </DialogContent>
     </Dialog>
   )
 }
