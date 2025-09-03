@@ -13,7 +13,6 @@ import {
   Paper,
   IconButton,
   Tooltip,
-  Chip,
   LinearProgress,
   useTheme
 } from '@mui/material'
@@ -222,7 +221,12 @@ export default function TaskDashboard() {
       <Navigation />
 
       {/* Header */}
-      <Paper elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+      <Paper elevation={0} sx={{ 
+        bgcolor: 'background.paper', 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.05)'
+      }}>
         <Container maxWidth="xl">
           <Box sx={{ 
             display: 'flex', 
@@ -231,10 +235,17 @@ export default function TaskDashboard() {
             py: 4 
           }}>
             <Box>
-              <Typography variant="h3" component="h1" fontWeight="600" sx={{ mb: 1 }}>
+              <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
+                mb: 1, 
+                color: 'text.primary',
+                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
                 📊 Bảng Điều Khiển Công Việc
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Quản lý và theo dõi tất cả công việc của bạn một cách hiệu quả
               </Typography>
             </Box>
@@ -245,12 +256,15 @@ export default function TaskDashboard() {
                   disabled={loading}
                   sx={{ 
                     bgcolor: 'background.paper',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    border: 1,
+                    borderColor: 'divider',
+                    boxShadow: '0px 2px 4px rgba(0,0,0,0.05)',
                     '&:hover': { 
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                      transform: 'translateY(-1px)'
+                      boxShadow: '0px 4px 8px rgba(0,0,0,0.1)',
+                      transform: 'translateY(-1px)',
+                      borderColor: 'primary.main'
                     },
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease-in-out'
                   }}
                 >
                   <RefreshIcon />
@@ -264,16 +278,17 @@ export default function TaskDashboard() {
                 sx={{ 
                   px: 4,
                   py: 1.5,
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  borderRadius: 2,
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  borderRadius: 3,
                   textTransform: 'none',
-                  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                   '&:hover': {
-                    boxShadow: '0 8px 25px rgba(25, 118, 210, 0.6)',
+                    boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
                     transform: 'translateY(-2px)'
                   },
-                  transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                  transition: 'all 0.2s ease-in-out'
                 }}
               >
                 Công Việc Mới
@@ -302,15 +317,16 @@ export default function TaskDashboard() {
           }}>
             {/* Total Tasks */}
             <Card elevation={0} sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
+              bgcolor: 'background.paper',
               position: 'relative',
               overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
               '&:hover': { 
                 transform: 'translateY(-4px)', 
-                boxShadow: '0 12px 20px -10px rgba(102, 126, 234, 0.4)' 
+                boxShadow: '0px 4px 16px rgba(52, 71, 103, 0.1)' 
               },
-              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              transition: 'all 0.2s ease-in-out'
             }}>
               <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
                 <Box sx={{ 
@@ -322,41 +338,33 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)'
+                    background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                    color: 'white'
                   }}>
                     <TrendingUpIcon fontSize="large" />
                   </Box>
                 </Box>
-                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1 }}>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
                   {stats.total}
                 </Typography>
-                <Typography variant="body2" fontWeight="500" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
                   Tổng Công Việc
                 </Typography>
               </CardContent>
-              <Box sx={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                bgcolor: 'rgba(255, 255, 255, 0.1)',
-              }} />
             </Card>
             
             {/* Pending Tasks */}
             <Card elevation={0} sx={{ 
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              color: 'white',
+              bgcolor: 'background.paper',
               position: 'relative',
               overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
               '&:hover': { 
                 transform: 'translateY(-4px)', 
-                boxShadow: '0 12px 20px -10px rgba(240, 147, 251, 0.4)' 
+                boxShadow: '0px 4px 16px rgba(251, 133, 0, 0.1)' 
               },
-              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              transition: 'all 0.2s ease-in-out'
             }}>
               <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
                 <Box sx={{ 
@@ -368,41 +376,33 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)'
+                    background: 'linear-gradient(135deg, #fb8500 0%, #ffb347 100%)',
+                    color: 'white'
                   }}>
                     <ScheduleIcon fontSize="large" />
                   </Box>
                 </Box>
-                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1 }}>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
                   {stats.pending}
                 </Typography>
-                <Typography variant="body2" fontWeight="500" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
                   Chờ Xử Lý
                 </Typography>
               </CardContent>
-              <Box sx={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                bgcolor: 'rgba(255, 255, 255, 0.1)',
-              }} />
             </Card>
             
             {/* In Progress Tasks */}
             <Card elevation={0} sx={{ 
-              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-              color: 'white',
+              bgcolor: 'background.paper',
               position: 'relative',
               overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
               '&:hover': { 
                 transform: 'translateY(-4px)', 
-                boxShadow: '0 12px 20px -10px rgba(79, 172, 254, 0.4)' 
+                boxShadow: '0px 4px 16px rgba(73, 163, 241, 0.1)' 
               },
-              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              transition: 'all 0.2s ease-in-out'
             }}>
               <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
                 <Box sx={{ 
@@ -414,41 +414,33 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)'
+                    background: 'linear-gradient(135deg, #49a3f1 0%, #5dade2 100%)',
+                    color: 'white'
                   }}>
                     <WarningIcon fontSize="large" />
                   </Box>
                 </Box>
-                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1 }}>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
                   {stats.inProgress}
                 </Typography>
-                <Typography variant="body2" fontWeight="500" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
                   Đang Thực Hiện
                 </Typography>
               </CardContent>
-              <Box sx={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                bgcolor: 'rgba(255, 255, 255, 0.1)',
-              }} />
             </Card>
             
             {/* Completed Tasks */}
             <Card elevation={0} sx={{ 
-              background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-              color: 'white',
+              bgcolor: 'background.paper',
               position: 'relative',
               overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
               '&:hover': { 
                 transform: 'translateY(-4px)', 
-                boxShadow: '0 12px 20px -10px rgba(67, 233, 123, 0.4)' 
+                boxShadow: '0px 4px 16px rgba(130, 214, 22, 0.1)' 
               },
-              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              transition: 'all 0.2s ease-in-out'
             }}>
               <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
                 <Box sx={{ 
@@ -460,41 +452,33 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)'
+                    background: 'linear-gradient(135deg, #82d616 0%, #a8e6cf 100%)',
+                    color: 'white'
                   }}>
                     <CheckCircleIcon fontSize="large" />
                   </Box>
                 </Box>
-                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1 }}>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
                   {stats.completed}
                 </Typography>
-                <Typography variant="body2" fontWeight="500" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
                   Hoàn Thành
                 </Typography>
               </CardContent>
-              <Box sx={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                bgcolor: 'rgba(255, 255, 255, 0.1)',
-              }} />
             </Card>
             
             {/* Overdue Tasks */}
             <Card elevation={0} sx={{ 
-              background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-              color: 'white',
+              bgcolor: 'background.paper',
               position: 'relative',
               overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
               '&:hover': { 
                 transform: 'translateY(-4px)', 
-                boxShadow: '0 12px 20px -10px rgba(250, 112, 154, 0.4)' 
+                boxShadow: '0px 4px 16px rgba(234, 6, 6, 0.1)' 
               },
-              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              transition: 'all 0.2s ease-in-out'
             }}>
               <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
                 <Box sx={{ 
@@ -506,67 +490,70 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)'
+                    background: 'linear-gradient(135deg, #ea0606 0%, #ff6b6b 100%)',
+                    color: 'white'
                   }}>
                     <ErrorIcon fontSize="large" />
                   </Box>
                 </Box>
-                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1 }}>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
                   {stats.overdue}
                 </Typography>
-                <Typography variant="body2" fontWeight="500" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
                   Quá Hạn
                 </Typography>
               </CardContent>
-              <Box sx={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                bgcolor: 'rgba(255, 255, 255, 0.1)',
-              }} />
             </Card>
           </Box>
           
           {/* Progress Bar */}
           {stats.total > 0 && (
-            <Card elevation={0} sx={{ mt: 4, p: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" fontWeight="600">
+            <Card elevation={0} sx={{ 
+              mt: 4, 
+              p: 4, 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 3
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" fontWeight="600" sx={{ color: 'text.primary' }}>
                   Tiến Độ Hoàn Thành Tổng Thể
                 </Typography>
-                <Chip 
-                  label={`${Math.round((stats.completed / stats.total) * 100)}%`}
-                  sx={{ 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)', 
-                    color: 'white',
-                    fontWeight: '600',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                />
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: 2,
+                  background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                  color: 'white'
+                }}>
+                  <Typography variant="body2" fontWeight="700">
+                    {Math.round((stats.completed / stats.total) * 100)}%
+                  </Typography>
+                </Box>
               </Box>
               <LinearProgress 
                 variant="determinate" 
                 value={(stats.completed / stats.total) * 100}
                 sx={{ 
-                  height: 12, 
-                  borderRadius: 6,
-                  bgcolor: 'rgba(255, 255, 255, 0.2)',
+                  height: 10, 
+                  borderRadius: 5,
+                  bgcolor: 'grey.200',
                   '& .MuiLinearProgress-bar': {
-                    borderRadius: 6,
-                    background: 'linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,1) 100%)'
+                    borderRadius: 5,
+                    background: 'linear-gradient(90deg, #3867d6 0%, #8854d0 100%)'
                   }
                 }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  {stats.completed} / {stats.total} công việc hoàn thành
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  <strong>{stats.completed}</strong> / {stats.total} công việc hoàn thành
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  {stats.total - stats.completed} công việc còn lại
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  <strong>{stats.total - stats.completed}</strong> công việc còn lại
                 </Typography>
               </Box>
             </Card>
