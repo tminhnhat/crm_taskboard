@@ -198,22 +198,19 @@ export default function TaskDashboard() {
 
   if (error) {
     return (
-      <Box 
-        sx={{ 
-          minHeight: '100vh', 
-          bgcolor: 'grey.50', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}
-      >
-        <Box sx={{ textAlign: 'center' }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            Lỗi khi tải danh sách công việc: {error}
-          </Alert>
-          <Typography color="text.secondary">
-            Vui lòng kiểm tra cấu hình Supabase trong file .env.local
-          </Typography>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+        <Navigation />
+        <Box sx={{ maxWidth: '7xl', mx: 'auto', px: { xs: 2, sm: 3, lg: 4 }, py: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Lỗi khi tải danh sách công việc: {error}
+              </Alert>
+              <Typography color="text.secondary">
+                Vui lòng kiểm tra cấu hình Supabase trong file .env.local
+              </Typography>
+            </Box>
+          </Box>
         </Box>
       </Box>
     )
