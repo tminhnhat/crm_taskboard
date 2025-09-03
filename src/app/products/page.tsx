@@ -190,6 +190,7 @@ export default function ProductsPage() {
                 Vui lòng kiểm tra cấu hình Supabase trong file .env.local
               </Typography>
             </Box>
+          </Box>
         </Box>
       </Box>
     )
@@ -469,7 +470,13 @@ export default function ProductsPage() {
 
         {/* Filters Section */}
         <Paper elevation={1} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <ProductFilters filters={filters} onFiltersChange={setFilters} />
+          <ProductFilters 
+            filters={filters} 
+            onFiltersChange={setFilters}
+            availableProductTypes={availableProductTypes}
+            totalCount={products.length}
+            filteredCount={filteredProducts.length}
+          />
         </Paper>
 
         {/* Products List */}

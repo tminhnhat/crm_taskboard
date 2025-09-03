@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Box,
   TextField,
   Select,
@@ -11,19 +15,27 @@ import {
   Button,
   Typography,
   Divider,
-  InputAdornment
+  InputAdornment,
+  useTheme,
+  useMediaQuery,
+  IconButton
 } from '@mui/material'
+import { Close as CloseIcon } from '@mui/icons-material'
 import { Product } from '@/lib/supabase'
 import JsonInputHelper from './JsonInputHelper'
 
 interface ProductFormProps {
-  product?: Product | null
+  isOpen: boolean
+  onClose: () => void
   onSave: (productData: Partial<Product>) => void
-  onCancel: () => void
+  product?: Product | null
   isLoading?: boolean
 }
 
-export default function ProductForm({ product, onSave, onCancel, isLoading }: ProductFormProps) {
+export default function ProductForm({ isOpen, onClose, onSave, product, isLoading }: ProductFormProps) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  
   const [formData, setFormData] = useState({
     product_name: product?.product_name || '',
     product_type: product?.product_type || '',
@@ -85,35 +97,38 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
   })
 
   return (
-    <Box 
-      sx={{ 
-        position: 'fixed', 
-        inset: 0, 
-        bgcolor: 'rgba(0, 0, 0, 0.5)', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        p: 2, 
-        zIndex: 50 
+    <Dialog 
+      open={isOpen}
+      onClose={onClose}
+      fullScreen={isMobile}
+      maxWidth="md" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: isMobile ? 0 : 2,
+          bgcolor: 'background.paper'
+        }
       }}
     >
-      <Box 
-        sx={{ 
-          bgcolor: 'background.paper', 
-          borderRadius: 2, 
-          boxShadow: 24, 
-          maxWidth: '4xl', 
-          width: '100%', 
-          maxHeight: '90vh', 
-          overflow: 'auto' 
-        }}
-      >
-        <Box sx={{ p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 600, color: 'text.primary', mb: 3 }}>
-            {product ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
-          </Typography>
-          
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+        color: 'white',
+        fontWeight: 700
+      }}>
+        {product ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
+        <IconButton
+          onClick={onClose}
+          sx={{ color: 'white' }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      
+      <DialogContent sx={{ pt: 3 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Basic Product Information */}
             <TextField
               size="small"
@@ -319,31 +334,31 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
                 Thêm thông tin bổ sung với giao diện thân thiện
               </Typography>
             </Box>
-
-            {/* Form Actions */}
-            <Box sx={{ display: 'flex', gap: 2, pt: 2 }}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={isLoading || !formData.product_name.trim()}
-                sx={{ flex: 1 }}
-              >
-                {isLoading ? 'Đang lưu...' : (product ? 'Cập Nhật Sản Phẩm' : 'Tạo Sản Phẩm')}
-              </Button>
-              <Button
-                type="button"
-                variant="outlined"
-                color="inherit"
-                onClick={onCancel}
-                sx={{ flex: 1 }}
-              >
-                Hủy
-              </Button>
-            </Box>
-          </Box>
         </Box>
-      </Box>
-    </Box>
+      </DialogContent>
+      
+      <DialogActions sx={{ p: 3, gap: 1 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="inherit"
+          sx={{ flex: 1 }}
+        >
+          Hủy
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          color="primary"
+          disabled={isLoading || !formData.product_name.trim()}
+          sx={{ 
+            flex: 1,
+            background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)'
+          }}
+        >
+          {isLoading ? 'Đang lưu...' : (product ? 'Cập Nhật Sản Phẩm' : 'Tạo Sản Phẩm')}
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }

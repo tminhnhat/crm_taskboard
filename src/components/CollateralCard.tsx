@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Collateral } from '@/lib/supabase'
 import {
+  Card,
   CardContent,
   Typography,
   Box,
@@ -20,7 +21,8 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  Paper
+  Paper,
+  Button
 } from '@mui/material'
 import { 
   Home,
@@ -226,79 +228,121 @@ const getCollateralTypeInVietnamese = (type: string): string => {
 
 export default function CollateralCard({ collateral, onEdit, onDelete }: CollateralCardProps) {
   return (
-    <StyledCard>
-      <CardContent>
+    <Card elevation={0} sx={{
+      bgcolor: 'background.paper',
+      border: 1,
+      borderColor: 'divider',
+      borderRadius: 2,
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: '0px 4px 12px rgba(52, 71, 103, 0.1)'
+      }
+    }}>
+      <CardContent sx={{ p: 3 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ 
               p: 1.5, 
-              bgcolor: 'primary.light', 
+              bgcolor: 'rgba(52, 71, 103, 0.1)', 
               borderRadius: 2, 
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <Assessment sx={{ fontSize: 24, color: 'primary.main' }} />
+              <Assessment sx={{ fontSize: 24, color: '#344767' }} />
             </Box>
             <Box>
-              <Typography variant="h6" fontWeight="bold" color="text.primary">
+              <Typography variant="h6" fontWeight="700" sx={{ color: '#344767', mb: 0.5 }}>
                 {collateral.collateral_type ? (
                   getCollateralTypeInVietnamese(collateral.collateral_type)
                 ) : (
                   'Tài sản thế chấp'
                 )}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Loại tài sản thế chấp
               </Typography>
             </Box>
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <ActionButton
+            <Button
               size="small"
               startIcon={<Edit />}
               onClick={() => onEdit(collateral)}
-              color="primary"
               variant="outlined"
+              sx={{
+                borderColor: '#344767',
+                color: '#344767',
+                fontWeight: 600,
+                px: 2,
+                py: 1,
+                borderRadius: 2,
+                textTransform: 'none',
+                '&:hover': {
+                  borderColor: '#344767',
+                  bgcolor: 'rgba(52, 71, 103, 0.04)',
+                  transform: 'translateY(-1px)'
+                }
+              }}
             >
               Sửa
-            </ActionButton>
-            <ActionButton
+            </Button>
+            <Button
               size="small"
               startIcon={<Delete />}
               onClick={() => onDelete(collateral)}
-              color="error"
               variant="outlined"
+              sx={{
+                borderColor: 'error.main',
+                color: 'error.main',
+                fontWeight: 600,
+                px: 2,
+                py: 1,
+                borderRadius: 2,
+                textTransform: 'none',
+                '&:hover': {
+                  borderColor: 'error.main',
+                  bgcolor: 'rgba(211, 47, 47, 0.04)',
+                  transform: 'translateY(-1px)'
+                }
+              }}
             >
               Xóa
-            </ActionButton>
+            </Button>
           </Box>
         </Box>
 
-        <Stack spacing={2}>
+        <Stack spacing={3}>
           {/* Customer Information */}
           {collateral.customer && (
-            <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <Box sx={{ 
+              p: 2.5, 
+              bgcolor: 'rgba(248, 250, 252, 0.8)', 
+              borderRadius: 2, 
+              border: 1,
+              borderColor: 'rgba(52, 71, 103, 0.1)'
+            }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ fontWeight: 600 }}>
                 Thông tin khách hàng
               </Typography>
-              <Typography variant="h6" color="text.primary" gutterBottom>
+              <Typography variant="h6" sx={{ color: '#344767', fontWeight: 700, mb: 1.5 }}>
                 {collateral.customer.full_name}
               </Typography>
               <Stack spacing={0.5}>
                 {collateral.customer.phone && (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     SĐT: {collateral.customer.phone}
                   </Typography>
                 )}
                 {collateral.customer.address && (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     Địa chỉ: {collateral.customer.address}
                   </Typography>
                 )}
                 {collateral.customer.cif_number && (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     Số CIF: {collateral.customer.cif_number}
                   </Typography>
                 )}
@@ -307,37 +351,50 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
           )}
 
           {/* Value */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <AttachMoney sx={{ color: 'text.secondary', fontSize: 20 }} />
-            <Typography variant="body2" color="text.secondary">
-              Giá trị:
-            </Typography>
-            <Typography variant="h6" fontWeight="bold" color="primary.main">
-              {collateral.value !== null ? new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-              }).format(collateral.value) : 'Chưa có giá trị'}
-            </Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1.5,
+            p: 2,
+            bgcolor: 'rgba(52, 71, 103, 0.04)',
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'rgba(52, 71, 103, 0.1)'
+          }}>
+            <AttachMoney sx={{ color: '#344767', fontSize: 20 }} />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Giá trị tài sản:
+              </Typography>
+              <Typography variant="h6" fontWeight="700" sx={{ color: '#344767' }}>
+                {collateral.value !== null ? new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(collateral.value) : 'Chưa có giá trị'}
+              </Typography>
+            </Box>
           </Box>
 
           {/* Valuation Date */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Event sx={{ color: 'text.secondary', fontSize: 20 }} />
-            <Typography variant="body2" color="text.secondary">
-              Ngày định giá:
-            </Typography>
-            <Typography variant="body1" color="text.primary">
-              {collateral.valuation_date ? new Date(collateral.valuation_date).toLocaleDateString('vi-VN') : 'Chưa định giá'}
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2 }}>
+            <Event sx={{ color: '#344767', fontSize: 20 }} />
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Ngày định giá:
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#344767', fontWeight: 600 }}>
+                {collateral.valuation_date ? new Date(collateral.valuation_date).toLocaleDateString('vi-VN') : 'Chưa định giá'}
+              </Typography>
+            </Box>
           </Box>
 
           {/* Description */}
           {collateral.description && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+            <Box sx={{ p: 2, borderLeft: 4, borderColor: '#344767', bgcolor: 'rgba(248, 250, 252, 0.5)' }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 600 }}>
                 Mô tả:
               </Typography>
-              <Typography variant="body1" color="text.primary">
+              <Typography variant="body1" sx={{ color: '#344767', fontWeight: 500, lineHeight: 1.6 }}>
                 {collateral.description}
               </Typography>
             </Box>
@@ -345,13 +402,13 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
 
           {/* Location */}
           {collateral.location && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 600 }}>
                 Địa điểm:
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
-                <LocationOn sx={{ color: 'text.secondary', fontSize: 20, mt: 0.2 }} />
-                <Typography variant="body1" color="text.primary">
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <LocationOn sx={{ color: '#344767', fontSize: 20, mt: 0.2 }} />
+                <Typography variant="body1" sx={{ color: '#344767', fontWeight: 500 }}>
                   {collateral.location}
                 </Typography>
               </Box>
@@ -364,37 +421,64 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
               const IconComponent = getMetadataIcon(key);
               
               return (
-                <Accordion key={key} sx={{ boxShadow: 1 }}>
+                <Accordion key={key} elevation={0} sx={{ 
+                  bgcolor: 'background.paper',
+                  border: 1,
+                  borderColor: 'rgba(52, 71, 103, 0.1)',
+                  borderRadius: 2,
+                  '&:before': { display: 'none' }
+                }}>
                   <AccordionSummary
-                    expandIcon={<ExpandMore />}
-                    sx={{ bgcolor: 'action.hover' }}
+                    expandIcon={<ExpandMore sx={{ color: '#344767' }} />}
+                    sx={{ 
+                      bgcolor: 'rgba(52, 71, 103, 0.04)',
+                      borderRadius: 2,
+                      '&.Mui-expanded': {
+                        borderBottomLeftRadius: 0,
+                        borderBottomRightRadius: 0
+                      }
+                    }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <IconComponent sx={{ color: 'text.secondary', fontSize: 20 }} />
-                      <Typography variant="subtitle1" fontWeight="medium">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <IconComponent sx={{ color: '#344767', fontSize: 20 }} />
+                      <Typography variant="subtitle1" fontWeight="600" sx={{ color: '#344767' }}>
                         {formatFieldLabel(key)}
                       </Typography>
                     </Box>
                   </AccordionSummary>
-                  <AccordionDetails>
+                  <AccordionDetails sx={{ p: 0 }}>
                     <TableContainer>
                       <Table size="small">
                         <TableBody>
                           {Object.entries(data).map(([fieldKey, value]) => (
-                            <TableRow key={fieldKey}>
-                              <TableCell sx={{ width: '30%', fontWeight: 'medium', bgcolor: 'action.hover' }}>
+                            <TableRow key={fieldKey} sx={{ 
+                              '&:nth-of-type(odd)': { bgcolor: 'rgba(248, 250, 252, 0.5)' },
+                              '&:hover': { bgcolor: 'rgba(52, 71, 103, 0.04)' }
+                            }}>
+                              <TableCell sx={{ 
+                                width: '30%', 
+                                fontWeight: 600, 
+                                bgcolor: 'rgba(52, 71, 103, 0.08)',
+                                color: '#344767',
+                                borderColor: 'rgba(52, 71, 103, 0.1)'
+                              }}>
                                 {formatFieldLabel(fieldKey)}
                               </TableCell>
-                              <TableCell>
+                              <TableCell sx={{ 
+                                borderColor: 'rgba(52, 71, 103, 0.1)',
+                                color: '#344767',
+                                fontWeight: 500
+                              }}>
                                 {typeof value === 'boolean' ? (
                                   <Chip 
                                     label={value ? 'Có' : 'Không'}
                                     color={value ? 'success' : 'error'}
                                     size="small"
                                     variant="outlined"
+                                    sx={{ fontWeight: 600 }}
                                   />
                                 ) : typeof value === 'number' ? (
-                                  <Typography variant="body2">
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                     {value.toLocaleString('vi-VN')}
                                   </Typography>
                                 ) : typeof value === 'string' ? (
@@ -411,7 +495,7 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                                       if (!isNaN(date.getTime())) {
                                         const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
                                         return (
-                                          <Typography variant="body2">
+                                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                             {formattedDate}
                                           </Typography>
                                         )
@@ -425,7 +509,12 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                                           href={value}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          sx={{ fontSize: '0.875rem' }}
+                                          sx={{ 
+                                            fontSize: '0.875rem',
+                                            color: '#344767',
+                                            fontWeight: 600,
+                                            '&:hover': { color: '#3867d6' }
+                                          }}
                                         >
                                           {value}
                                         </Link>
@@ -434,7 +523,11 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                                     
                                     // Regular string display
                                     return (
-                                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                                      <Typography variant="body2" sx={{ 
+                                        whiteSpace: 'pre-wrap',
+                                        fontWeight: 500,
+                                        color: '#344767'
+                                      }}>
                                         {value}
                                       </Typography>
                                     )
@@ -442,11 +535,14 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
                                 ) : (
                                   <Box component="pre" sx={{ 
                                     fontSize: '0.875rem', 
-                                    bgcolor: 'action.hover', 
+                                    bgcolor: 'rgba(52, 71, 103, 0.04)', 
                                     borderRadius: 1, 
                                     p: 1, 
                                     overflow: 'auto',
-                                    fontFamily: 'monospace'
+                                    fontFamily: 'monospace',
+                                    color: '#344767',
+                                    border: 1,
+                                    borderColor: 'rgba(52, 71, 103, 0.1)'
                                   }}>
                                     {JSON.stringify(value, null, 2)}
                                   </Box>
@@ -463,6 +559,6 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
             })}
         </Stack>
       </CardContent>
-    </StyledCard>
+    </Card>
   )
 }
