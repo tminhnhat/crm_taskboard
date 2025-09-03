@@ -1,6 +1,19 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Typography,
+  Divider,
+  Grid,
+  InputAdornment
+} from '@mui/material'
 import { Product } from '@/lib/supabase'
 import JsonInputHelper from './JsonInputHelper'
 
@@ -73,260 +86,277 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }: Pr
   })
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+    <Box 
+      sx={{ 
+        position: 'fixed', 
+        inset: 0, 
+        bgcolor: 'rgba(0, 0, 0, 0.5)', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        p: 2, 
+        zIndex: 50 
+      }}
+    >
+      <Box 
+        sx={{ 
+          bgcolor: 'background.paper', 
+          borderRadius: 2, 
+          boxShadow: 24, 
+          maxWidth: '4xl', 
+          width: '100%', 
+          maxHeight: '90vh', 
+          overflow: 'auto' 
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 600, color: 'text.primary', mb: 3 }}>
             {product ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
-          </h2>
+          </Typography>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
-                Tên Sản Phẩm *
-              </label>
-              <input
-                type="text"
-                id="product_name"
-                name="product_name"
-                value={formData.product_name}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="VD: Gói Tiết Kiệm Sinh Lợi, Vay Thế Chấp Nhà Đất"
-              />
-            </div>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Basic Product Information */}
+            <TextField
+              size="small"
+              fullWidth
+              required
+              label="Tên Sản Phẩm"
+              name="product_name"
+              value={formData.product_name}
+              onChange={handleChange}
+              placeholder="VD: Gói Tiết Kiệm Sinh Lợi, Vay Thế Chấp Nhà Đất"
+            />
 
-            <div>
-              <label htmlFor="product_type" className="block text-sm font-medium text-gray-700 mb-1">
-                Loại Sản Phẩm
-              </label>
-              <select
-                id="product_type"
+            <FormControl size="small" fullWidth>
+              <InputLabel>Loại Sản Phẩm</InputLabel>
+              <Select
                 name="product_type"
                 value={formData.product_type}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                label="Loại Sản Phẩm"
+                onChange={(e) => setFormData(prev => ({ ...prev, product_type: e.target.value }))}
               >
-                <option value="">Chọn loại sản phẩm</option>
-                <option value="Savings Account">Tài Khoản Tiết Kiệm</option>
-                <option value="Current Account">Tài Khoản Vãng Lai</option>
-                <option value="Term Deposit">Gửi Tiết Kiệm Có Kỳ Hạn</option>
-                <option value="Personal Loan">Vay Cá Nhân</option>
-                <option value="Home Loan">Vay Thế Chấp Nhà Đất</option>
-                <option value="Auto Loan">Vay Mua Xe</option>
-                <option value="Business Loan">Vay Kinh Doanh</option>
-                <option value="Credit Card">Thẻ Tín Dụng</option>
-                <option value="Debit Card">Thẻ Ghi Nợ</option>
-                <option value="Life Insurance">Bảo Hiểm Nhân Thọ</option>
-                <option value="Health Insurance">Bảo Hiểm Sức Khỏe</option>
-                <option value="Property Insurance">Bảo Hiểm Tài Sản</option>
-                <option value="Auto Insurance">Bảo Hiểm Ô Tô</option>
-                <option value="Investment">Đầu Tư</option>
-                <option value="Foreign Exchange">Ngoại Hối</option>
-                <option value="Money Transfer">Chuyển Tiền</option>
-                <option value="Cash Management">Quản Lý Tiền Mặt</option>
-                <option value="Trade Finance">Tài Chính Thương Mại</option>
-                <option value="Payment Services">Dịch Vụ Thanh Toán</option>
-                <option value="Safe Deposit Box">Két An Toàn</option>
-                <option value="Financial Advisory">Tư Vấn Tài Chính</option>
-              </select>
-            </div>
+                <MenuItem value="">Chọn loại sản phẩm</MenuItem>
+                <MenuItem value="Savings Account">Tài Khoản Tiết Kiệm</MenuItem>
+                <MenuItem value="Current Account">Tài Khoản Vãng Lai</MenuItem>
+                <MenuItem value="Term Deposit">Gửi Tiết Kiệm Có Kỳ Hạn</MenuItem>
+                <MenuItem value="Personal Loan">Vay Cá Nhân</MenuItem>
+                <MenuItem value="Home Loan">Vay Thế Chấp Nhà Đất</MenuItem>
+                <MenuItem value="Auto Loan">Vay Mua Xe</MenuItem>
+                <MenuItem value="Business Loan">Vay Kinh Doanh</MenuItem>
+                <MenuItem value="Credit Card">Thẻ Tín Dụng</MenuItem>
+                <MenuItem value="Debit Card">Thẻ Ghi Nợ</MenuItem>
+                <MenuItem value="Life Insurance">Bảo Hiểm Nhân Thọ</MenuItem>
+                <MenuItem value="Health Insurance">Bảo Hiểm Sức Khỏe</MenuItem>
+                <MenuItem value="Property Insurance">Bảo Hiểm Tài Sản</MenuItem>
+                <MenuItem value="Auto Insurance">Bảo Hiểm Ô Tô</MenuItem>
+                <MenuItem value="Investment">Đầu Tư</MenuItem>
+                <MenuItem value="Foreign Exchange">Ngoại Hối</MenuItem>
+                <MenuItem value="Money Transfer">Chuyển Tiền</MenuItem>
+                <MenuItem value="Cash Management">Quản Lý Tiền Mặt</MenuItem>
+                <MenuItem value="Trade Finance">Tài Chính Thương Mại</MenuItem>
+                <MenuItem value="Payment Services">Dịch Vụ Thanh Toán</MenuItem>
+                <MenuItem value="Safe Deposit Box">Két An Toàn</MenuItem>
+                <MenuItem value="Financial Advisory">Tư Vấn Tài Chính</MenuItem>
+              </Select>
+            </FormControl>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="interest_rate" className="block text-sm font-medium text-gray-700 mb-1">
-                  Lãi Suất (%/năm)
-                </label>
-                <input
+            {/* Financial Details */}
+            <Divider />
+            <Typography variant="subtitle2" color="primary">
+              Thông Tin Tài Chính
+            </Typography>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  size="small"
+                  fullWidth
                   type="number"
-                  step="0.01"
-                  id="interest_rate"
+                  inputProps={{ step: 0.01 }}
+                  label="Lãi Suất"
                   name="interest_rate"
                   value={formData.interest_rate}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="VD: 6.5"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">%/năm</InputAdornment>,
+                  }}
+                  placeholder="VD: 8.5"
                 />
-              </div>
-              
-              <div>
-                <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-1">
-                  Đơn Vị Tiền Tệ
-                </label>
-                <select
-                  id="currency"
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="VND">VND</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="JPY">JPY</option>
-                </select>
-              </div>
-            </div>
+              </Grid>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="minimum_amount" className="block text-sm font-medium text-gray-700 mb-1">
-                  Số Tiền Tối Thiểu
-                </label>
-                <input
+              <Grid item xs={12} md={6}>
+                <FormControl size="small" fullWidth>
+                  <InputLabel>Đơn Vị Tiền Tệ</InputLabel>
+                  <Select
+                    name="currency"
+                    value={formData.currency}
+                    label="Đơn Vị Tiền Tệ"
+                    onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+                  >
+                    <MenuItem value="VND">VND</MenuItem>
+                    <MenuItem value="USD">USD</MenuItem>
+                    <MenuItem value="EUR">EUR</MenuItem>
+                    <MenuItem value="JPY">JPY</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+
+            {/* Amount Limits */}
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  size="small"
+                  fullWidth
                   type="number"
-                  id="minimum_amount"
+                  label="Số Tiền Tối Thiểu"
                   name="minimum_amount"
                   value={formData.minimum_amount}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="VD: 100000"
                 />
-              </div>
-              
-              <div>
-                <label htmlFor="maximum_amount" className="block text-sm font-medium text-gray-700 mb-1">
-                  Số Tiền Tối Đa
-                </label>
-                <input
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  size="small"
+                  fullWidth
                   type="number"
-                  id="maximum_amount"
+                  label="Số Tiền Tối Đa"
                   name="maximum_amount"
                   value={formData.maximum_amount}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="VD: 5000000000"
                 />
-              </div>
-            </div>
+              </Grid>
+            </Grid>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="terms_months" className="block text-sm font-medium text-gray-700 mb-1">
-                  Thời Hạn (tháng)
-                </label>
-                <input
+            {/* Terms and Fees */}
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  size="small"
+                  fullWidth
                   type="number"
-                  id="terms_months"
+                  label="Thời Hạn"
                   name="terms_months"
                   value={formData.terms_months}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">tháng</InputAdornment>,
+                  }}
                   placeholder="VD: 12"
                 />
-              </div>
+              </Grid>
               
-              <div>
-                <label htmlFor="fees" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phí Dịch Vụ
-                </label>
-                <input
+              <Grid item xs={12} md={6}>
+                <TextField
+                  size="small"
+                  fullWidth
                   type="number"
-                  step="0.01"
-                  id="fees"
+                  inputProps={{ step: 0.01 }}
+                  label="Phí Dịch Vụ"
                   name="fees"
                   value={formData.fees}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="VD: 50000"
                 />
-              </div>
-            </div>
+              </Grid>
+            </Grid>
 
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Mô Tả Sản Phẩm
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={3}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Mô tả chi tiết về sản phẩm, tính năng và ưu điểm"
-              />
-            </div>
+            {/* Description and Details */}
+            <Divider />
+            <Typography variant="subtitle2" color="primary">
+              Chi Tiết Sản Phẩm
+            </Typography>
 
-            <div>
-              <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 mb-1">
-                Điều Kiện Áp Dụng
-              </label>
-              <textarea
-                id="requirements"
-                name="requirements"
-                value={formData.requirements}
-                onChange={handleChange}
-                rows={2}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="VD: Tuổi từ 18-65, thu nhập tối thiểu 10 triệu/tháng"
-              />
-            </div>
+            <TextField
+              size="small"
+              fullWidth
+              multiline
+              rows={3}
+              label="Mô Tả Sản Phẩm"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Mô tả chi tiết về sản phẩm, tính năng và ưu điểm"
+            />
 
-            <div>
-              <label htmlFor="benefits" className="block text-sm font-medium text-gray-700 mb-1">
-                Quyền Lợi & Ưu Đãi
-              </label>
-              <textarea
-                id="benefits"
-                name="benefits"
-                value={formData.benefits}
-                onChange={handleChange}
-                rows={2}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="VD: Miễn phí chuyển khoản, tặng thẻ quà tặng, bảo hiểm miễn phí"
-              />
-            </div>
+            <TextField
+              size="small"
+              fullWidth
+              multiline
+              rows={2}
+              label="Điều Kiện Áp Dụng"
+              name="requirements"
+              value={formData.requirements}
+              onChange={handleChange}
+              placeholder="VD: Tuổi từ 18-65, thu nhập tối thiểu 10 triệu/tháng"
+            />
 
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                Trạng Thái
-              </label>
-              <select
-                id="status"
+            <TextField
+              size="small"
+              fullWidth
+              multiline
+              rows={2}
+              label="Quyền Lợi & Ưu Đãi"
+              name="benefits"
+              value={formData.benefits}
+              onChange={handleChange}
+              placeholder="VD: Miễn phí chuyển khoản, tặng thẻ quà tặng, bảo hiểm miễn phí"
+            />
+
+            <FormControl size="small" fullWidth>
+              <InputLabel>Trạng Thái</InputLabel>
+              <Select
                 name="status"
                 value={formData.status}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                label="Trạng Thái"
+                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
               >
-                <option value="active">Đang Hoạt Động</option>
-                <option value="inactive">Tạm Ngưng</option>
-              </select>
-            </div>
+                <MenuItem value="active">Đang Hoạt Động</MenuItem>
+                <MenuItem value="inactive">Tạm Ngưng</MenuItem>
+              </Select>
+            </FormControl>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            {/* Metadata Section */}
+            <Box>
+              <Typography variant="subtitle2" color="primary" gutterBottom>
                 Thông Tin Bổ Sung
-              </label>
+              </Typography>
               <JsonInputHelper
                 value={metadataInput}
                 onChange={setMetadataInput}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                 Thêm thông tin bổ sung với giao diện thân thiện
-              </p>
-            </div>
+              </Typography>
+            </Box>
 
-            <div className="flex gap-3 pt-4">
-              <button
+            {/* Form Actions */}
+            <Box sx={{ display: 'flex', gap: 2, pt: 2 }}>
+              <Button
                 type="submit"
+                variant="contained"
+                color="primary"
                 disabled={isLoading || !formData.product_name.trim()}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                sx={{ flex: 1 }}
               >
                 {isLoading ? 'Đang lưu...' : (product ? 'Cập Nhật Sản Phẩm' : 'Tạo Sản Phẩm')}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outlined"
+                color="inherit"
                 onClick={onCancel}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                sx={{ flex: 1 }}
               >
                 Hủy
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   )
 }

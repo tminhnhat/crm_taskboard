@@ -1,7 +1,26 @@
 import { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Box,
+  Chip,
+  Stack,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+  Divider
+} from '@mui/material';
+import { Close as CloseIcon, QrCodeScanner } from '@mui/icons-material';
 import QRScanner from './QRScanner';
-import { Dialog } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Customer, CustomerType } from '@/lib/supabase';
 import { calculateNumerologyData } from '@/lib/numerology';
 import { toVNDate, toISODate, isValidDate } from '@/lib/date';
@@ -15,6 +34,8 @@ interface CustomerFormProps {
 }
 
 export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: CustomerFormProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { customers } = useCustomers();
   const [showQRScanner, setShowQRScanner] = useState(false);
   // Handle QR scan result from QRScanner
@@ -359,273 +380,257 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
   }
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-4">
-            <Dialog.Title className="text-lg font-semibold text-gray-900">
-              {customer ? 'Sửa Khách Hàng' : 'Tạo Khách Hàng Mới'}
-            </Dialog.Title>
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+    <Dialog 
+      open={isOpen} 
+      onClose={onClose}
+      fullScreen={isMobile}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          maxHeight: isMobile ? '100vh' : '90vh',
+          m: isMobile ? 0 : 1,
+        }
+      }}
+    >
+      <DialogTitle 
+        sx={{ 
+          m: 0, 
+          p: 2, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          borderBottom: 1,
+          borderColor: 'divider'
+        }}
+      >
+        <Typography variant="h6" component="div">
+          {customer ? 'Sửa Khách Hàng' : 'Tạo Khách Hàng Mới'}
+        </Typography>
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{ color: 'grey.500' }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent sx={{ p: 3 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {/* QR Scanner Button */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<QrCodeScanner />}
+              onClick={() => setShowQRScanner(true)}
+              sx={{ 
+                bgcolor: 'success.main',
+                '&:hover': { bgcolor: 'success.dark' }
+              }}
             >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
+              Quét QR CCCD
+            </Button>
+          </Box>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 flex justify-end">
-                <button
-                  type="button"
-                  className="mb-2 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
-                  onClick={() => setShowQRScanner(true)}
-                >
-                  📷 Quét QR CCCD (Camera/Ảnh)
-                </button>
-              </div>
-      {/* QRScanner Modal */}
-      {showQRScanner && (
-        <Dialog open={showQRScanner} onClose={() => setShowQRScanner(false)} className="fixed z-50 inset-0 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
-          <div className="relative bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-auto z-10 flex flex-col items-center">
-            <h3 className="text-lg font-semibold mb-2">Quét mã QR CCCD</h3>
-            <QRScanner onResult={handleQRResult} />
-            <button
-              type="button"
-              className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-gray-700"
-              onClick={() => setShowQRScanner(false)}
+          {/* QRScanner Modal */}
+          {showQRScanner && (
+            <Dialog 
+              open={showQRScanner} 
+              onClose={() => setShowQRScanner(false)}
+              maxWidth="sm"
+              fullWidth
             >
-              Đóng
-            </button>
-          </div>
-        </Dialog>
-      )}
-              <div>
-                <label htmlFor="customer_type" className="block text-sm font-medium text-gray-700 mb-1">
-                  Loại Khách Hàng *
-                </label>
-                <select
-                  id="customer_type"
+              <DialogTitle>
+                <Typography variant="h6">Quét mã QR CCCD</Typography>
+              </DialogTitle>
+              <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 3 }}>
+                <QRScanner onResult={handleQRResult} />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setShowQRScanner(false)}>Đóng</Button>
+              </DialogActions>
+            </Dialog>
+          )}
+
+          {/* Basic Information Section */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <FormControl size="small" required>
+              <InputLabel>Loại Khách Hàng</InputLabel>
+              <Select
+                value={formData.customer_type}
+                label="Loại Khách Hàng"
+                onChange={(e) => {
+                  const newType = e.target.value as CustomerType;
+                  setFormData(prev => ({
+                    ...prev,
+                    customer_type: newType
+                  }))
+                }}
+              >
+                <MenuItem value="individual">Cá Nhân</MenuItem>
+                <MenuItem value="corporate">Doanh Nghiệp</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl size="small">
+              <InputLabel>Trạng Thái</InputLabel>
+              <Select
+                value={formData.status}
+                label="Trạng Thái"
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              >
+                <MenuItem value="active">Đang Hoạt Động</MenuItem>
+                <MenuItem value="inactive">Không Hoạt Động</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Name Fields */}
+          <TextField
+            size="small"
+            fullWidth
+            required
+            label={formData.customer_type === 'corporate' ? 'Người Đại Diện' : 'Họ Và Tên'}
+            value={formData.full_name}
+            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+            placeholder="Nhập họ và tên"
+          />
+
+          {formData.customer_type !== 'individual' && (
+            <TextField
+              size="small"
+              fullWidth
+              required
+              label="Tên Doanh Nghiệp"
+              value={formData.company_name || ''}
+              onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+              placeholder="Nhập tên doanh nghiệp"
+            />
+          )}
+
+          {formData.customer_type !== 'individual' && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 1 }}>
+              <Typography variant="subtitle2" color="primary">
+                Thông Tin Doanh Nghiệp
+              </Typography>
+              
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                <TextField
+                  size="small"
+                  fullWidth
                   required
-                  value={formData.customer_type}
-                  onChange={(e) => {
-                    const newType = e.target.value as CustomerType;
-                    setFormData(prev => ({
-                      ...prev,
-                      customer_type: newType
-                    }))
-                  }}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="individual">Cá Nhân</option>
-                  <option value="corporate">Doanh Nghiệp</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                  Trạng Thái
-                </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="active">Đang Hoạt Động</option>
-                  <option value="inactive">Không Hoạt Động</option>
-                </select>
-              </div>
-            </div>
-
-                        {/* Customer Type Specific Fields */}
-            <div>
-              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
-                {formData.customer_type === 'corporate' ? 'Người Đại Diện *' : 'Họ Và Tên *'}
-              </label>
-              <input
-                type="text"
-                id="full_name"
-                name="full_name"
-                required
-                value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nhập họ và tên"
-              />
-            </div>
-
-            {formData.customer_type !== 'individual' && (
-            <div>
-              <div>
-                <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Tên Doanh Nghiệp *
-                </label>
-                <input
-                  type="text"
-                  id="company_name"
-                  name="company_name"
-                  required
-                  value={formData.company_name || ''}
-                  onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Nhập tên doanh nghiệp"
+                  label="Số Đăng Ký Kinh Doanh"
+                  value={formData.business_registration_number || ''}
+                  onChange={(e) => setFormData({ ...formData, business_registration_number: e.target.value })}
+                  placeholder="Nhập số đăng ký kinh doanh"
                 />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 mt-4">
-                <div>
-                  <label htmlFor="business_registration_number" className="block text-sm font-medium text-gray-700 mb-1">
-                    Số Đăng Ký Kinh Doanh *
-                  </label>
-                  <input
-                    type="text"
-                    id="business_registration_number"
-                    name="business_registration_number"
-                    required
-                    value={formData.business_registration_number || ''}
-                    onChange={(e) => setFormData({ ...formData, business_registration_number: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập số đăng ký kinh doanh"
-                  />
-                </div>
                 
-                <div>
-                  <label htmlFor="legal_representative" className="block text-sm font-medium text-gray-700 mb-1">
-                    Người Đại Diện Pháp Luật *
-                  </label>
-                  <input
-                    type="text"
-                    id="legal_representative"
-                    name="legal_representative"
-                    required
-                    value={formData.legal_representative || ''}
-                    onChange={(e) => setFormData({ ...formData, legal_representative: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập tên người đại diện"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="legal_representative_cif_number" className="block text-sm font-medium text-gray-700 mb-1">
-                    Số CIF Người Đại Diện
-                  </label>
-                  <input
-                    type="text"
-                    id="legal_representative_cif_number"
-                    name="legal_representative_cif_number"
-                    value={formData.legal_representative_cif_number || ''}
-                    onChange={(e) => setFormData({ ...formData, legal_representative_cif_number: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập số CIF của người đại diện"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="business_sector" className="block text-sm font-medium text-gray-700 mb-1">
-                    Ngành Nghề Kinh Doanh
-                  </label>
-                  <input
-                    type="text"
-                    id="business_sector"
-                    name="business_sector"
-                    value={formData.business_sector || ''}
-                    onChange={(e) => setFormData({ ...formData, business_sector: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập ngành nghề kinh doanh"
-                  />
-                </div>
-              </div>
-            </div>
-            )}
-
-            <div>
-              <label htmlFor="account_number" className="block text-sm font-medium text-gray-700 mb-1">
-                Mã Tài Khoản
-                <span className="text-xs text-blue-600 ml-2">📱 (dùng cho QR thanh toán)</span>
-              </label>
-              <input
-                type="text"
-                id="account_number"
-                value={formData.account_number || ''}
-                onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nhập số tài khoản Vietinbank (VD: 123456789)"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                💡 Số tài khoản này sẽ được sử dụng tự động khi tạo mã QR thanh toán cho khách hàng
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="cif_number" className="block text-sm font-medium text-gray-700 mb-1">
-                Số CIF
-              </label>
-              <input
-                type="text"
-                id="cif_number"
-                value={formData.cif_number || ''}
-                onChange={(e) => setFormData({ ...formData, cif_number: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nhập số CIF (Customer Information File)"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Số Điện Thoại
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  value={formData.phone || ''}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Nhập số điện thoại"
+                <TextField
+                  size="small"
+                  fullWidth
+                  required
+                  label="Người Đại Diện Pháp Luật"
+                  value={formData.legal_representative || ''}
+                  onChange={(e) => setFormData({ ...formData, legal_representative: e.target.value })}
+                  placeholder="Nhập tên người đại diện"
                 />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={formData.email || ''}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Nhập địa chỉ email"
+                
+                <TextField
+                  size="small"
+                  fullWidth
+                  label="Số CIF Người Đại Diện"
+                  value={formData.legal_representative_cif_number || ''}
+                  onChange={(e) => setFormData({ ...formData, legal_representative_cif_number: e.target.value })}
+                  placeholder="Nhập số CIF của người đại diện"
                 />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-700 mb-1">
-                  Ngày Sinh
-                </label>
-                <input
-                  type="text"
-                  id="date_of_birth"
-                  value={formData.date_of_birth || ''}
-                  onChange={(e) => handleDateChange('date_of_birth', e)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="dd/mm/yyyy"
-                  maxLength={10}
-                  title="Vui lòng nhập ngày theo định dạng dd/mm/yyyy"
+                
+                <TextField
+                  size="small"
+                  fullWidth
+                  label="Ngành Nghề Kinh Doanh"
+                  value={formData.business_sector || ''}
+                  onChange={(e) => setFormData({ ...formData, business_sector: e.target.value })}
+                  placeholder="Nhập ngành nghề kinh doanh"
                 />
-                {formData.date_of_birth && !validateDateFormat(formData.date_of_birth) && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy
-                  </p>
-                )}
-              </div>
+              </Box>
+            </Box>
+          )}
+
+          {/* Account Information Section */}
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+            Thông Tin Tài Khoản
+          </Typography>
+
+          <TextField
+            size="small"
+            fullWidth
+            label="Mã Tài Khoản"
+            value={formData.account_number || ''}
+            onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+            placeholder="Nhập số tài khoản Vietinbank (VD: 123456789)"
+            helperText="💡 Số tài khoản này sẽ được sử dụng tự động khi tạo mã QR thanh toán cho khách hàng"
+            InputProps={{
+              endAdornment: (
+                <Typography variant="caption" color="primary" sx={{ mr: 1 }}>
+                  📱 QR
+                </Typography>
+              ),
+            }}
+          />
+
+          <TextField
+            size="small"
+            fullWidth
+            label="Số CIF"
+            value={formData.cif_number || ''}
+            onChange={(e) => setFormData({ ...formData, cif_number: e.target.value })}
+            placeholder="Nhập số CIF (Customer Information File)"
+          />
+
+          {/* Contact Information */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <TextField
+              size="small"
+              fullWidth
+              type="tel"
+              label="Số Điện Thoại"
+              value={formData.phone || ''}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="Nhập số điện thoại"
+            />
+
+            <TextField
+              size="small"
+              fullWidth
+              type="email"
+              label="Email"
+              value={formData.email || ''}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="Nhập địa chỉ email"
+            />
+          </Box>
+
+          {/* Personal Information - Key Fields */}
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+            Thông Tin Cá Nhân
+          </Typography>
+          
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+            <TextField
+              size="small"
+              fullWidth
+              label="Ngày Sinh"
+              value={formData.date_of_birth || ''}
+              onChange={(e) => handleDateChange('date_of_birth', e)}
+              placeholder="dd/mm/yyyy"
+              inputProps={{ maxLength: 10 }}
+              error={formData.date_of_birth && !validateDateFormat(formData.date_of_birth)}
+              helperText={formData.date_of_birth && !validateDateFormat(formData.date_of_birth) ? "Định dạng không hợp lệ. Vui lòng sử dụng dd/mm/yyyy" : ""}
+            />
 
               <div>
                 <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
@@ -986,27 +991,28 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
                   <input type="text" className="border rounded px-2 py-1 text-sm mb-1" value={formData.spouse_info.address || ''} readOnly placeholder="Địa chỉ" />
                   <input type="text" className="border rounded px-2 py-1 text-sm" value={formData.spouse_info.phone || ''} readOnly placeholder="Số điện thoại" />
                 </div>
-              )}
-            </div>
+          
+          {/* TODO: Add remaining form fields here - Personal Info, ID Info, Numerology, etc. */}
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center', py: 2 }}>
+            [Remaining form fields will be added in the next iteration]
+          </Typography>
 
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-              >
-                {customer ? 'Cập Nhật Khách Hàng' : 'Tạo Khách Hàng'}
-              </button>
-            </div>
-          </form>
-        </Dialog.Panel>
-      </div>
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+        <Button onClick={onClose} variant="outlined" color="inherit">
+          Hủy
+        </Button>
+        <Button 
+          type="submit" 
+          variant="contained" 
+          color="primary"
+          onClick={handleSubmit}
+        >
+          {customer ? 'Cập Nhật Khách Hàng' : 'Tạo Khách Hàng'}
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }
