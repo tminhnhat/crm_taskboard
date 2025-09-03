@@ -254,9 +254,13 @@ export default function QRPaymentGenerator({
       </DialogTitle>
 
       <DialogContent sx={{ p: 3 }}>
-        <Grid container spacing={3}>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, 
+          gap: 3 
+        }}>
           {/* Form Section */}
-          <Grid item xs={12} lg={6}>
+          <Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Customer Data Section */}
               <Card sx={{ bgcolor: 'primary.50' }}>
@@ -467,10 +471,10 @@ export default function QRPaymentGenerator({
                 {isGenerating ? 'Đang tạo...' : 'Tạo mã QR'}
               </Button>
             </Box>
-          </Grid>
+          </Box>
 
           {/* Preview Section */}
-          <Grid item xs={12} lg={6}>
+          <Box>
             <Paper sx={{ p: 3, bgcolor: 'grey.50', height: 'fit-content' }}>
               <Typography variant="h6" sx={{ mb: 3 }}>
                 Xem trước
@@ -531,8 +535,8 @@ export default function QRPaymentGenerator({
                 </Box>
               )}
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Info Alert */}
         <Alert severity="info" sx={{ mt: 3 }}>

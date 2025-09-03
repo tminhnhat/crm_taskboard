@@ -39,7 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useDocuments } from '@/hooks/useDocuments';
 import type { DocumentTemplate } from '@/lib/supabase';
-import { LoadingSpinner } from './LoadingSpinner';
+import LoadingSpinner from './LoadingSpinner';
 
 interface TemplateManagerProps {
   templateType?: string;
@@ -200,7 +200,7 @@ export function TemplateManager({
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Grid container spacing={3}>
           {[...Array(6)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+            <Box key={index} sx={{ width: { xs: '100%', sm: '50%', md: '33%', lg: '25%' }, p: 1 }}>
               <Card>
                 <CardContent>
                   <Skeleton variant="rectangular" width="100%" height={60} />
@@ -212,7 +212,7 @@ export function TemplateManager({
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
           ))}
         </Grid>
       </Container>
@@ -257,7 +257,7 @@ export function TemplateManager({
 
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={4}>
+          <Box sx={{ width: { xs: '100%', sm: '33%' }, p: 1 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Box sx={{ 
@@ -283,9 +283,9 @@ export function TemplateManager({
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
           
-          <Grid2 size xs={12} sm={4}>
+          <Box sx={{ width: { xs: '100%', sm: '33%' }, p: 1 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Box sx={{ 
@@ -311,9 +311,9 @@ export function TemplateManager({
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
           
-          <Grid2 size xs={12} sm={4}>
+          <Box sx={{ width: { xs: '100%', sm: '33%' }, p: 1 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Box sx={{ 
@@ -339,7 +339,7 @@ export function TemplateManager({
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
         </Grid>
 
         {/* Upload Section */}
@@ -367,7 +367,7 @@ export function TemplateManager({
               </Box>
               
               <Grid container spacing={3}>
-                <Grid2 size xs={12} md={6}>
+                <Box sx={{ width: { xs: '100%', md: '50%' }, p: 1 }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {/* File Upload */}
                     <Box>
@@ -441,9 +441,9 @@ export function TemplateManager({
                       }}
                     />
                   </Box>
-                </Grid>
+                </Box>
 
-                <Grid2 size xs={12} md={6}>
+                <Box sx={{ width: { xs: '100%', md: '50%' }, p: 1 }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
                     {/* Template Type */}
                     <TextField
@@ -475,17 +475,17 @@ export function TemplateManager({
                       <Button
                         onClick={handleUpload}
                         variant="contained"
-                        xs="large"
+                        size="large"
                         fullWidth
                         disabled={uploadLoading || !selectedFile || !newTemplateName || !newTemplateType}
-                        startIcon={uploadLoading ? <CircularProgress xs={20} /> : <CloudUploadIcon />}
+                        startIcon={uploadLoading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
                         sx={{ py: 1.5 }}
                       >
                         {uploadLoading ? 'Đang upload...' : '🚀 Upload Template'}
                       </Button>
                     </Box>
                   </Box>
-                </Grid>
+                </Box>
               </Grid>
             </CardContent>
           </Card>
@@ -516,7 +516,7 @@ export function TemplateManager({
               </Box>
               
               {loading && (
-                <CircularProgress xs={24} />
+                <CircularProgress size={24} />
               )}
             </Box>
 
@@ -552,121 +552,128 @@ export function TemplateManager({
                 )}
               </Box>
             ) : (
-              <Grid container spacing={3}>
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { 
+                  xs: '1fr', 
+                  sm: 'repeat(2, 1fr)', 
+                  md: 'repeat(3, 1fr)', 
+                  lg: 'repeat(4, 1fr)' 
+                }, 
+                gap: 3
+              }}>
                 {templates.map((template) => {
                   const fileExtension = template.file_url.split('.').pop()?.toLowerCase() || '';
                   const fileIcon = getFileIcon(template.file_url);
                   const fileTypeColor = getFileTypeColor(template.file_url);
                   
                   return (
-                    <Grid2 size xs={12} sm={6} md={4} lg={3} key={template.template_id}>
-                      <Card sx={{ 
-                        height: '100%',
-                        position: 'relative',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: theme.shadows[8]
-                        },
-                        transition: 'all 0.2s ease-in-out'
-                      }}>
-                        <CardContent sx={{ p: 3 }}>
-                          {/* File Icon and Type */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                            <Box sx={{ 
-                              p: 1.5, 
-                              borderRadius: 2, 
-                              bgcolor: `${fileTypeColor}.50`,
-                              color: `${fileTypeColor}.main`
-                            }}>
-                              {fileIcon}
-                            </Box>
+                    <Card key={template.template_id} sx={{ 
+                      height: '100%',
+                      position: 'relative',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: theme.shadows[8]
+                      },
+                      transition: 'all 0.2s ease-in-out'
+                    }}>
+                      <CardContent sx={{ p: 3 }}>
+                        {/* File Icon and Type */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                          <Box sx={{ 
+                            p: 1.5, 
+                            borderRadius: 2, 
+                            bgcolor: `${fileTypeColor}.50`,
+                            color: `${fileTypeColor}.main`
+                          }}>
+                            {fileIcon}
+                          </Box>
+                          <Chip 
+                            label={fileExtension.toUpperCase()} 
+                            color={fileTypeColor as any}
+                            size="small"
+                          />
+                        </Box>
+
+                        {/* Template Info */}
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, lineHeight: 1.3 }}>
+                          {template.template_name}
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <FolderIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
                             <Chip 
-                              label={fileExtension.toUpperCase()} 
-                              color={fileTypeColor as any}
-                              xs="small"
+                              label={template.template_type} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ fontSize: '0.75rem' }}
                             />
                           </Box>
-
-                          {/* Template Info */}
-                          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, lineHeight: 1.3 }}>
-                            {template.template_name}
-                          </Typography>
                           
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <FolderIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                              <Chip 
-                                label={template.template_type} 
-                                xs="small" 
-                                variant="outlined"
-                                sx={{ fontSize: '0.75rem' }}
-                              />
-                            </Box>
-                            
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <ScheduleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                              <Typography variant="caption" color="text.secondary">
-                                {formatDate(template.created_at)}
-                              </Typography>
-                            </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <ScheduleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="caption" color="text.secondary">
+                              {formatDate(template.created_at)}
+                            </Typography>
                           </Box>
+                        </Box>
 
-                          {/* Actions */}
-                          <Box sx={{ display: 'flex', gap: 1 }}>
+                        {/* Actions */}
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button
+                            href={template.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            variant="contained"
+                            color="success"
+                            size="small"
+                            startIcon={<DownloadIcon />}
+                            sx={{ flex: 1 }}
+                          >
+                            Tải về
+                          </Button>
+                          
+                          {onTemplateSelect && (
                             <Button
-                              href={template.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              onClick={() => onTemplateSelect(template)}
                               variant="contained"
-                              color="success"
-                              xs="small"
-                              startIcon={<DownloadIcon />}
+                              size="small"
+                              startIcon={<CheckCircleIcon />}
                               sx={{ flex: 1 }}
                             >
-                              Tải về
+                              Chọn
                             </Button>
-                            
-                            {onTemplateSelect && (
-                              <Button
-                                onClick={() => onTemplateSelect(template)}
-                                variant="contained"
-                                xs="small"
-                                startIcon={<CheckCircleIcon />}
-                                sx={{ flex: 1 }}
-                              >
-                                Chọn
-                              </Button>
-                            )}
-                          </Box>
-
-                          {/* Delete Button */}
-                          {allowDelete && (
-                            <Tooltip title="Xóa template">
-                              <IconButton
-                                onClick={() => handleDeleteClick(template)}
-                                sx={{ 
-                                  position: 'absolute',
-                                  top: 8,
-                                  right: 8,
-                                  color: 'error.main',
-                                  bgcolor: 'background.paper',
-                                  boxShadow: 1,
-                                  '&:hover': {
-                                    bgcolor: 'error.50'
-                                  }
-                                }}
-                                xs="small"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
                           )}
-                        </CardContent>
-                      </Card>
-                    </Grid>
+                        </Box>
+
+                        {/* Delete Button */}
+                        {allowDelete && (
+                          <Tooltip title="Xóa template">
+                            <IconButton
+                              onClick={() => handleDeleteClick(template)}
+                              sx={{ 
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                color: 'error.main',
+                                bgcolor: 'background.paper',
+                                boxShadow: 1,
+                                '&:hover': {
+                                  bgcolor: 'error.50'
+                                }
+                              }}
+                              size="small"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </CardContent>
+                    </Card>
                   );
                 })}
-              </Grid>
+              </Box>
             )}
           </CardContent>
         </Card>
