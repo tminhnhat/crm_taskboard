@@ -66,7 +66,7 @@ export interface Document {
 }
 
 // TypeScript types for our database schema based on your SQL
-export type TaskStatusEnum = 'needsAction' | 'inProgress' | 'onHold' | 'completed' | 'cancelled' | 'deleted'
+export type TaskStatusEnum = 'needsAction' | 'inProgress' | 'completed' | 'deleted'
 
 export type TaskPriority = 'Do first' | 'Schedule' | 'Delegate' | 'Eliminate'
 

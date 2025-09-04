@@ -65,9 +65,7 @@ export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersPro
               <MenuItem value="">Tất cả</MenuItem>
               <MenuItem value="needsAction">Cần thực hiện</MenuItem>
               <MenuItem value="inProgress">Đang thực hiện</MenuItem>
-              <MenuItem value="onHold">Tạm dừng</MenuItem>
               <MenuItem value="completed">Hoàn thành</MenuItem>
-              <MenuItem value="cancelled">Hủy bỏ</MenuItem>
               <MenuItem value="deleted">Đã xóa</MenuItem>
             </Select>
           </FormControl>

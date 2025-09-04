@@ -48,18 +48,14 @@ const priorityLabels = {
 const statusIcons = {
   needsAction: Schedule,
   inProgress: PlayArrow,
-  onHold: Pause,
   completed: CheckCircle,
-  cancelled: Cancel,
   deleted: Delete
 }
 
 const statusLabels = {
   needsAction: 'Cần thực hiện',
   inProgress: 'Đang thực hiện',
-  onHold: 'Tạm dừng',
   completed: 'Hoàn thành',
-  cancelled: 'Hủy bỏ',
   deleted: 'Đã xóa'
 }
 
@@ -151,9 +147,7 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
             >
               <MenuItem value="needsAction">Cần thực hiện</MenuItem>
               <MenuItem value="inProgress">Đang thực hiện</MenuItem>
-              <MenuItem value="onHold">Tạm dừng</MenuItem>
               <MenuItem value="completed">Hoàn thành</MenuItem>
-              <MenuItem value="cancelled">Hủy bỏ</MenuItem>
               <MenuItem value="deleted">Đã xóa</MenuItem>
             </StyledSelect>
           </FormControl>
