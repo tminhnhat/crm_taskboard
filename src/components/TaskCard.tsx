@@ -235,10 +235,11 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
 
         {/* Action Buttons */}
         <Box sx={{ 
-          display: 'flex', 
-          gap: 2, 
-          pt: 2, 
-          borderTop: '1px solid rgba(0,0,0,0.08)' 
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          pt: 2,
+          borderTop: '1px solid rgba(0,0,0,0.08)'
         }}>
           <ActionButton
             startIcon={<Edit />}
@@ -262,6 +263,7 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
           >
             Sửa
           </ActionButton>
+          <Box sx={{ flex: 1 }} />
           <ActionButton
             startIcon={<DeleteOutline />}
             onClick={() => onDelete(task.task_id)}
