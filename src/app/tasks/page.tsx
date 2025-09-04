@@ -24,7 +24,8 @@ import {
   Warning as WarningIcon,
   Error as ErrorIcon,
   Assessment as AssessmentIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  AssignmentOutlined as AssignmentOutlinedIcon
 } from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
 import TaskCard from '@/components/TaskCard'
@@ -243,7 +244,7 @@ export default function TaskDashboard() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                📊 Bảng Điều Khiển Công Việc
+                <AssignmentOutlinedIcon sx={{ fontSize: 36 }} /> Bảng Điều Khiển Công Việc
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Quản lý và theo dõi tất cả công việc của bạn một cách hiệu quả
