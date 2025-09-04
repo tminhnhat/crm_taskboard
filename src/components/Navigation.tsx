@@ -41,16 +41,19 @@ export default function Navigation() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const navigation = [
+    // Main homepage
+    { name: 'Trang Chủ', href: '/', icon: Home },
+    
     // Main features
-    { name: 'Công Việc', href: '/', icon: Assignment },
+    { name: 'Công Việc', href: '/tasks', icon: Assignment },
     { name: 'Khách Hàng', href: '/customers', icon: People },
     { name: 'Sản Phẩm', href: '/products', icon: Inventory },
     { name: 'Nhân Viên', href: '/staff', icon: Person },
     
     // Credit process
     { name: 'Hợp Đồng', href: '/contracts', icon: Description },
-    { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: Home },
-    { name: 'Thẩm Định', href: '/assessments', icon: Search },
+    { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: Search },
+    { name: 'Thẩm Định', href: '/assessments', icon: Folder },
     
     // Document management
     { name: 'Tài Liệu', href: '/documents', icon: Description },
