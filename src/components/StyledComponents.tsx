@@ -111,6 +111,13 @@ export const InfoBox = styled(Box)(({ theme }) => ({
   '& .MuiTypography-root': {
     fontSize: '0.875rem',
   },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.75),
+    gap: theme.spacing(0.75),
+    '& .MuiTypography-root': {
+      fontSize: '0.8rem',
+    },
+  },
 }));
 
 export const CardHeader = styled(Box)(({ theme }) => ({
@@ -118,6 +125,11 @@ export const CardHeader = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   alignItems: 'flex-start',
   marginBottom: theme.spacing(2),
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: theme.spacing(1),
+  },
 }));
 
 export const CardActions = styled(Box)(({ theme }) => ({
@@ -127,4 +139,9 @@ export const CardActions = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2),
   paddingTop: theme.spacing(2),
   borderTop: `1px solid ${theme.palette.divider}`,
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    alignItems: 'stretch',
+  },
 }));

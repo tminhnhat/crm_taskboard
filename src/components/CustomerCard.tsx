@@ -148,15 +148,27 @@ const NumerologyCard = ({ title, value, explanation, meaning, color, icon }: {
 }) => (
   <Box
     sx={{
-      p: 2,
+      p: { xs: 1.5, sm: 2 },
       bgcolor: 'background.paper',
       borderRadius: 2,
       border: `1px solid ${color}`,
       boxShadow: 1,
     }}
   >
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      mb: 1,
+      flexDirection: { xs: 'column', sm: 'row' },
+      textAlign: { xs: 'center', sm: 'left' }
+    }}>
+      <Typography variant="subtitle2" sx={{ 
+        fontWeight: 600, 
+        color: 'text.primary',
+        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+        mb: { xs: 0.5, sm: 0 }
+      }}>
         {icon} {title}
       </Typography>
       <Typography 
@@ -164,13 +176,20 @@ const NumerologyCard = ({ title, value, explanation, meaning, color, icon }: {
         sx={{ 
           fontWeight: 'bold', 
           color,
-          textAlign: 'center'
+          textAlign: 'center',
+          fontSize: { xs: '1.5rem', sm: '2.125rem' }
         }}
       >
         {value}
       </Typography>
     </Box>
-    <Typography variant="caption" sx={{ color: 'text.secondary', fontStyle: 'italic', mb: 1, display: 'block' }}>
+    <Typography variant="caption" sx={{ 
+      color: 'text.secondary', 
+      fontStyle: 'italic', 
+      mb: 1, 
+      display: 'block',
+      fontSize: { xs: '0.7rem', sm: '0.75rem' }
+    }}>
       {explanation}
     </Typography>
     <Box 
@@ -181,7 +200,11 @@ const NumerologyCard = ({ title, value, explanation, meaning, color, icon }: {
         border: `1px solid ${color}30` 
       }}
     >
-      <Typography variant="caption" sx={{ color, fontWeight: 500 }}>
+      <Typography variant="caption" sx={{ 
+        color, 
+        fontWeight: 500,
+        fontSize: { xs: '0.7rem', sm: '0.75rem' }
+      }}>
         <strong>Ý nghĩa:</strong> {meaning}
       </Typography>
     </Box>
@@ -220,37 +243,61 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
         <CardHeader>
           <Box sx={{ flex: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-              <TypeIcon color="action" sx={{ mt: 0.5 }} />
+              <TypeIcon color="action" sx={{ mt: 0.5, display: { xs: 'none', sm: 'block' } }} />
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 0.5 }}>
+                <Typography variant="h6" component="h3" sx={{ 
+                  fontWeight: 600, 
+                  mb: 0.5,
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                }}>
                   {customer.customer_type === 'corporate' ? customer.company_name : customer.full_name}
                 </Typography>
                 {customer.customer_type === 'corporate' && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ 
+                    mb: 0.5,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                  }}>
                     Người đại diện: {customer.legal_representative || 'Chưa cập nhật'}
                   </Typography>
                 )}
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ 
+                  mb: 0.5,
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                }}>
                   Tài khoản: {customer.account_number}
                 </Typography>
                 {customer.cif_number && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ 
+                    mb: 0.5,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                  }}>
                     CIF: {customer.cif_number}
                   </Typography>
                 )}
                 {customer.customer_type === 'corporate' && customer.legal_representative_cif_number && (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                  }}>
                     CIF người đại diện: {customer.legal_representative_cif_number}
                   </Typography>
                 )}
               </Box>
             </Box>
             
-            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+            <Stack 
+              direction="row" 
+              spacing={1} 
+              sx={{ 
+                mb: 2, 
+                flexWrap: 'wrap',
+                gap: { xs: 0.5, sm: 1 }
+              }}
+            >
               <Chip 
                 label={customer.customer_type === 'individual' ? 'Cá Nhân' : 'Doanh Nghiệp'}
                 color={getCustomerTypeColor(customer.customer_type) as any}
                 size="small"
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
               />
               <Chip 
                 label={customer.status === 'active' ? 'Đang Hoạt Động' : 
@@ -258,60 +305,91 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                        customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
                 color={getStatusColor(customer.status) as any}
                 size="small"
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
               />
             </Stack>
             
             <Stack spacing={1}>
               {customer.phone && (
-                <InfoBox>
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
                   <Phone fontSize="small" />
-                  <Typography variant="body2">{customer.phone}</Typography>
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                    {customer.phone}
+                  </Typography>
                 </InfoBox>
               )}
               {customer.email && (
-                <InfoBox>
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
                   <Email fontSize="small" />
-                  <Typography variant="body2">{customer.email}</Typography>
+                  <Typography variant="body2" sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    wordBreak: 'break-word'
+                  }}>
+                    {customer.email}
+                  </Typography>
                 </InfoBox>
               )}
               {customer.address && (
-                <InfoBox>
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
                   <LocationOn fontSize="small" />
-                  <Typography variant="body2">{customer.address}</Typography>
+                  <Typography variant="body2" sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    wordBreak: 'break-word'
+                  }}>
+                    {customer.address}
+                  </Typography>
                 </InfoBox>
               )}
               {customer.hobby && (
-                <InfoBox>
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
                   <Star fontSize="small" />
-                  <Typography variant="body2">Sở thích: {customer.hobby}</Typography>
+                  <Typography variant="body2" sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    wordBreak: 'break-word'
+                  }}>
+                    Sở thích: {customer.hobby}
+                  </Typography>
                 </InfoBox>
               )}
-              <InfoBox>
+              <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
                 <Badge fontSize="small" />
                 <Box>
                   {customer.customer_type === 'corporate' ? (
                     <Box>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ 
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        wordBreak: 'break-word'
+                      }}>
                         Mã số doanh nghiệp: {customer.business_registration_number || 'Chưa cập nhật'}
                       </Typography>
                       {customer.registration_date && (
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                        }}>
                           (Ngày đăng ký: {formatDateDisplay(customer.registration_date)})
                         </Typography>
                       )}
                     </Box>
                   ) : (
                     <Box>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ 
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        wordBreak: 'break-word'
+                      }}>
                         CCCD: {customer.id_number || 'Chưa cập nhật'}
                       </Typography>
                       {customer.id_issue_date && (
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                        }}>
                           (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
                         </Typography>
                       )}
                       {customer.id_issue_authority && (
-                        <Typography variant="caption" color="text.secondary" display="block">
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          wordBreak: 'break-word'
+                        }}>
                           Nơi cấp: {customer.id_issue_authority}
                         </Typography>
                       )}
@@ -320,9 +398,9 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                 </Box>
               </InfoBox>
               {customer.date_of_birth && (
-                <InfoBox>
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
                   <CalendarToday fontSize="small" />
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                     Ngày sinh: {formatDateDisplay(customer.date_of_birth)}
                   </Typography>
                 </InfoBox>
@@ -349,22 +427,35 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                 <Collapse in={showNumerology}>
                   <Box sx={{ 
                     mt: 2, 
-                    p: 3,
+                    p: { xs: 2, sm: 3 },
                     background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
                     borderRadius: 2,
                     border: 1,
                     borderColor: 'divider'
                   }}>
-                    <Box sx={{ textAlign: 'center', mb: 3 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    <Box sx={{ textAlign: 'center', mb: { xs: 2, sm: 3 } }}>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 600, 
+                        mb: 1,
+                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                      }}>
                         🔮 Bản Đồ Thần Số Học
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                      }}>
                         Khám phá bản thân qua con số của bạn
                       </Typography>
                     </Box>
                     
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 2 }}>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: { 
+                        xs: '1fr', 
+                        sm: 'repeat(auto-fit, minmax(280px, 1fr))' 
+                      }, 
+                      gap: 2 
+                    }}>
                       {(() => {
                         const numerology = customer.numerology_data as NumerologyData;
                         const cards = [];
@@ -440,28 +531,52 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                             <Box
                               key="missingNumbers"
                               sx={{
-                                p: 2,
+                                p: { xs: 1.5, sm: 2 },
                                 bgcolor: 'background.paper',
                                 borderRadius: 2,
                                 border: '1px solid #616161',
                                 boxShadow: 1,
                               }}
                             >
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                              <Box sx={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center', 
+                                mb: 1,
+                                flexDirection: { xs: 'column', sm: 'row' },
+                                textAlign: { xs: 'center', sm: 'left' }
+                              }}>
+                                <Typography variant="subtitle2" sx={{ 
+                                  fontWeight: 600,
+                                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                                  mb: { xs: 0.5, sm: 0 }
+                                }}>
                                   ❌ Số Thiếu
                                 </Typography>
-                                <Typography variant="h6" sx={{ color: '#616161' }}>
+                                <Typography variant="h6" sx={{ 
+                                  color: '#616161',
+                                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                                }}>
                                   {Array.isArray(numerology.missingNumbers) 
                                     ? numerology.missingNumbers.join(', ') 
                                     : numerology.missingNumbers}
                                 </Typography>
                               </Box>
-                              <Typography variant="caption" sx={{ color: 'text.secondary', fontStyle: 'italic', mb: 1, display: 'block' }}>
+                              <Typography variant="caption" sx={{ 
+                                color: 'text.secondary', 
+                                fontStyle: 'italic', 
+                                mb: 1, 
+                                display: 'block',
+                                fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                              }}>
                                 Những khía cạnh cần phát triển thêm
                               </Typography>
                               <Box sx={{ p: 1, bgcolor: '#61616115', borderRadius: 1 }}>
-                                <Typography variant="caption" sx={{ color: '#616161', fontWeight: 500 }}>
+                                <Typography variant="caption" sx={{ 
+                                  color: '#616161', 
+                                  fontWeight: 500,
+                                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                                }}>
                                   <strong>Ý nghĩa:</strong> Lĩnh vực cần nỗ lực học tập để hoàn thiện bản thân
                                 </Typography>
                               </Box>
@@ -474,13 +589,18 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                     </Box>
                     
                     <Box sx={{ 
-                      mt: 3, 
-                      p: 2, 
+                      mt: { xs: 2, sm: 3 }, 
+                      p: { xs: 1.5, sm: 2 }, 
                       background: 'linear-gradient(45deg, #e3f2fd 30%, #e8eaf6 90%)',
                       borderRadius: 2,
                       border: '1px solid #1976d2'
                     }}>
-                      <Typography variant="caption" sx={{ color: '#1976d2', textAlign: 'center', display: 'block' }}>
+                      <Typography variant="caption" sx={{ 
+                        color: '#1976d2', 
+                        textAlign: 'center', 
+                        display: 'block',
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                      }}>
                         <strong>💡 Lưu ý:</strong> Thần số học chỉ là công cụ tham khảo để hiểu bản thân. 
                         Hãy sử dụng một cách khôn ngoan và phát triển bản thân tích cực.
                       </Typography>
@@ -491,11 +611,20 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
             )}
           </Box>
           
-          <Box sx={{ ml: 2, minWidth: 140 }}>
+          <Box sx={{ 
+            ml: { xs: 0, sm: 2 }, 
+            minWidth: { xs: 'auto', sm: 140 },
+            mt: { xs: 2, sm: 0 }
+          }}>
             <FormControl fullWidth size="small" sx={{ mb: 1 }}>
               <StyledSelect
                 value={customer.status}
                 onChange={(e) => onStatusChange(customer.customer_id, e.target.value as string)}
+                sx={{
+                  '& .MuiSelect-select': {
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                  }
+                }}
               >
                 <MenuItem value="active">Đang Hoạt Động</MenuItem>
                 <MenuItem value="inactive">Không Hoạt Động</MenuItem>
@@ -504,25 +633,41 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
           </Box>
         </CardHeader>
         
-        <CardActions>
-          <Box>
+        <CardActions sx={{ 
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 2, sm: 0 },
+          alignItems: { xs: 'stretch', sm: 'center' }
+        }}>
+          <Box sx={{ order: { xs: 2, sm: 1 } }}>
             <ActionButton
               startIcon={<Edit />}
               onClick={() => onEdit(customer)}
               color="primary"
               variant="outlined"
               size="small"
+              sx={{ 
+                fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                width: { xs: '100%', sm: 'auto' }
+              }}
             >
               Sửa
             </ActionButton>
           </Box>
-          <Stack direction="row" spacing={1}>
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={1}
+            sx={{ 
+              order: { xs: 1, sm: 2 },
+              width: { xs: '100%', sm: 'auto' }
+            }}
+          >
             {onRecalculateNumerology && customer.full_name && customer.date_of_birth && (
               <Tooltip title="Tính lại thần số học">
                 <IconButton
                   onClick={() => onRecalculateNumerology(customer.customer_id)}
                   color="secondary"
                   size="small"
+                  sx={{ alignSelf: { xs: 'center', sm: 'auto' } }}
                 >
                   <Calculate />
                 </IconButton>
@@ -534,6 +679,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                   onClick={() => onGenerateQR(customer)}
                   color="success"
                   size="small"
+                  sx={{ alignSelf: { xs: 'center', sm: 'auto' } }}
                 >
                   <QrCode />
                 </IconButton>
@@ -545,6 +691,10 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               color="error"
               variant="outlined"
               size="small"
+              sx={{ 
+                fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                width: { xs: '100%', sm: 'auto' }
+              }}
             >
               Xóa
             </ActionButton>
