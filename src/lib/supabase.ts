@@ -17,7 +17,10 @@ export const supabase = new Proxy({} as NonNullable<typeof supabaseClient>, {
   get(target, prop) {
     if (!supabaseClient) {
       if (typeof window !== 'undefined') {
-        throw new Error('Database connection not available. Please check your environment configuration.');
+        const errorMsg = !supabaseUrl || !supabaseKey 
+          ? 'Database connection not available. Please check your environment configuration.'
+          : 'Database configuration incomplete. Missing Supabase credentials.';
+        throw new Error(errorMsg);
       }
       // During build time, return a mock to prevent errors
       return () => Promise.reject(new Error('Database not available during build'));
