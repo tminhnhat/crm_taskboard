@@ -28,9 +28,6 @@ import {
   PriorityChip,
   StatusChip,
   ActionButton,
-  InfoBox,
-  CardHeader,
-  CardActions,
   StyledSelect
 } from './StyledComponents'
 
@@ -103,124 +100,197 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
   }
 
   return (
-    <StyledCard>
-      <CardContent>
-        <CardHeader>
-          <Box sx={{ flex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Typography variant="h6" component="h3" sx={{ fontWeight: 600 }}>
-                {task.task_name}
-              </Typography>
+    <StyledCard sx={{ 
+      borderRadius: 3, 
+      boxShadow: '0px 2px 8px rgba(0,0,0,0.1)',
+      border: '1px solid rgba(0,0,0,0.08)',
+      overflow: 'visible'
+    }}>
+      <CardContent sx={{ p: 3 }}>
+        {/* Header with title and status dropdown */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box sx={{ flex: 1, pr: 2 }}>
+            <Typography 
+              variant="h6" 
+              component="h3" 
+              sx={{ 
+                fontWeight: 700, 
+                fontSize: '1.1rem',
+                color: 'text.primary',
+                mb: 0.5,
+                lineHeight: 1.3
+              }}
+            >
+              {task.task_name}
               {isOverdue && (
-                <Warning color="error" fontSize="small" />
+                <Warning color="error" fontSize="small" sx={{ ml: 1 }} />
               )}
-            </Box>
-            
-            {task.task_note && (
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {task.task_note}
+            </Typography>
+            {task.task_type && (
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                {taskTypeLabels[task.task_type] || task.task_type}
               </Typography>
             )}
-            
-            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
-              <StatusChip 
-                icon={<StatusIcon />} 
-                label={statusLabels[task.task_status]}
-                status={task.task_status}
-                size="small"
-              />
-              {task.task_priority && (
-                <PriorityChip 
-                  label={priorityLabels[task.task_priority]}
-                  priority={task.task_priority}
-                  size="small"
-                />
-              )}
-              {task.task_type && (
-                <PriorityChip 
-                  label={taskTypeLabels[task.task_type] || task.task_type}
-                  size="small"
-                />
-              )}
-            </Stack>
-            
-            <Stack spacing={1}>
-              {task.task_due_date && (
-                <InfoBox sx={{ color: isOverdue ? 'error.main' : 'text.secondary' }}>
-                  <Event fontSize="small" />
-                  <Typography variant="body2">
-                    Hạn: {formatDateDisplay(task.task_due_date)}
-                  </Typography>
-                </InfoBox>
-              )}
-              {task.task_date_start && (
-                <InfoBox>
-                  <Event fontSize="small" />
-                  <Typography variant="body2">
-                    Bắt đầu: {formatDateDisplay(task.task_date_start)}
-                    {task.task_start_time && ` lúc ${task.task_start_time}`}
-                  </Typography>
-                </InfoBox>
-              )}
-              {task.task_date_finish && (
-                <InfoBox sx={{ color: 'success.main' }}>
-                  <CheckCircle fontSize="small" />
-                  <Typography variant="body2">
-                    Hoàn thành: {formatDateDisplay(task.task_date_finish)}
-                    {task.task_time_finish && ` lúc ${task.task_time_finish}`}
-                  </Typography>
-                </InfoBox>
-              )}
-              {task.task_time_process && (
-                <InfoBox>
-                  <AccessTime fontSize="small" />
-                  <Typography variant="body2">
-                    Thời gian dự kiến: {task.task_time_process}
-                  </Typography>
-                </InfoBox>
-              )}
-            </Stack>
           </Box>
           
-          <Box sx={{ ml: 2, minWidth: 140 }}>
-            <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-              <StyledSelect
-                value={task.task_status}
-                onChange={(e) => onStatusChange(task.task_id, e.target.value as TaskStatusEnum)}
-              >
-                <MenuItem value="needsAction">Cần thực hiện</MenuItem>
-                <MenuItem value="inProgress">Đang thực hiện</MenuItem>
-                <MenuItem value="onHold">Tạm dừng</MenuItem>
-                <MenuItem value="completed">Hoàn thành</MenuItem>
-                <MenuItem value="cancelled">Hủy bỏ</MenuItem>
-                <MenuItem value="deleted">Đã xóa</MenuItem>
-              </StyledSelect>
-            </FormControl>
-          </Box>
-        </CardHeader>
-        
-        <CardActions>
-          <Box>
-            <ActionButton
-              startIcon={<Edit />}
-              onClick={() => onEdit(task)}
-              color="primary"
-              variant="outlined"
-              size="small"
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <StyledSelect
+              value={task.task_status}
+              onChange={(e) => onStatusChange(task.task_id, e.target.value as TaskStatusEnum)}
+              sx={{
+                '& .MuiSelect-select': {
+                  padding: '6px 12px',
+                  fontSize: '0.85rem',
+                  fontWeight: 500
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderRadius: 2,
+                  borderColor: 'rgba(0,0,0,0.12)'
+                }
+              }}
             >
-              Sửa
-            </ActionButton>
-          </Box>
+              <MenuItem value="needsAction">Cần thực hiện</MenuItem>
+              <MenuItem value="inProgress">Đang thực hiện</MenuItem>
+              <MenuItem value="onHold">Tạm dừng</MenuItem>
+              <MenuItem value="completed">Hoàn thành</MenuItem>
+              <MenuItem value="cancelled">Hủy bỏ</MenuItem>
+              <MenuItem value="deleted">Đã xóa</MenuItem>
+            </StyledSelect>
+          </FormControl>
+        </Box>
+
+        {/* Task Details */}
+        {task.task_note && (
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: 'text.secondary', 
+              mb: 2,
+              fontSize: '0.9rem',
+              lineHeight: 1.5
+            }}
+          >
+            {task.task_note}
+          </Typography>
+        )}
+
+        {/* Priority and Status Indicators */}
+        <Box sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+            <StatusChip 
+              icon={<StatusIcon />} 
+              label={statusLabels[task.task_status]}
+              status={task.task_status}
+              size="small"
+              sx={{ fontSize: '0.75rem' }}
+            />
+            {task.task_priority && (
+              <PriorityChip 
+                label={priorityLabels[task.task_priority]}
+                priority={task.task_priority}
+                size="small"
+                sx={{ fontSize: '0.75rem' }}
+              />
+            )}
+          </Stack>
+        </Box>
+
+        {/* Date and Time Information */}
+        <Box sx={{ mb: 2 }}>
+          {task.task_due_date && (
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1, 
+              mb: 1,
+              color: isOverdue ? 'error.main' : 'text.secondary'
+            }}>
+              <Event fontSize="small" />
+              <Typography variant="body2" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                Hạn: {formatDateDisplay(task.task_due_date)}
+              </Typography>
+            </Box>
+          )}
+          {task.task_date_start && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Event fontSize="small" sx={{ color: 'text.secondary' }} />
+              <Typography variant="body2" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                Bắt đầu: {formatDateDisplay(task.task_date_start)}
+                {task.task_start_time && ` lúc ${task.task_start_time}`}
+              </Typography>
+            </Box>
+          )}
+          {task.task_date_finish && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <CheckCircle fontSize="small" sx={{ color: 'success.main' }} />
+              <Typography variant="body2" sx={{ fontSize: '0.875rem', color: 'success.main' }}>
+                Hoàn thành: {formatDateDisplay(task.task_date_finish)}
+                {task.task_time_finish && ` lúc ${task.task_time_finish}`}
+              </Typography>
+            </Box>
+          )}
+          {task.task_time_process && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AccessTime fontSize="small" sx={{ color: 'text.secondary' }} />
+              <Typography variant="body2" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                Thời gian dự kiến: {task.task_time_process}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        {/* Action Buttons */}
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 2, 
+          pt: 2, 
+          borderTop: '1px solid rgba(0,0,0,0.08)' 
+        }}>
+          <ActionButton
+            startIcon={<Edit />}
+            onClick={() => onEdit(task)}
+            variant="outlined"
+            size="small"
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                transform: 'none'
+              }
+            }}
+          >
+            Sửa
+          </ActionButton>
           <ActionButton
             startIcon={<DeleteOutline />}
             onClick={() => onDelete(task.task_id)}
-            color="error"
             variant="outlined"
             size="small"
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+              borderColor: 'error.main',
+              color: 'error.main',
+              '&:hover': {
+                backgroundColor: 'error.main',
+                color: 'white',
+                transform: 'none'
+              }
+            }}
           >
             Xóa
           </ActionButton>
-        </CardActions>
+        </Box>
       </CardContent>
     </StyledCard>
   )
