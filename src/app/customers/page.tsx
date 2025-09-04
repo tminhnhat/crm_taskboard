@@ -23,7 +23,7 @@ import {
   Person as PersonIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
-  Refresh as RefreshIcon
+  PermContactCalendar as PermContactCalendarOutlinedIcon
 } from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
 import CustomerCard from '@/components/CustomerCard'
@@ -260,7 +260,7 @@ export default function CustomersPage() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                👥 Quản Lý Khách Hàng
+                <PermContactCalendarOutlinedIcon sx={{ fontSize: 36 }} /> Quản Lý Khách Hàng
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Quản lý và theo dõi thông tin khách hàng một cách chuyên nghiệp
