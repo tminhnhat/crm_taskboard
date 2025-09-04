@@ -131,7 +131,7 @@ export default function CustomerForm({ isOpen, onClose, onSubmit, customer }: Cu
         spouse_info: {},
       });
     }
-  }, [customer, isOpen, formatDateForDisplay]);
+  }, [customer, isOpen]);
 
   // Update form data handler
   const handleFormDataChange = (newData: Partial<CustomerFormData>) => {
