@@ -83,6 +83,16 @@ export default function ContractsPage() {
     return Array.from(staff.values()).sort((a, b) => a.full_name.localeCompare(b.full_name))
   }, [contracts])
 
+  const availableStatuses = useMemo(() => {
+    const statuses = new Set<string>()
+    contracts.forEach(contract => {
+      if (contract.status) {
+        statuses.add(contract.status)
+      }
+    })
+    return Array.from(statuses).sort()
+  }, [contracts])
+
   // Filter contracts based on current filters
   const filteredContracts = useMemo(() => {
     return contracts.filter(contract => {
@@ -344,6 +354,7 @@ export default function ContractsPage() {
         <ContractFilters
           filters={filters}
           onFiltersChange={setFilters}
+          availableStatuses={availableStatuses}
           availableCustomers={availableCustomers}
           availableProducts={availableProducts}
           availableStaff={availableStaff}

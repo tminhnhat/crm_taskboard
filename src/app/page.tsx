@@ -1,7 +1,31 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  Pagination,
+  Paper,
+  IconButton,
+  Tooltip,
+  LinearProgress,
+  useTheme
+} from '@mui/material'
+import { 
+  Add as AddIcon,
+  TrendingUp as TrendingUpIcon,
+  Schedule as ScheduleIcon,
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
+  Error as ErrorIcon,
+  Assessment as AssessmentIcon,
+  Refresh as RefreshIcon
+} from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
 import TaskCard from '@/components/TaskCard'
 import TaskForm from '@/components/TaskForm'
@@ -11,7 +35,8 @@ import { useTasks } from '@/hooks/useTasks'
 import { Task, TaskStatusEnum } from '@/lib/supabase'
 
 export default function TaskDashboard() {
-  const { tasks, loading, error, createTask, updateTask, deleteTask, updateTaskStatus } = useTasks()
+  const theme = useTheme()
+  const { tasks, loading, error, createTask, updateTask, deleteTask, updateTaskStatus, refetch } = useTasks()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState({
@@ -172,117 +197,457 @@ export default function TaskDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Lỗi khi tải danh sách công việc: {error}</p>
-          <p className="text-gray-600">Vui lòng kiểm tra cấu hình Supabase trong file .env.local</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Navigation />
+        <Box sx={{ maxWidth: '7xl', mx: 'auto', px: { xs: 2, sm: 3, lg: 4 }, py: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Lỗi khi tải danh sách công việc: {error}
+              </Alert>
+              <Typography color="text.secondary">
+                Vui lòng kiểm tra cấu hình Supabase trong file .env.local
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Navigation */}
       <Navigation />
 
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h2 className="text-2xl font-bold text-gray-900">Quản Lý Công Việc</h2>
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Công Việc Mới
-            </button>
-          </div>
-        </div>
-      </header>
+      <Paper elevation={0} sx={{ 
+        bgcolor: 'background.paper', 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.05)'
+      }}>
+        <Container maxWidth="xl">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            py: 4 
+          }}>
+            <Box>
+              <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
+                mb: 1, 
+                color: 'text.primary',
+                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                📊 Bảng Điều Khiển Công Việc
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Quản lý và theo dõi tất cả công việc của bạn một cách hiệu quả
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Tooltip title="Làm mới dữ liệu">
+                <IconButton 
+                  onClick={() => refetch?.()}
+                  disabled={loading}
+                  sx={{ 
+                    bgcolor: 'background.paper',
+                    border: 1,
+                    borderColor: 'divider',
+                    boxShadow: '0px 2px 4px rgba(0,0,0,0.05)',
+                    '&:hover': { 
+                      boxShadow: '0px 4px 8px rgba(0,0,0,0.1)',
+                      transform: 'translateY(-1px)',
+                      borderColor: 'primary.main'
+                    },
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setIsFormOpen(true)}
+                size="large"
+                sx={{ 
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
+                  '&:hover': {
+                    boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
+              >
+                Công Việc Mới
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Paper>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-            <div className="text-sm text-gray-600">Tổng Công Việc</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.pending}</div>
-            <div className="text-sm text-gray-600">Chờ Xử Lý</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-yellow-600">{stats.inProgress}</div>
-            <div className="text-sm text-gray-600">Đang Thực Hiện</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-            <div className="text-sm text-gray-600">Hoàn Thành</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-            <div className="text-sm text-gray-600">Quá Hạn</div>
-          </div>
-        </div>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Statistics Cards */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" fontWeight="600" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AssessmentIcon color="primary" />
+            Thống Kê Tổng Quan
+          </Typography>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(5, 1fr)' 
+            }, 
+            gap: 3
+          }}>
+            {/* Total Tasks */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(52, 71, 103, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                    color: 'white'
+                  }}>
+                    <TrendingUpIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.total}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Tổng Công Việc
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Pending Tasks */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(251, 133, 0, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #fb8500 0%, #ffb347 100%)',
+                    color: 'white'
+                  }}>
+                    <ScheduleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.pending}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Chờ Xử Lý
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* In Progress Tasks */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(73, 163, 241, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #49a3f1 0%, #5dade2 100%)',
+                    color: 'white'
+                  }}>
+                    <WarningIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.inProgress}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Đang Thực Hiện
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Completed Tasks */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(130, 214, 22, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #82d616 0%, #a8e6cf 100%)',
+                    color: 'white'
+                  }}>
+                    <CheckCircleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.completed}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Hoàn Thành
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Overdue Tasks */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(234, 6, 6, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #ea0606 0%, #ff6b6b 100%)',
+                    color: 'white'
+                  }}>
+                    <ErrorIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.overdue}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Quá Hạn
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+          
+          {/* Progress Bar */}
+          {stats.total > 0 && (
+            <Card elevation={0} sx={{ 
+              mt: 4, 
+              p: 4, 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 3
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" fontWeight="600" sx={{ color: 'text.primary' }}>
+                  Tiến Độ Hoàn Thành Tổng Thể
+                </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: 2,
+                  background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                  color: 'white'
+                }}>
+                  <Typography variant="body2" fontWeight="700">
+                    {Math.round((stats.completed / stats.total) * 100)}%
+                  </Typography>
+                </Box>
+              </Box>
+              <LinearProgress 
+                variant="determinate" 
+                value={(stats.completed / stats.total) * 100}
+                sx={{ 
+                  height: 10, 
+                  borderRadius: 5,
+                  bgcolor: 'grey.200',
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 5,
+                    background: 'linear-gradient(90deg, #3867d6 0%, #8854d0 100%)'
+                  }
+                }}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  <strong>{stats.completed}</strong> / {stats.total} công việc hoàn thành
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  <strong>{stats.total - stats.completed}</strong> công việc còn lại
+                </Typography>
+              </Box>
+            </Card>
+          )}
+        </Box>
 
-        {/* Filters */}
-        <TaskFilters filters={filters} onFiltersChange={setFilters} />
+        {/* Filters Section */}
+        <Paper elevation={1} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+          <TaskFilters filters={filters} onFiltersChange={setFilters} />
+        </Paper>
 
         {/* Tasks List */}
-        {loading ? (
-          <div className="grid gap-4">
-            {[...Array(3)].map((_, i) => (
-              <TaskCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : filteredTasks.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              {tasks.length === 0 ? 'Chưa có công việc nào. Tạo công việc đầu tiên của bạn!' : 'Không có công việc nào phù hợp với bộ lọc.'}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="grid gap-4">
-              {filteredTasks
-                .slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage)
-                .map((task) => (
-                  <TaskCard
-                    key={task.task_id}
-                    task={task}
-                    onEdit={handleEditTask}
-                    onDelete={handleDeleteTask}
-                    onStatusChange={handleStatusChange}
-                  />
-                ))}
-            </div>
+        <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+          {loading ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[...Array(3)].map((_, i) => (
+                <TaskCardSkeleton key={i} />
+              ))}
+            </Box>
+          ) : filteredTasks.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Box sx={{ 
+                width: 120, 
+                height: 120, 
+                bgcolor: 'grey.100', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 3
+              }}>
+                <TrendingUpIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+              </Box>
+              <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                {tasks.length === 0 ? 'Chưa có công việc nào' : 'Không có kết quả phù hợp'}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                {tasks.length === 0 ? 'Tạo công việc đầu tiên của bạn để bắt đầu!' : 'Thử điều chỉnh bộ lọc để tìm thấy công việc bạn cần.'}
+              </Typography>
+              {tasks.length === 0 && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => setIsFormOpen(true)}
+                  size="large"
+                >
+                  Tạo Công Việc Đầu Tiên
+                </Button>
+              )}
+            </Box>
+          ) : (
+            <>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Danh sách công việc ({filteredTasks.length})
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Hiển thị {((currentPage - 1) * tasksPerPage) + 1}-{Math.min(currentPage * tasksPerPage, filteredTasks.length)} trong tổng số {filteredTasks.length} công việc
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {filteredTasks
+                  .slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage)
+                  .map((task) => (
+                    <TaskCard
+                      key={task.task_id}
+                      task={task}
+                      onEdit={handleEditTask}
+                      onDelete={handleDeleteTask}
+                      onStatusChange={handleStatusChange}
+                    />
+                  ))}
+              </Box>
 
-            {/* Pagination Controls */}
-            <div className="mt-6 flex justify-center items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border rounded-md disabled:opacity-50"
-              >
-                Trang Trước
-              </button>
-              <span className="text-sm text-gray-600">
-                Trang {currentPage} / {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border rounded-md disabled:opacity-50"
-              >
-                Trang Sau
-              </button>
-            </div>
-          </>
-        )}
-      </main>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={(event, value) => setCurrentPage(value)}
+                    color="primary"
+                    size="large"
+                    showFirstButton
+                    showLastButton
+                  />
+                </Box>
+              )}
+            </>
+          )}
+        </Paper>
+      </Container>
 
       {/* Task Form Modal */}
       <TaskForm
@@ -291,6 +656,6 @@ export default function TaskDashboard() {
         onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
         task={editingTask}
       />
-    </div>
+    </Box>
   )
 }

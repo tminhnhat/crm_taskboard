@@ -1,17 +1,44 @@
-// CreditAssessmentFormFull.tsx - Phiên bản đầy đủ thông tin, hỗ trợ nhiều loại khoản vay và metadata section động
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Dialog } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { toVNDate } from '@/lib/date'
 import {
-  BanknotesIcon,
-  DocumentTextIcon,
-  ChartBarIcon,
-  ClipboardDocumentCheckIcon,
-  UserGroupIcon
-} from '@heroicons/react/24/outline'
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Box,
+  Autocomplete,
+  useTheme,
+  useMediaQuery,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Divider,
+  Chip,
+  IconButton,
+  InputAdornment,
+} from '@mui/material'
+import {
+  Close,
+  AccountBalance,
+  Description,
+  Assessment as AssessmentIcon,
+  CheckCircle,
+  People,
+  ExpandMore,
+  AttachMoney,
+} from '@mui/icons-material'
+import { toVNDate } from '@/lib/date'
 
 // --- Types ---
 interface MetadataField {
@@ -46,7 +73,7 @@ interface CreditAssessmentFormProps {
 // --- Templates ---
 const SPOUSE_TEMPLATE: TemplateConfig = {
   title: 'Thông tin vợ/chồng',
-  icon: UserGroupIcon,
+  icon: People,
   fields: [
     { key: 'full_name', label: 'Họ và tên', type: 'text' },
     { key: 'date_of_birth', label: 'Ngày sinh', type: 'date' },
@@ -65,7 +92,7 @@ const TEMPLATES_KINH_DOANH: MetadataTemplates = {
   spouse_info: SPOUSE_TEMPLATE,
   loan_info: {
     title: '1. Thông tin khoản vay (Kinh doanh)',
-    icon: BanknotesIcon,
+    icon: AccountBalance,
     fields: [
       { key: 'purpose.main_purpose', label: 'Mục đích vay', type: 'text' },
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
@@ -76,7 +103,7 @@ const TEMPLATES_KINH_DOANH: MetadataTemplates = {
   },
   business_plan: {
     title: '2. Phương án kinh doanh',
-    icon: ChartBarIcon,
+    icon: AssessmentIcon,
     fields: [
       { key: 'pakd_doanhthu', label: 'Doanh thu', type: 'number' },
       { key: 'pakd_giavon', label: 'Giá vốn', type: 'number' },
@@ -95,7 +122,7 @@ const TEMPLATES_KINH_DOANH: MetadataTemplates = {
   },
   financial_reports: {
     title: '3. Báo cáo tài chính',
-    icon: DocumentTextIcon,
+    icon: Description,
     fields: [
       { key: 'bc_doanhthu', label: 'Doanh thu', type: 'number' },
       { key: 'bc_loinhuan', label: 'Lợi nhuận', type: 'number' },
@@ -105,7 +132,7 @@ const TEMPLATES_KINH_DOANH: MetadataTemplates = {
   },
   assessment_details: {
     title: '4. Đánh giá thẩm định',
-    icon: ClipboardDocumentCheckIcon,
+    icon: CheckCircle,
     fields: [
       { key: 'danhgia_khachhang', label: 'Đánh giá khách hàng', type: 'textarea' },
       { key: 'danhgia_taisan', label: 'Đánh giá tài sản', type: 'textarea' },
@@ -118,7 +145,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
   spouse_info: SPOUSE_TEMPLATE,
   loan_info: {
     title: '1. Thông tin khoản vay (Tiêu dùng)',
-    icon: BanknotesIcon,
+    icon: AccountBalance,
     fields: [
       { key: 'purpose.main_purpose', label: 'Mục đích vay', type: 'text' },
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
@@ -129,7 +156,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
   },
   repayment_sources: {
     title: '2. Nguồn trả nợ',
-    icon: ClipboardDocumentCheckIcon,
+    icon: CheckCircle,
     fields: [
       { key: 'from_customer_salary', label: 'Từ lương của khách hàng', type: 'number' },
       { key: 'from_customer_salary_desc', label: 'Mô tả nguồn lương của khách hàng', type: 'textarea' },
@@ -146,7 +173,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
   },
   liabilities: {
     title: '3. Thông tin nợ phải trả',
-    icon: DocumentTextIcon,
+    icon: Description,
     fields: [
       { key: 'expected_loan_liability', label: 'Nợ phải trả cho khoản vay dự kiến', type: 'number' },
       { key: 'expected_loan_liability_desc', label: 'Mô tả nợ phải trả cho khoản vay dự kiến', type: 'textarea' },
@@ -161,7 +188,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
   },
   monthly_expenses: {
     title: '4. Chi phí sinh hoạt hàng tháng',
-    icon: ChartBarIcon,
+    icon: AssessmentIcon,
     fields: [
       { key: 'food_expense', label: 'Chi phí ăn uống', type: 'number' },
       { key: 'medical_expense', label: 'Chi phí y tế', type: 'number' },
@@ -171,7 +198,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
   },
   residual_income: {
     title: '5. Thu nhập còn lại',
-    icon: ChartBarIcon,
+    icon: AssessmentIcon,
     fields: [
       { key: 'total_residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
     ]
@@ -182,7 +209,7 @@ const TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
   spouse_info: SPOUSE_TEMPLATE,
   loan_info: {
     title: '1. Thông tin khoản vay (Thẻ tín dụng)',
-    icon: BanknotesIcon,
+    icon: AccountBalance,
     fields: [
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
       { key: 'amount.requested', label: 'Hạn mức thẻ', type: 'number' },
@@ -202,72 +229,159 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
   onChange: (data: Record<string, any>) => void
 }) {
   const [metadata, setMetadata] = useState<Record<string, any>>(initialData)
+  const [expanded, setExpanded] = useState<boolean>(true)
+
   useEffect(() => { setMetadata(initialData) }, [initialData])
+
   const handleFieldChange = (field: string, value: any) => {
     const newMetadata = { ...metadata, [field]: value }
     setMetadata(newMetadata)
     onChange(newMetadata)
   }
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-blue-100">
-      <div className="flex items-center mb-4">
-        <div className="bg-blue-50 rounded-full p-2 mr-3">
-          <Icon className="h-6 w-6 text-blue-600" />
-        </div>
-        <h4 className="text-xl font-semibold text-blue-700 tracking-tight">{title}</h4>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {fields.map(field => (
-          <div key={field.key} className="mb-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
-            {field.type === 'select' ? (
-              <select
-                value={metadata[field.key] || ''}
-                onChange={e => handleFieldChange(field.key, e.target.value)}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Chọn {field.label}</option>
-                {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            ) : field.type === 'textarea' ? (
-              <textarea
-                value={metadata[field.key] || ''}
-                onChange={e => handleFieldChange(field.key, e.target.value)}
-                rows={3}
-                className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : field.type === 'boolean' ? (
-              <input
-                type="checkbox"
-                checked={!!metadata[field.key]}
-                onChange={e => handleFieldChange(field.key, e.target.checked)}
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-              />
-            ) : (
-              <input
-                type={field.type}
-                value={metadata[field.key] || ''}
-                onChange={e => handleFieldChange(field.key, field.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
-                readOnly={field.readOnly}
-                className={`block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 ${field.readOnly ? 'bg-blue-50 text-blue-700 font-bold border-blue-300' : ''}`}
-                style={field.readOnly ? { fontSize: '1.1rem' } : {}}
-              />
-            )}
-            {/* Highlight for total fields */}
-            {field.readOnly && (
-              <span className="text-xs text-blue-500 font-semibold">Tự động tính</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+    <Accordion 
+      expanded={expanded} 
+      onChange={() => setExpanded(!expanded)}
+      sx={{ 
+        mb: 2, 
+        boxShadow: 3,
+        '&:before': { display: 'none' },
+        borderRadius: '12px !important',
+        overflow: 'hidden'
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMore />}
+        sx={{
+          backgroundColor: 'primary.main',
+          color: 'primary.contrastText',
+          minHeight: 64,
+          '&.Mui-expanded': {
+            minHeight: 64,
+          },
+          '& .MuiAccordionSummary-content': {
+            alignItems: 'center',
+          },
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ 
+            p: 1, 
+            bgcolor: 'primary.light', 
+            borderRadius: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Icon sx={{ fontSize: 20, color: 'primary.contrastText' }} />
+          </Box>
+          <Typography variant="h6" fontWeight="medium">
+            {title}
+          </Typography>
+        </Box>
+      </AccordionSummary>
+      <AccordionDetails sx={{ p: 3, backgroundColor: 'background.paper' }}>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+          gap: 3 
+        }}>
+          {fields.map(field => (
+            <Box key={field.key}>
+              {field.type === 'select' ? (
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel>{field.label}</InputLabel>
+                  <Select
+                    value={metadata[field.key] || ''}
+                    onChange={e => handleFieldChange(field.key, e.target.value)}
+                    label={field.label}
+                  >
+                    <MenuItem value="">
+                      <em>Chọn {field.label}</em>
+                    </MenuItem>
+                    {field.options?.map(opt => (
+                      <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : field.type === 'textarea' ? (
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label={field.label}
+                  value={metadata[field.key] || ''}
+                  onChange={e => handleFieldChange(field.key, e.target.value)}
+                  variant="outlined"
+                />
+              ) : field.type === 'number' ? (
+                <TextField
+                  fullWidth
+                  type="number"
+                  label={field.label}
+                  value={metadata[field.key] || ''}
+                  onChange={e => handleFieldChange(field.key, parseFloat(e.target.value))}
+                  InputProps={{
+                    readOnly: field.readOnly,
+                    startAdornment: field.label.includes('tiền') || field.label.includes('phí') ? (
+                      <InputAdornment position="start">
+                        <AttachMoney />
+                      </InputAdornment>
+                    ) : undefined,
+                  }}
+                  variant="outlined"
+                  sx={field.readOnly ? { 
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'primary.light',
+                      '& input': {
+                        color: 'primary.main',
+                        fontWeight: 'bold',
+                      }
+                    }
+                  } : {}}
+                />
+              ) : (
+                <TextField
+                  fullWidth
+                  type={field.type}
+                  label={field.label}
+                  value={metadata[field.key] || ''}
+                  onChange={e => handleFieldChange(field.key, e.target.value)}
+                  InputProps={{
+                    readOnly: field.readOnly,
+                  }}
+                  variant="outlined"
+                  sx={field.readOnly ? { 
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'primary.light',
+                      '& input': {
+                        color: 'primary.main',
+                        fontWeight: 'bold',
+                      }
+                    }
+                  } : {}}
+                />
+              )}
+              {field.readOnly && (
+                <Typography variant="caption" color="primary.main" sx={{ mt: 0.5, display: 'block' }}>
+                  Tự động tính
+                </Typography>
+              )}
+            </Box>
+          ))}
+        </Box>
+      </AccordionDetails>
+    </Accordion>
   )
 }
 
 // --- Main Form ---
-export default function CreditAssessmentFormFull({
+export default function CreditAssessmentForm({
   isOpen, onClose, onSubmit, assessment, isLoading, customers, staff, products
 }: CreditAssessmentFormProps) {
+  const theme = useTheme()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
   // --- State ---
   const [formState, setFormState] = useState(() => {
     const details = assessment?.assessment_details || {}
@@ -372,6 +486,20 @@ export default function CreditAssessmentFormFull({
     })
   }
 
+  const handleLoanTypeChange = (value: string) => {
+    setFormState(prev => ({
+      ...prev,
+      loan_type: value,
+      assessment_details: {
+        ...prev.assessment_details,
+        loan_info: {
+          ...prev.assessment_details.loan_info,
+          ['loan_type.category']: value
+        }
+      }
+    }))
+  }
+
   const handleSectionDataChange = (section: string, data: Record<string, any>) => {
     let newData = { ...data };
     // Tính tổng chi phí sinh hoạt
@@ -444,192 +572,266 @@ export default function CreditAssessmentFormFull({
 
   // --- Render ---
   return (
-    <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" open={isOpen} onClose={onClose}>
-      <div className="min-h-screen px-4 text-center">
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-  <div className="inline-block w-full max-w-5xl my-8 p-0 text-left align-middle transition-all transform">
-          <div className="flex justify-between items-center mb-4">
-            <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
-              {assessment ? 'Chỉnh sửa thẩm định' : 'Thẩm định mới'}
-            </Dialog.Title>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white rounded-xl shadow p-6 mb-6 border border-gray-100">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Trạng thái</label>
-                <select
-                  name="status"
-                  value={formState.status}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="draft">Nháp</option>
-                  <option value="approve">Phê duyệt</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Khách hàng</label>
-                <select
-                  name="customer_id"
-                  value={formState.customer_id}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="">Chọn khách hàng</option>
-                  {customers.map(customer => (
-                    <option key={customer.customer_id} value={customer.customer_id}>
-                      {customer.full_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {/* Spouse select and metadata section - moved here */}
-              <div className="md:col-span-2 mb-6">
-                <label className="block text-sm font-medium text-gray-700">Chọn vợ/chồng từ khách hàng</label>
-                <select
-                  value={formState.assessment_details.spouse_info?.customer_id || ''}
-                  onChange={e => {
-                    const selectedId = e.target.value
-                    const selectedCustomer = customers.find(c => c.customer_id.toString() === selectedId)
-                    if (selectedCustomer) {
-                      const mapped = {
-                        customer_id: selectedCustomer.customer_id,
-                        full_name: selectedCustomer.full_name,
-                        date_of_birth: selectedCustomer.date_of_birth,
-                        gender: selectedCustomer.gender,
-                        id_number: selectedCustomer.id_number,
-                        id_issue_date: selectedCustomer.id_issue_date,
-                        id_issue_authority: selectedCustomer.id_issue_authority,
-                        phone: selectedCustomer.phone,
-                        address: selectedCustomer.address,
-                        account_number: selectedCustomer.account_number,
-                        cif_number: selectedCustomer.cif_number
-                      }
-                      handleSectionDataChange('spouse_info', mapped)
-                    } else {
-                      handleSectionDataChange('spouse_info', {})
+    <Dialog 
+      open={isOpen} 
+      onClose={onClose} 
+      maxWidth="lg"
+      fullWidth
+      fullScreen={fullScreen}
+      sx={{ '& .MuiDialog-paper': { borderRadius: fullScreen ? 0 : 3 } }}
+    >
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        backgroundColor: 'primary.main',
+        color: 'primary.contrastText'
+      }}>
+        <Typography variant="h6" component="div">
+          {assessment ? 'Chỉnh sửa thẩm định' : 'Thẩm định mới'}
+        </Typography>
+        <IconButton onClick={onClose} sx={{ color: 'primary.contrastText' }}>
+          <Close />
+        </IconButton>
+      </DialogTitle>
+      
+      <DialogContent sx={{ p: 3 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          {/* Basic Information */}
+          <Card sx={{ mb: 3, boxShadow: 2 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom color="primary.main" sx={{ mb: 3 }}>
+                Thông tin cơ bản
+              </Typography>
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+                gap: 3 
+              }}>
+                <Box>
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel>Trạng thái</InputLabel>
+                    <Select
+                      value={formState.status}
+                      onChange={(e) => setFormState(prev => ({ ...prev, status: e.target.value as string }))}
+                      label="Trạng thái"
+                      required
+                    >
+                      <MenuItem value="draft">Nháp</MenuItem>
+                      <MenuItem value="approve">Phê duyệt</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box>
+                  <Autocomplete
+                    options={customers}
+                    getOptionLabel={(option) => option.full_name}
+                    value={customers.find(c => c.customer_id.toString() === formState.customer_id) || null}
+                    onChange={(event, newValue) => {
+                      setFormState(prev => ({ ...prev, customer_id: newValue?.customer_id.toString() || '' }))
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Khách hàng" variant="outlined" required />
+                    )}
+                  />
+                </Box>
+
+                <Box>
+                  <Autocomplete
+                    options={staff}
+                    getOptionLabel={(option) => option.full_name}
+                    value={staff.find(s => s.staff_id.toString() === formState.staff_id) || null}
+                    onChange={(event, newValue) => {
+                      const selectedStaff = newValue
+                      setFormState(prev => ({ 
+                        ...prev, 
+                        staff_id: selectedStaff?.staff_id.toString() || '',
+                        department: selectedStaff?.department || '' 
+                      }))
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Nhân viên" variant="outlined" required />
+                    )}
+                  />
+                </Box>
+
+                <Box>
+                  <Autocomplete
+                    options={products}
+                    getOptionLabel={(option) => option.product_name}
+                    value={products.find(p => p.product_id.toString() === formState.product_id) || null}
+                    onChange={(event, newValue) => {
+                      setFormState(prev => ({ ...prev, product_id: newValue?.product_id.toString() || '' }))
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Sản phẩm" variant="outlined" required />
+                    )}
+                  />
+                </Box>
+
+                <Box>
+                  <TextField
+                    fullWidth
+                    name="department"
+                    label="Phòng ban"
+                    value={formState.department}
+                    onChange={(e) => setFormState(prev => ({ ...prev, department: e.target.value }))}
+                    variant="outlined"
+                  />
+                </Box>
+
+                <Box>
+                  <Autocomplete
+                    options={staff}
+                    getOptionLabel={(option) => option.full_name}
+                    value={staff.find(s => s.full_name === formState.department_head) || null}
+                    onChange={(event, newValue) => {
+                      setFormState(prev => ({ ...prev, department_head: newValue?.full_name || '' }))
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Lãnh đạo phòng" variant="outlined" required />
+                    )}
+                  />
+                </Box>
+
+                <Box>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    name="fee_amount"
+                    label="Phí thẩm định"
+                    value={formState.fee_amount}
+                    onChange={(e) => setFormState(prev => ({ ...prev, fee_amount: e.target.value }))}
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <AttachMoney />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Box>
+
+                <Box>
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel>Loại khoản vay</InputLabel>
+                    <Select
+                      value={formState.loan_type}
+                      onChange={(e) => handleLoanTypeChange(e.target.value as string)}
+                      label="Loại khoản vay"
+                    >
+                      <MenuItem value="Kinh doanh">Kinh doanh</MenuItem>
+                      <MenuItem value="Tiêu dùng">Tiêu dùng</MenuItem>
+                      <MenuItem value="Thẻ tín dụng">Thẻ tín dụng</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+
+          {/* Spouse Selection */}
+          <Card sx={{ mb: 3, boxShadow: 2 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom color="primary.main" sx={{ mb: 3 }}>
+                Chọn thông tin vợ/chồng
+              </Typography>
+              <Autocomplete
+                options={customers}
+                getOptionLabel={(option) => option.full_name}
+                value={customers.find(c => c.customer_id.toString() === (formState.assessment_details.spouse_info?.customer_id?.toString() || '')) || null}
+                onChange={(event, newValue) => {
+                  if (newValue) {
+                    const mapped = {
+                      customer_id: newValue.customer_id,
+                      full_name: newValue.full_name,
+                      date_of_birth: newValue.date_of_birth,
+                      gender: newValue.gender,
+                      id_number: newValue.id_number,
+                      id_issue_date: newValue.id_issue_date,
+                      id_issue_authority: newValue.id_issue_authority,
+                      phone: newValue.phone,
+                      address: newValue.address,
+                      account_number: newValue.account_number,
+                      cif_number: newValue.cif_number
                     }
-                  }}
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Chọn khách hàng làm vợ/chồng</option>
-                  {customers.map(c => (
-                    <option key={c.customer_id} value={c.customer_id}>{c.full_name}</option>
-                  ))}
-                </select>
-                {/* Spouse metadata section */}
-                <MetadataSection
-                  key="spouse_info"
-                  title={selectedTemplates.spouse_info.title}
-                  icon={selectedTemplates.spouse_info.icon}
-                  initialData={formState.assessment_details.spouse_info || {}}
-                  fields={selectedTemplates.spouse_info.fields}
-                  onChange={data => handleSectionDataChange('spouse_info', data)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Nhân viên</label>
-                <select
-                  name="staff_id"
-                  value={formState.staff_id}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="">Chọn nhân viên</option>
-                  {staff.map(s => (
-                    <option key={s.staff_id} value={s.staff_id}>{s.full_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Sản phẩm</label>
-                <select
-                  name="product_id"
-                  value={formState.product_id}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="">Chọn sản phẩm</option>
-                  {products.map(product => (
-                    <option key={product.product_id} value={product.product_id}>{product.product_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phòng ban</label>
-                <input
-                  type="text"
-                  name="department"
-                  value={formState.department}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Lãnh đạo phòng</label>
-                <select
-                  name="department_head"
-                  value={formState.department_head}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  required
-                >
-                  <option value="">Chọn lãnh đạo phòng</option>
-                  {staff.map(s => (
-                    <option key={s.staff_id} value={s.full_name}>{s.full_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phí thẩm định</label>
-                <input
-                  type="number"
-                  name="fee_amount"
-                  value={formState.fee_amount}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                />
-              </div>
-            </div>
-            {/* Render all metadata sections dynamically */}
-            {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
-              let initialData = formState.assessment_details[sectionKey] || {};
-              // Format date fields for spouse_info
-              if (sectionKey === 'spouse_info') {
-                initialData = {
-                  ...initialData,
-                  date_of_birth: initialData.date_of_birth ? toVNDate(initialData.date_of_birth) : '',
-                  id_issue_date: initialData.id_issue_date ? toVNDate(initialData.id_issue_date) : ''
-                };
-              }
-              return (
-                <MetadataSection
-                  key={sectionKey}
-                  title={section.title}
-                  icon={section.icon}
-                  initialData={initialData}
-                  fields={section.fields}
-                  onChange={data => handleSectionDataChange(sectionKey, data)}
-                />
-              );
-            })}
-            <div className="flex justify-end space-x-4 mt-8">
-              <button type="button" onClick={onClose} className="px-5 py-2 text-base font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl shadow">Hủy</button>
-              <button type="submit" disabled={isLoading} className="px-5 py-2 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl shadow disabled:opacity-50 flex items-center gap-2">
-                {isLoading && <span className="animate-spin h-5 w-5 border-2 border-white border-t-blue-400 rounded-full inline-block"></span>}
-                {isLoading ? 'Đang xử lý...' : assessment ? 'Cập nhật' : 'Tạo mới'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+                    handleSectionDataChange('spouse_info', mapped)
+                  } else {
+                    handleSectionDataChange('spouse_info', {})
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Chọn khách hàng làm vợ/chồng" variant="outlined" />
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Dynamic Metadata Sections */}
+          {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
+            let initialData = formState.assessment_details[sectionKey] || {};
+            // Format date fields for spouse_info
+            if (sectionKey === 'spouse_info') {
+              initialData = {
+                ...initialData,
+                date_of_birth: initialData.date_of_birth ? toVNDate(initialData.date_of_birth) : '',
+                id_issue_date: initialData.id_issue_date ? toVNDate(initialData.id_issue_date) : ''
+              };
+            }
+            return (
+              <MetadataSection
+                key={sectionKey}
+                title={section.title}
+                icon={section.icon}
+                initialData={initialData}
+                fields={section.fields}
+                onChange={data => handleSectionDataChange(sectionKey, data)}
+              />
+            );
+          })}
+        </Box>
+      </DialogContent>
+
+      <Divider />
+      
+      <DialogActions sx={{ p: 2, gap: 1 }}>
+        <Button 
+          onClick={onClose} 
+          variant="outlined" 
+          color="inherit"
+          size="large"
+        >
+          Hủy
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          color="primary"
+          disabled={isLoading}
+          size="large"
+          startIcon={isLoading ? (
+            <Box
+              sx={{
+                width: 16,
+                height: 16,
+                border: '2px solid',
+                borderColor: 'currentColor',
+                borderTopColor: 'transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                '@keyframes spin': {
+                  '0%': { transform: 'rotate(0deg)' },
+                  '100%': { transform: 'rotate(360deg)' },
+                },
+              }}
+            />
+          ) : null}
+        >
+          {isLoading ? 'Đang xử lý...' : assessment ? 'Cập nhật' : 'Tạo mới'}
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 }

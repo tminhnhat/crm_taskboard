@@ -256,14 +256,13 @@ export default function StaffPage() {
         )}
 
         {/* Staff Form Modal */}
-        {showForm && (
-          <StaffForm
-            staff={editingStaff}
-            onSave={handleSaveStaff}
-            onCancel={handleCancelForm}
-            isLoading={loading}
-          />
-        )}
+        <StaffForm
+          staff={editingStaff}
+          onSave={handleSaveStaff}
+          onCancel={handleCancelForm}
+          isLoading={loading}
+          open={showForm}
+        />
       </div>
     </div>
   )

@@ -1,22 +1,45 @@
 'use client'
 
+import React, { useState } from 'react'
 import { Collateral } from '@/lib/supabase'
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Stack,
+  Chip,
+  Collapse,
+  IconButton,
+  Link,
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper,
+  Button
+} from '@mui/material'
 import { 
-  PencilIcon, 
-  TrashIcon,
-  HomeIcon,
-  TruckIcon,
-  BanknotesIcon,
-  DocumentTextIcon,
-  MapPinIcon,
-  CalendarIcon,
-  DocumentDuplicateIcon,
-  ShieldCheckIcon,
-  DocumentChartBarIcon,
-  ChatBubbleLeftRightIcon,
-  ChevronDownIcon
-} from '@heroicons/react/24/outline'
-import { useState } from 'react'
+  Home,
+  DirectionsCar,
+  AttachMoney,
+  Description,
+  LocationOn,
+  Event,
+  Business,
+  Security,
+  Assessment,
+  Chat,
+  ExpandMore,
+  Edit,
+  Delete
+} from '@mui/icons-material'
+import { StyledCard, ActionButton } from './StyledComponents'
 
 interface CollateralCardProps {
   collateral: Collateral
@@ -27,21 +50,21 @@ interface CollateralCardProps {
 const getMetadataIcon = (key: string) => {
   switch (key.toLowerCase()) {
     case 'property':
-      return HomeIcon
+      return Home
     case 'vehicle':
-      return TruckIcon
+      return DirectionsCar
     case 'financial':
-      return BanknotesIcon
+      return AttachMoney
     case 'documents':
-      return DocumentTextIcon
+      return Description
     case 'legal':
-      return ShieldCheckIcon
+      return Security
     case 'assessment':
-      return DocumentChartBarIcon
+      return Assessment
     case 'communication':
-      return ChatBubbleLeftRightIcon
+      return Chat
     default:
-      return DocumentDuplicateIcon
+      return Business
   }
 }
 
@@ -204,224 +227,338 @@ const getCollateralTypeInVietnamese = (type: string): string => {
 }
 
 export default function CollateralCard({ collateral, onEdit, onDelete }: CollateralCardProps) {
-  const [expandedSections, setExpandedSections] = useState<string[]>([])
-
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-4 border border-gray-200">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <DocumentChartBarIcon className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900">
+    <Card elevation={0} sx={{
+      bgcolor: 'background.paper',
+      border: 1,
+      borderColor: 'divider',
+      borderRadius: 2,
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: '0px 4px 12px rgba(52, 71, 103, 0.1)'
+      }
+    }}>
+      <CardContent sx={{ p: 3 }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ 
+              p: 1.5, 
+              bgcolor: 'rgba(52, 71, 103, 0.1)', 
+              borderRadius: 2, 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Assessment sx={{ fontSize: 24, color: '#344767' }} />
+            </Box>
+            <Box>
+              <Typography variant="h6" fontWeight="700" sx={{ color: '#344767', mb: 0.5 }}>
                 {collateral.collateral_type ? (
-                  <span>{getCollateralTypeInVietnamese(collateral.collateral_type)}</span>
+                  getCollateralTypeInVietnamese(collateral.collateral_type)
                 ) : (
                   'Tài sản thế chấp'
                 )}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">Loại tài sản thế chấp</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => onEdit(collateral)}
-            className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
-          >
-            <PencilIcon className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => onDelete(collateral)}
-            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-          >
-            <TrashIcon className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Loại tài sản thế chấp
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              size="small"
+              startIcon={<Edit />}
+              onClick={() => onEdit(collateral)}
+              variant="outlined"
+              sx={{
+                borderColor: '#344767',
+                color: '#344767',
+                fontWeight: 600,
+                px: 2,
+                py: 1,
+                borderRadius: 2,
+                textTransform: 'none',
+                '&:hover': {
+                  borderColor: '#344767',
+                  bgcolor: 'rgba(52, 71, 103, 0.04)',
+                  transform: 'translateY(-1px)'
+                }
+              }}
+            >
+              Sửa
+            </Button>
+            <Button
+              size="small"
+              startIcon={<Delete />}
+              onClick={() => onDelete(collateral)}
+              variant="outlined"
+              sx={{
+                borderColor: 'error.main',
+                color: 'error.main',
+                fontWeight: 600,
+                px: 2,
+                py: 1,
+                borderRadius: 2,
+                textTransform: 'none',
+                '&:hover': {
+                  borderColor: 'error.main',
+                  bgcolor: 'rgba(211, 47, 47, 0.04)',
+                  transform: 'translateY(-1px)'
+                }
+              }}
+            >
+              Xóa
+            </Button>
+          </Box>
+        </Box>
 
-      {/* Content */}
-      <div className="space-y-4">
-        {/* Customer Information */}
-        {collateral.customer && (
-          <div className="flex items-start">
-            <div className="flex-grow">
-              <div className="flex items-center">
-                <span className="text-sm text-gray-500">Khách hàng:</span>
-                <span className="ml-2 font-semibold text-gray-900">
-                  {collateral.customer.full_name}
-                </span>
-              </div>
-              {collateral.customer.phone && (
-                <div className="text-sm text-gray-600">
-                  SĐT: {collateral.customer.phone}
-                </div>
-              )}
-              {collateral.customer.address && (
-                <div className="text-sm text-gray-600">
-                  Địa chỉ: {collateral.customer.address}
-                </div>
-              )}
-              {collateral.customer.cif_number && (
-                <div className="text-sm text-gray-500 mt-1">
-                  Số CIF: {collateral.customer.cif_number}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Value */}
-        <div className="flex items-center">
-          <BanknotesIcon className="h-5 w-5 text-gray-400 mr-2" />
-          <span className="text-sm text-gray-500">Giá trị:</span>
-          <span className="ml-2 text-lg font-semibold text-gray-900">
-            {collateral.value !== null ? new Intl.NumberFormat('vi-VN', {
-              style: 'currency',
-              currency: 'VND'
-            }).format(collateral.value) : 'Chưa có giá trị'}
-          </span>
-        </div>
-
-        {/* Valuation Date */}
-        <div className="flex items-center">
-          <CalendarIcon className="h-5 w-5 text-gray-400 mr-2" />
-          <span className="text-sm text-gray-500">Ngày định giá:</span>
-          <span className="ml-2 text-gray-700">
-            {collateral.valuation_date ? new Date(collateral.valuation_date).toLocaleDateString('vi-VN') : 'Chưa định giá'}
-          </span>
-        </div>
-
-        {/* Description */}
-        {collateral.description && (
-          <div>
-            <span className="text-sm text-gray-500">Mô tả:</span>
-            <p className="text-gray-700 mt-1">{collateral.description}</p>
-          </div>
-        )}
-
-        {/* Location */}
-        {collateral.location && (
-          <div>
-            <span className="text-sm text-gray-500">Địa điểm:</span>
-            <div className="flex items-start mt-1">
-              <MapPinIcon className="h-5 w-5 text-gray-400 mr-1 flex-shrink-0 mt-0.5" />
-              <p className="text-gray-700">{collateral.location}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Metadata Sections */}
-        {collateral.metadata && typeof collateral.metadata === 'object' && 
-          Object.entries(collateral.metadata as Record<string, Record<string, unknown>>).map(([key, data]) => {
-            const IconComponent = getMetadataIcon(key);
-            const isExpanded = expandedSections.includes(key);
-            
-            return (
-              <div key={key} className="mt-4">
-                <button
-                  onClick={() => setExpandedSections(prev => 
-                    isExpanded ? prev.filter(k => k !== key) : [...prev, key]
-                  )}
-                  className="w-full flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center space-x-2">
-                    <IconComponent className="h-5 w-5 text-gray-500" />
-                    <span className="font-medium text-gray-700">
-                      {formatFieldLabel(key)}
-                    </span>
-                  </div>
-                  <ChevronDownIcon 
-                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
-                      isExpanded ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-
-                {isExpanded && (
-                  <div className="mt-2 bg-white rounded-lg border border-gray-100">
-                    {Object.entries(data).map(([fieldKey, value], index) => (
-                      <div 
-                        key={fieldKey} 
-                        className={`flex items-start p-3 ${
-                          index !== Object.entries(data).length - 1 ? 'border-b border-gray-100' : ''
-                        }`}
-                      >
-                        <div className="w-1/3">
-                          <span className="text-sm font-medium text-gray-600">
-                            {formatFieldLabel(fieldKey)}
-                          </span>
-                        </div>
-                        <div className="flex-1 pl-4">
-                          {typeof value === 'boolean' ? (
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {value ? 'Có' : 'Không'}
-                            </span>
-                          ) : typeof value === 'number' ? (
-                            <span className="text-sm text-gray-800">
-                              {value.toLocaleString('vi-VN')}
-                            </span>
-                          ) : typeof value === 'string' ? (
-                            (() => {
-                              // Check if it's a date field
-                              const isDateField = fieldKey.toLowerCase().includes('date') || 
-                                                fieldKey.toLowerCase().includes('ngay') ||
-                                                fieldKey.toLowerCase().includes('birthday') ||
-                                                fieldKey.toLowerCase().includes('expiry')
-                              
-                              // Try to parse as date if it's a date field
-                              if (isDateField) {
-                                const date = new Date(value)
-                                if (!isNaN(date.getTime())) {
-                                  const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
-                                  return (
-                                    <span className="text-sm text-gray-800">
-                                      {formattedDate}
-                                    </span>
-                                  )
-                                }
-                              }
-                              
-                              // If it's a URL, render as link
-                              if (value.startsWith('http')) {
-                                return (
-                                  <a 
-                                    href={value}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                                  >
-                                    {value}
-                                  </a>
-                                )
-                              }
-                              
-                              // Regular string display
-                              return (
-                                <span className="text-sm text-gray-800 whitespace-pre-wrap">
-                                  {value}
-                                </span>
-                              )
-                            })()
-                          ) : (
-                            <pre className="text-sm text-gray-800 bg-gray-50 rounded p-2 overflow-auto">
-                              {JSON.stringify(value, null, 2)}
-                            </pre>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+        <Stack spacing={3}>
+          {/* Customer Information */}
+          {collateral.customer && (
+            <Box sx={{ 
+              p: 2.5, 
+              bgcolor: 'rgba(248, 250, 252, 0.8)', 
+              borderRadius: 2, 
+              border: 1,
+              borderColor: 'rgba(52, 71, 103, 0.1)'
+            }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ fontWeight: 600 }}>
+                Thông tin khách hàng
+              </Typography>
+              <Typography variant="h6" sx={{ color: '#344767', fontWeight: 700, mb: 1.5 }}>
+                {collateral.customer.full_name}
+              </Typography>
+              <Stack spacing={0.5}>
+                {collateral.customer.phone && (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    SĐT: {collateral.customer.phone}
+                  </Typography>
                 )}
-              </div>
-            );
-          })}
-      </div>
-    </div>
+                {collateral.customer.address && (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    Địa chỉ: {collateral.customer.address}
+                  </Typography>
+                )}
+                {collateral.customer.cif_number && (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    Số CIF: {collateral.customer.cif_number}
+                  </Typography>
+                )}
+              </Stack>
+            </Box>
+          )}
+
+          {/* Value */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1.5,
+            p: 2,
+            bgcolor: 'rgba(52, 71, 103, 0.04)',
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'rgba(52, 71, 103, 0.1)'
+          }}>
+            <AttachMoney sx={{ color: '#344767', fontSize: 20 }} />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Giá trị tài sản:
+              </Typography>
+              <Typography variant="h6" fontWeight="700" sx={{ color: '#344767' }}>
+                {collateral.value !== null ? new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(collateral.value) : 'Chưa có giá trị'}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Valuation Date */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2 }}>
+            <Event sx={{ color: '#344767', fontSize: 20 }} />
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Ngày định giá:
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#344767', fontWeight: 600 }}>
+                {collateral.valuation_date ? new Date(collateral.valuation_date).toLocaleDateString('vi-VN') : 'Chưa định giá'}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Description */}
+          {collateral.description && (
+            <Box sx={{ p: 2, borderLeft: 4, borderColor: '#344767', bgcolor: 'rgba(248, 250, 252, 0.5)' }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 600 }}>
+                Mô tả:
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#344767', fontWeight: 500, lineHeight: 1.6 }}>
+                {collateral.description}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Location */}
+          {collateral.location && (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 600 }}>
+                Địa điểm:
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <LocationOn sx={{ color: '#344767', fontSize: 20, mt: 0.2 }} />
+                <Typography variant="body1" sx={{ color: '#344767', fontWeight: 500 }}>
+                  {collateral.location}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+
+          {/* Metadata Sections */}
+          {collateral.metadata && typeof collateral.metadata === 'object' && 
+            Object.entries(collateral.metadata as Record<string, Record<string, unknown>>).map(([key, data], index) => {
+              const IconComponent = getMetadataIcon(key);
+              
+              return (
+                <Accordion key={key} elevation={0} sx={{ 
+                  bgcolor: 'background.paper',
+                  border: 1,
+                  borderColor: 'rgba(52, 71, 103, 0.1)',
+                  borderRadius: 2,
+                  '&:before': { display: 'none' }
+                }}>
+                  <AccordionSummary
+                    expandIcon={<ExpandMore sx={{ color: '#344767' }} />}
+                    sx={{ 
+                      bgcolor: 'rgba(52, 71, 103, 0.04)',
+                      borderRadius: 2,
+                      '&.Mui-expanded': {
+                        borderBottomLeftRadius: 0,
+                        borderBottomRightRadius: 0
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <IconComponent sx={{ color: '#344767', fontSize: 20 }} />
+                      <Typography variant="subtitle1" fontWeight="600" sx={{ color: '#344767' }}>
+                        {formatFieldLabel(key)}
+                      </Typography>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ p: 0 }}>
+                    <TableContainer>
+                      <Table size="small">
+                        <TableBody>
+                          {Object.entries(data).map(([fieldKey, value]) => (
+                            <TableRow key={fieldKey} sx={{ 
+                              '&:nth-of-type(odd)': { bgcolor: 'rgba(248, 250, 252, 0.5)' },
+                              '&:hover': { bgcolor: 'rgba(52, 71, 103, 0.04)' }
+                            }}>
+                              <TableCell sx={{ 
+                                width: '30%', 
+                                fontWeight: 600, 
+                                bgcolor: 'rgba(52, 71, 103, 0.08)',
+                                color: '#344767',
+                                borderColor: 'rgba(52, 71, 103, 0.1)'
+                              }}>
+                                {formatFieldLabel(fieldKey)}
+                              </TableCell>
+                              <TableCell sx={{ 
+                                borderColor: 'rgba(52, 71, 103, 0.1)',
+                                color: '#344767',
+                                fontWeight: 500
+                              }}>
+                                {typeof value === 'boolean' ? (
+                                  <Chip 
+                                    label={value ? 'Có' : 'Không'}
+                                    color={value ? 'success' : 'error'}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ fontWeight: 600 }}
+                                  />
+                                ) : typeof value === 'number' ? (
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {value.toLocaleString('vi-VN')}
+                                  </Typography>
+                                ) : typeof value === 'string' ? (
+                                  (() => {
+                                    // Check if it's a date field
+                                    const isDateField = fieldKey.toLowerCase().includes('date') || 
+                                                      fieldKey.toLowerCase().includes('ngay') ||
+                                                      fieldKey.toLowerCase().includes('birthday') ||
+                                                      fieldKey.toLowerCase().includes('expiry')
+                                    
+                                    // Try to parse as date if it's a date field
+                                    if (isDateField) {
+                                      const date = new Date(value)
+                                      if (!isNaN(date.getTime())) {
+                                        const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
+                                        return (
+                                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                            {formattedDate}
+                                          </Typography>
+                                        )
+                                      }
+                                    }
+                                    
+                                    // If it's a URL, render as link
+                                    if (value.startsWith('http')) {
+                                      return (
+                                        <Link 
+                                          href={value}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          sx={{ 
+                                            fontSize: '0.875rem',
+                                            color: '#344767',
+                                            fontWeight: 600,
+                                            '&:hover': { color: '#3867d6' }
+                                          }}
+                                        >
+                                          {value}
+                                        </Link>
+                                      )
+                                    }
+                                    
+                                    // Regular string display
+                                    return (
+                                      <Typography variant="body2" sx={{ 
+                                        whiteSpace: 'pre-wrap',
+                                        fontWeight: 500,
+                                        color: '#344767'
+                                      }}>
+                                        {value}
+                                      </Typography>
+                                    )
+                                  })()
+                                ) : (
+                                  <Box component="pre" sx={{ 
+                                    fontSize: '0.875rem', 
+                                    bgcolor: 'rgba(52, 71, 103, 0.04)', 
+                                    borderRadius: 1, 
+                                    p: 1, 
+                                    overflow: 'auto',
+                                    fontFamily: 'monospace',
+                                    color: '#344767',
+                                    border: 1,
+                                    borderColor: 'rgba(52, 71, 103, 0.1)'
+                                  }}>
+                                    {JSON.stringify(value, null, 2)}
+                                  </Box>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
+        </Stack>
+      </CardContent>
+    </Card>
   )
 }

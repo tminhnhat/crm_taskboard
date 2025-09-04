@@ -1,23 +1,36 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  Paper,
+  useTheme,
+  Pagination
+} from '@mui/material'
+import { 
+  Add as AddIcon,
+  Inventory as InventoryIcon,
+  TrendingUp as TrendingUpIcon,
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
+  AttachMoney as MoneyIcon,
+  Assessment as AssessmentIcon,
+  Security as SecurityIcon,
+  Settings as SettingsIcon
+} from '@mui/icons-material'
 import { useProducts } from '@/hooks/useProducts'
 import { Product } from '@/lib/supabase'
 import Navigation from '@/components/Navigation'
 import ProductCard from '@/components/ProductCard'
 import ProductForm from '@/components/ProductForm'
 import ProductFilters from '@/components/ProductFilters'
-import LoadingSpinner from '@/components/LoadingSpinner'
-import { 
-  PlusIcon, 
-  CubeIcon,
-  ChartBarIcon,
-  ExclamationTriangleIcon,
-  BanknotesIcon,
-  DocumentChartBarIcon,
-  ShieldCheckIcon,
-  CogIcon
-} from '@heroicons/react/24/outline'
+import { ProductCardSkeleton } from '@/components/LoadingSpinner'
 
 export default function ProductsPage() {
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
@@ -150,210 +163,398 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <LoadingSpinner />
-        </div>
-      </div>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {[...Array(4)].map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </Box>
+        </Container>
+      </Box>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex items-center">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
-              <p className="text-red-800">Lỗi khi tải danh sách sản phẩm: {error}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <Box sx={{ maxWidth: '7xl', mx: 'auto', px: { xs: 2, sm: 3, lg: 4 }, py: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Lỗi khi tải danh sách sản phẩm: {error}
+              </Alert>
+              <Typography color="text.secondary">
+                Vui lòng kiểm tra cấu hình Supabase trong file .env.local
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Navigation */}
       <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <CubeIcon className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Sản Phẩm</h1>
-                <p className="text-gray-600">Quản lý danh mục sản phẩm của bạn</p>
-              </div>
-            </div>
-            <button
+
+      {/* Header */}
+      <Paper elevation={0} sx={{ 
+        bgcolor: 'background.paper', 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.05)'
+      }}>
+        <Container maxWidth="xl">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            py: 4 
+          }}>
+            <Box>
+              <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
+                mb: 1, 
+                color: 'text.primary',
+                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                📦 Quản Lý Sản Phẩm
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Quản lý và theo dõi danh mục sản phẩm một cách chuyên nghiệp
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
               onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2"
+              size="large"
+              sx={{ 
+                px: 4,
+                py: 1.5,
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                borderRadius: 3,
+                textTransform: 'none',
+                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
+                '&:hover': {
+                  boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
             >
-              <PlusIcon className="h-5 w-5" />
               Thêm Sản Phẩm
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Box>
+        </Container>
+      </Paper>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center">
-              <ChartBarIcon className="h-6 w-6 text-gray-600" />
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-500">Tổng SP</p>
-                <p className="text-lg font-semibold text-gray-900">{stats.total}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="h-6 w-6 bg-green-100 rounded-lg flex items-center justify-center">
-                <div className="h-3 w-3 bg-green-600 rounded-full"></div>
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-500">Hoạt Động</p>
-                <p className="text-lg font-semibold text-green-600">{stats.active}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="h-3 w-3 bg-gray-600 rounded-full"></div>
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-500">Tạm Ngưng</p>
-                <p className="text-lg font-semibold text-gray-600">{stats.inactive}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="h-6 w-6 bg-orange-100 rounded-lg flex items-center justify-center">
-                <BanknotesIcon className="h-4 w-4 text-orange-600" />
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-500">Vay Vốn</p>
-                <p className="text-lg font-semibold text-orange-600">{stats.loans}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="h-6 w-6 bg-blue-100 rounded-lg flex items-center justify-center">
-                <CubeIcon className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-500">Tiền Gửi</p>
-                <p className="text-lg font-semibold text-blue-600">{stats.deposits}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="h-6 w-6 bg-purple-100 rounded-lg flex items-center justify-center">
-                <DocumentChartBarIcon className="h-4 w-4 text-purple-600" />
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-500">Thẻ</p>
-                <p className="text-lg font-semibold text-purple-600">{stats.cards}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="h-6 w-6 bg-teal-100 rounded-lg flex items-center justify-center">
-                <ShieldCheckIcon className="h-4 w-4 text-teal-600" />
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-500">Bảo Hiểm</p>
-                <p className="text-lg font-semibold text-teal-600">{stats.insurance}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="h-6 w-6 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <CogIcon className="h-4 w-4 text-indigo-600" />
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-500">Dịch Vụ</p>
-                <p className="text-lg font-semibold text-indigo-600">{stats.feeBasedServices}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Main Content */}
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Statistics Cards */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" fontWeight="600" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AssessmentIcon color="primary" />
+            Thống Kê Sản Phẩm
+          </Typography>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: 'repeat(2, 1fr)', 
+              sm: 'repeat(4, 1fr)', 
+              lg: 'repeat(8, 1fr)' 
+            }, 
+            gap: 2
+          }}>
+            {/* Total Products */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-2px)', 
+                boxShadow: '0px 4px 12px rgba(52, 71, 103, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <TrendingUpIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                  Tổng SP
+                </Typography>
+                <Typography variant="h6" fontWeight="700" sx={{ color: 'text.primary' }}>
+                  {stats.total}
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Active Products */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-2px)', 
+                boxShadow: '0px 4px 12px rgba(130, 214, 22, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                  Hoạt Động
+                </Typography>
+                <Typography variant="h6" fontWeight="700" sx={{ color: 'success.main' }}>
+                  {stats.active}
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Inactive Products */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-2px)', 
+                boxShadow: '0px 4px 12px rgba(123, 128, 154, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <WarningIcon sx={{ color: 'warning.main', fontSize: 20 }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                  Tạm Dừng
+                </Typography>
+                <Typography variant="h6" fontWeight="700" sx={{ color: 'warning.main' }}>
+                  {stats.inactive}
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Loan Products */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-2px)', 
+                boxShadow: '0px 4px 12px rgba(251, 133, 0, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <MoneyIcon sx={{ color: '#fb8500', fontSize: 20 }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                  Cho Vay
+                </Typography>
+                <Typography variant="h6" fontWeight="700" sx={{ color: '#fb8500' }}>
+                  {stats.loans}
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Deposit Products */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-2px)', 
+                boxShadow: '0px 4px 12px rgba(73, 163, 241, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <SecurityIcon sx={{ color: 'info.main', fontSize: 20 }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                  Tiền Gửi
+                </Typography>
+                <Typography variant="h6" fontWeight="700" sx={{ color: 'info.main' }}>
+                  {stats.deposits}
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Card Products */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-2px)', 
+                boxShadow: '0px 4px 12px rgba(168, 85, 247, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <InventoryIcon sx={{ color: '#a855f7', fontSize: 20 }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                  Thẻ
+                </Typography>
+                <Typography variant="h6" fontWeight="700" sx={{ color: '#a855f7' }}>
+                  {stats.cards}
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Insurance Products */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-2px)', 
+                boxShadow: '0px 4px 12px rgba(34, 197, 94, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <SecurityIcon sx={{ color: '#22c55e', fontSize: 20 }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                  Bảo Hiểm
+                </Typography>
+                <Typography variant="h6" fontWeight="700" sx={{ color: '#22c55e' }}>
+                  {stats.insurance}
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Fee-Based Services */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-2px)', 
+                boxShadow: '0px 4px 12px rgba(239, 68, 68, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <SettingsIcon sx={{ color: 'error.main', fontSize: 20 }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                  Dịch Vụ
+                </Typography>
+                <Typography variant="h6" fontWeight="700" sx={{ color: 'error.main' }}>
+                  {stats.feeBasedServices}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
 
-        {/* Filters */}
-        <ProductFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          availableProductTypes={availableProductTypes}
-          totalCount={products.length}
-          filteredCount={filteredProducts.length}
-        />
-
-        {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <CubeIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              {products.length === 0 ? 'Chưa có sản phẩm nào' : 'Không có sản phẩm nào phù hợp với bộ lọc'}
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {products.length === 0 
-                ? 'Hãy bắt đầu bằng cách tạo sản phẩm đầu tiên của bạn.' 
-                : 'Hãy thử điều chỉnh tiêu chí tìm kiếm.'}
-            </p>
-            {products.length === 0 && (
-              <div className="mt-6">
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 mx-auto"
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  Thêm Sản Phẩm Đầu Tiên
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.product_id}
-                product={product}
-                onEdit={handleEditProduct}
-                onDelete={handleDeleteProduct}
-                onStatusChange={handleStatusChange}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Product Form Modal */}
-        {showForm && (
-          <ProductForm
-            product={editingProduct}
-            onSave={handleSaveProduct}
-            onCancel={handleCancelForm}
-            isLoading={loading}
+        {/* Filters Section */}
+        <Paper elevation={1} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+          <ProductFilters 
+            filters={filters} 
+            onFiltersChange={setFilters}
+            availableProductTypes={availableProductTypes}
+            totalCount={products.length}
+            filteredCount={filteredProducts.length}
           />
-        )}
-      </div>
-    </div>
+        </Paper>
+
+        {/* Products List */}
+        <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+          {filteredProducts.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Box sx={{ 
+                width: 120, 
+                height: 120, 
+                bgcolor: 'grey.100', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 3
+              }}>
+                <InventoryIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+              </Box>
+              <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                {products.length === 0 ? 'Chưa có sản phẩm nào' : 'Không có kết quả phù hợp'}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                {products.length === 0 
+                  ? 'Tạo sản phẩm đầu tiên của bạn để bắt đầu!' 
+                  : 'Thử điều chỉnh bộ lọc để tìm thấy sản phẩm bạn cần.'
+                }
+              </Typography>
+              {products.length === 0 && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => setShowForm(true)}
+                  size="large"
+                >
+                  Tạo Sản Phẩm Đầu Tiên
+                </Button>
+              )}
+            </Box>
+          ) : (
+            <>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Danh sách sản phẩm ({filteredProducts.length})
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Hiển thị tất cả {filteredProducts.length} sản phẩm
+                </Typography>
+              </Box>
+              
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, 
+                gap: 3
+              }}>
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.product_id}
+                    product={product}
+                    onEdit={handleEditProduct}
+                    onDelete={handleDeleteProduct}
+                    onStatusChange={handleStatusChange}
+                  />
+                ))}
+              </Box>
+            </>
+          )}
+        </Paper>
+      </Container>
+
+      {/* Product Form Modal */}
+      <ProductForm
+        isOpen={showForm}
+        onClose={handleCancelForm}
+        onSave={handleSaveProduct}
+        product={editingProduct}
+      />
+    </Box>
   )
 }
+

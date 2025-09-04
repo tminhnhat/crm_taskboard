@@ -1,6 +1,42 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  TextField,
+  MenuItem,
+  Grid,
+  Alert,
+  CircularProgress,
+  Paper,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tooltip,
+  LinearProgress,
+  useTheme,
+  Skeleton
+} from '@mui/material';
+import {
+  CloudUpload as CloudUploadIcon,
+  Description as DescriptionIcon,
+  TableChart as TableChartIcon,
+  Download as DownloadIcon,
+  Delete as DeleteIcon,
+  CheckCircle as CheckCircleIcon,
+  Folder as FolderIcon,
+  FileCopy as FileCopyIcon,
+  Info as InfoIcon,
+  Schedule as ScheduleIcon
+} from '@mui/icons-material';
 import { useDocuments } from '@/hooks/useDocuments';
 import type { DocumentTemplate } from '@/lib/supabase';
 import LoadingSpinner from './LoadingSpinner';
@@ -18,6 +54,7 @@ export function TemplateManager({
   allowUpload = true, 
   allowDelete = true 
 }: TemplateManagerProps) {
+  const theme = useTheme();
   const { 
     templates, 
     loading, 
@@ -31,10 +68,24 @@ export function TemplateManager({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateType, setNewTemplateType] = useState(templateType || '');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<DocumentTemplate | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     fetchTemplates(templateType);
   }, [fetchTemplates, templateType]);
+
+  const templateTypeOptions = [
+    { value: 'hop_dong_tin_dung', label: 'Hợp đồng tín dụng' },
+    { value: 'to_trinh_tham_dinh', label: 'Tờ trình thẩm định' },
+    { value: 'giay_de_nghi_vay_von', label: 'Giấy đề nghị vay vốn' },
+    { value: 'bien_ban_dinh_gia', label: 'Biên bản định giá' },
+    { value: 'hop_dong_the_chap', label: 'Hợp đồng thế chấp' },
+    { value: 'don_dang_ky_the_chap', label: 'Đơn đăng ký thế chấp' },
+    { value: 'hop_dong_thu_phi', label: 'Hợp đồng thu phí' },
+    { value: 'tai_lieu_khac', label: 'Tài liệu khác' }
+  ];
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -43,6 +94,7 @@ export function TemplateManager({
       // Auto-fill template name from filename (without extension)
       const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
       setNewTemplateName(nameWithoutExt);
+      setUploadProgress(0);
     }
   };
 
@@ -54,12 +106,23 @@ export function TemplateManager({
 
     try {
       setUploadLoading(true);
+      setUploadProgress(0);
+      
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+
       await uploadTemplate(selectedFile, newTemplateName, newTemplateType);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
       
       // Reset form
       setSelectedFile(null);
       setNewTemplateName('');
       if (!templateType) setNewTemplateType('');
+      setUploadProgress(0);
       
       // Reset file input
       const fileInput = document.getElementById('template-file') as HTMLInputElement;
@@ -71,27 +134,27 @@ export function TemplateManager({
       alert('Upload template thất bại: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setUploadLoading(false);
+      setUploadProgress(0);
     }
   };
 
-  const handleDelete = async (template: DocumentTemplate) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa template "${template.template_name}"?`)) {
-      return;
-    }
+  const handleDeleteClick = (template: DocumentTemplate) => {
+    setTemplateToDelete(template);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!templateToDelete) return;
 
     try {
-      await deleteTemplateFile(template);
+      await deleteTemplateFile(templateToDelete);
       alert('Xóa template thành công!');
+      setDeleteDialogOpen(false);
+      setTemplateToDelete(null);
     } catch (error) {
       console.error('Delete failed:', error);
       alert('Xóa template thất bại: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
-  };
-
-  const formatFileSize = (url: string): string => {
-    // Extract filename from URL for display
-    const filename = url.split('/').pop() || 'Unknown';
-    return filename;
   };
 
   const formatDate = (dateString: string): string => {
@@ -104,361 +167,539 @@ export function TemplateManager({
     });
   };
 
+  const getFileIcon = (fileUrl: string) => {
+    const extension = fileUrl.split('.').pop()?.toLowerCase() || '';
+    switch (extension) {
+      case 'docx':
+      case 'doc':
+        return <DescriptionIcon />;
+      case 'xlsx':
+      case 'xls':
+        return <TableChartIcon />;
+      default:
+        return <FileCopyIcon />;
+    }
+  };
+
+  const getFileTypeColor = (fileUrl: string) => {
+    const extension = fileUrl.split('.').pop()?.toLowerCase() || '';
+    switch (extension) {
+      case 'docx':
+      case 'doc':
+        return 'primary';
+      case 'xlsx':
+      case 'xls':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
+
   if (loading && templates.length === 0) {
-    return <LoadingSpinner />;
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Grid container spacing={3}>
+          {[...Array(6)].map((_, index) => (
+            <Box key={index} sx={{ width: { xs: '100%', sm: '50%', md: '33%', lg: '25%' }, p: 1 }}>
+              <Card>
+                <CardContent>
+                  <Skeleton variant="rectangular" width="100%" height={60} />
+                  <Skeleton variant="text" sx={{ mt: 2 }} />
+                  <Skeleton variant="text" width="60%" />
+                  <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                    <Skeleton variant="rounded" width={80} height={32} />
+                    <Skeleton variant="rounded" width={80} height={32} />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+          ))}
+        </Grid>
+      </Container>
+    );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            📄 Template Manager
-          </h1>
-          <p className="text-lg text-gray-600">
-            Quản lý templates cho tất cả loại tài liệu {templateType ? `- ${templateType}` : ''}
-          </p>
-          <div className="mt-4 w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded-full"></div>
-        </div>
+  const docxCount = templates.filter(t => t.file_url.includes('.docx')).length;
+  const xlsxCount = templates.filter(t => t.file_url.includes('.xlsx')).length;
 
+  return (
+    <Box sx={{ 
+      minHeight: '100vh',
+      bgcolor: 'grey.50',
+      py: 4
+    }}>
+      <Container maxWidth="xl">
+        {/* Header */}
+        <Paper elevation={0} sx={{ p: 4, mb: 4, bgcolor: 'background.paper', borderRadius: 3 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h3" component="h1" fontWeight="bold" sx={{ mb: 2 }}>
+              📄 Template Manager
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+              Quản lý templates cho tất cả loại tài liệu {templateType ? `- ${templateType}` : ''}
+            </Typography>
+            <Box sx={{ 
+              width: 120, 
+              height: 4, 
+              background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)', 
+              borderRadius: 2, 
+              mx: 'auto' 
+            }} />
+          </Box>
+        </Paper>
+
+        {/* Error Alert */}
         {error && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg shadow-sm">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
+          <Alert severity="error" sx={{ mb: 4 }}>
+            {error}
+          </Alert>
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Tổng Templates</p>
-                <p className="text-2xl font-bold text-gray-900">{templates.length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">DOCX Templates</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {templates.filter(t => t.file_url.includes('.docx')).length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-purple-100">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2M9 7h6" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">XLSX Templates</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {templates.filter(t => t.file_url.includes('.xlsx')).length}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Box sx={{ width: { xs: '100%', sm: '33%' }, p: 1 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 2, 
+                    bgcolor: 'primary.50',
+                    color: 'primary.main'
+                  }}>
+                    <FolderIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="bold">
+                  {templates.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Tổng Templates
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+          
+          <Box sx={{ width: { xs: '100%', sm: '33%' }, p: 1 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 2, 
+                    bgcolor: 'success.50',
+                    color: 'success.main'
+                  }}>
+                    <DescriptionIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="bold" color="success.main">
+                  {docxCount}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  DOCX Templates
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+          
+          <Box sx={{ width: { xs: '100%', sm: '33%' }, p: 1 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 2, 
+                    bgcolor: 'warning.50',
+                    color: 'warning.main'
+                  }}>
+                    <TableChartIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="bold" color="warning.main">
+                  {xlsxCount}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  XLSX Templates
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Grid>
 
         {/* Upload Section */}
         {allowUpload && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
-            <div className="flex items-center mb-6">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h2 className="text-xl font-bold text-gray-900">Upload Template Mới</h2>
-                <p className="text-gray-600">Thêm template DOCX hoặc XLSX mới vào hệ thống</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="template-file" className="block text-sm font-semibold text-gray-700 mb-2">
-                    📎 Chọn File Template
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="template-file"
-                      type="file"
-                      accept=".docx,.xlsx,.doc,.xls"
-                      onChange={handleFileSelect}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-500 file:to-blue-600 file:text-white hover:file:from-blue-600 hover:file:to-blue-700 file:transition-all file:duration-200 file:shadow-sm hover:file:shadow-md"
+          <Card sx={{ mb: 4 }}>
+            <CardContent sx={{ p: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Box sx={{ 
+                  p: 1.5, 
+                  borderRadius: 2, 
+                  bgcolor: 'primary.50',
+                  color: 'primary.main',
+                  mr: 2
+                }}>
+                  <CloudUploadIcon />
+                </Box>
+                <Box>
+                  <Typography variant="h5" fontWeight="bold">
+                    Upload Template Mới
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Thêm template DOCX hoặc XLSX mới vào hệ thống
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <Grid container spacing={3}>
+                <Box sx={{ width: { xs: '100%', md: '50%' }, p: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {/* File Upload */}
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                        📎 Chọn File Template
+                      </Typography>
+                      <input
+                        id="template-file"
+                        type="file"
+                        accept=".docx,.xlsx,.doc,.xls"
+                        onChange={handleFileSelect}
+                        style={{ display: 'none' }}
+                      />
+                      <label htmlFor="template-file">
+                        <Button
+                          variant="outlined"
+                          component="span"
+                          startIcon={<CloudUploadIcon />}
+                          fullWidth
+                          sx={{ 
+                            py: 2,
+                            borderStyle: 'dashed',
+                            '&:hover': {
+                              borderStyle: 'dashed'
+                            }
+                          }}
+                        >
+                          Chọn file (.docx, .xlsx)
+                        </Button>
+                      </label>
+                      {selectedFile && (
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          mt: 1,
+                          p: 1,
+                          bgcolor: 'success.50',
+                          borderRadius: 1
+                        }}>
+                          <CheckCircleIcon sx={{ color: 'success.main', mr: 1 }} fontSize="small" />
+                          <Typography variant="body2" color="success.dark">
+                            {selectedFile.name}
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      {uploadLoading && (
+                        <Box sx={{ mt: 2 }}>
+                          <LinearProgress variant="determinate" value={uploadProgress} />
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                            Đang upload... {uploadProgress}%
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+
+                    {/* Template Name */}
+                    <TextField
+                      label="Tên Template"
+                      value={newTemplateName}
+                      onChange={(e) => setNewTemplateName(e.target.value)}
+                      placeholder="Nhập tên mô tả cho template..."
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        startAdornment: (
+                          <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                            🏷️
+                          </Box>
+                        ),
+                      }}
                     />
-                    {selectedFile && (
-                      <div className="mt-2 flex items-center text-sm text-green-600">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        {selectedFile.name}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div>
-                  <label htmlFor="template-name" className="block text-sm font-semibold text-gray-700 mb-2">
-                    🏷️ Tên Template
-                  </label>
-                  <input
-                    id="template-name"
-                    type="text"
-                    value={newTemplateName}
-                    onChange={(e) => setNewTemplateName(e.target.value)}
-                    placeholder="Nhập tên mô tả cho template..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
-                  />
-                </div>
-              </div>
+                <Box sx={{ width: { xs: '100%', md: '50%' }, p: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
+                    {/* Template Type */}
+                    <TextField
+                      label="Loại Template"
+                      value={newTemplateType}
+                      onChange={(e) => setNewTemplateType(e.target.value)}
+                      select
+                      fullWidth
+                      variant="outlined"
+                      disabled={!!templateType}
+                      InputProps={{
+                        startAdornment: (
+                          <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                            📂
+                          </Box>
+                        ),
+                      }}
+                    >
+                      <MenuItem value="">Chọn loại template...</MenuItem>
+                      {templateTypeOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
 
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="template-type" className="block text-sm font-semibold text-gray-700 mb-2">
-                    📂 Loại Template
-                  </label>
-                  <select
-                    id="template-type"
-                    value={newTemplateType}
-                    onChange={(e) => setNewTemplateType(e.target.value)}
-                    disabled={!!templateType}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md disabled:bg-gray-50"
-                  >
-                    <option value="">Chọn loại template...</option>
-                    <option value="hop_dong_tin_dung">Hợp đồng tín dụng</option>
-                    <option value="to_trinh_tham_dinh">Tờ trình thẩm định</option>
-                    <option value="giay_de_nghi_vay_von">Giấy đề nghị vay vốn</option>
-                    <option value="bien_ban_dinh_gia">Biên bản định giá</option>
-                    <option value="hop_dong_the_chap">Hợp đồng thế chấp</option>
-                    <option value="don_dang_ky_the_chap">Đơn đăng ký thế chấp</option>
-                    <option value="hop_dong_thu_phi">Hợp đồng thu phí</option>
-                    <option value="tai_lieu_khac">Tài liệu khác</option>
-                  </select>
-                </div>
-
-                <div className="flex items-end h-full">
-                  <button
-                    onClick={handleUpload}
-                    disabled={uploadLoading || !selectedFile || !newTemplateName || !newTemplateType}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
-                    {uploadLoading ? (
-                      <div className="flex items-center justify-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Đang upload...
-                      </div>
-                    ) : (
-                      <>🚀 Upload Template</>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+                    {/* Upload Button */}
+                    <Box sx={{ mt: 'auto' }}>
+                      <Button
+                        onClick={handleUpload}
+                        variant="contained"
+                        size="large"
+                        fullWidth
+                        disabled={uploadLoading || !selectedFile || !newTemplateName || !newTemplateType}
+                        startIcon={uploadLoading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                        sx={{ py: 1.5 }}
+                      >
+                        {uploadLoading ? 'Đang upload...' : '🚀 Upload Template'}
+                      </Button>
+                    </Box>
+                  </Box>
+                </Box>
+              </Grid>
+            </CardContent>
+          </Card>
         )}
 
         {/* Templates List */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-lg bg-indigo-100">
-                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h2 className="text-xl font-bold text-gray-900">Danh sách Templates</h2>
-                <p className="text-gray-600">{templates.length} templates có sẵn</p>
-              </div>
-            </div>
-            
-            {loading && (
-              <div className="flex items-center text-blue-600">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Đang tải...
-              </div>
-            )}
-          </div>
-
-          {templates.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có template nào</h3>
-              <p className="text-gray-500 mb-6">
-                {allowUpload ? 'Hãy upload template đầu tiên để bắt đầu sử dụng.' : 'Liên hệ admin để thêm templates.'}
-              </p>
-              {allowUpload && (
-                <button
-                  onClick={() => document.getElementById('template-file')?.click()}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Upload Template Đầu Tiên
-                </button>
+        <Card>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ 
+                  p: 1.5, 
+                  borderRadius: 2, 
+                  bgcolor: 'secondary.50',
+                  color: 'secondary.main',
+                  mr: 2
+                }}>
+                  <FileCopyIcon />
+                </Box>
+                <Box>
+                  <Typography variant="h5" fontWeight="bold">
+                    Danh sách Templates
+                  </Typography>
+                  <Typography color="text.secondary">
+                    {templates.length} templates có sẵn
+                  </Typography>
+                </Box>
+              </Box>
+              
+              {loading && (
+                <CircularProgress size={24} />
               )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {templates.map((template) => {
-                const fileExtension = template.file_url.split('.').pop()?.toLowerCase() || '';
-                const isDocx = fileExtension === 'docx';
-                const isXlsx = fileExtension === 'xlsx';
-                
-                return (
-                  <div
-                    key={template.template_id}
-                    className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
+            </Box>
+
+            {templates.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <Box sx={{ 
+                  width: 120, 
+                  height: 120, 
+                  bgcolor: 'grey.100', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mx: 'auto',
+                  mb: 3
+                }}>
+                  <FileCopyIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+                </Box>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Chưa có template nào
+                </Typography>
+                <Typography color="text.secondary" sx={{ mb: 4 }}>
+                  {allowUpload ? 'Hãy upload template đầu tiên để bắt đầu sử dụng.' : 'Liên hệ admin để thêm templates.'}
+                </Typography>
+                {allowUpload && (
+                  <Button
+                    variant="contained"
+                    startIcon={<CloudUploadIcon />}
+                    onClick={() => document.getElementById('template-file')?.click()}
                   >
-                    {/* Background decoration */}
-                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-50 to-transparent rounded-bl-full"></div>
-                    
-                    {/* File type icon */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-lg ${isDocx ? 'bg-blue-100' : isXlsx ? 'bg-green-100' : 'bg-gray-100'} relative z-10`}>
-                        {isDocx ? (
-                          <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        ) : isXlsx ? (
-                          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2M9 7h6" />
-                          </svg>
-                        ) : (
-                          <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        )}
-                      </div>
-                      
-                      {/* File type badge */}
-                      <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        isDocx ? 'bg-blue-100 text-blue-700' : 
-                        isXlsx ? 'bg-green-100 text-green-700' : 
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {fileExtension.toUpperCase()}
-                      </div>
-                    </div>
+                    Upload Template Đầu Tiên
+                  </Button>
+                )}
+              </Box>
+            ) : (
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { 
+                  xs: '1fr', 
+                  sm: 'repeat(2, 1fr)', 
+                  md: 'repeat(3, 1fr)', 
+                  lg: 'repeat(4, 1fr)' 
+                }, 
+                gap: 3
+              }}>
+                {templates.map((template) => {
+                  const fileExtension = template.file_url.split('.').pop()?.toLowerCase() || '';
+                  const fileIcon = getFileIcon(template.file_url);
+                  const fileTypeColor = getFileTypeColor(template.file_url);
+                  
+                  return (
+                    <Card key={template.template_id} sx={{ 
+                      height: '100%',
+                      position: 'relative',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: theme.shadows[8]
+                      },
+                      transition: 'all 0.2s ease-in-out'
+                    }}>
+                      <CardContent sx={{ p: 3 }}>
+                        {/* File Icon and Type */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                          <Box sx={{ 
+                            p: 1.5, 
+                            borderRadius: 2, 
+                            bgcolor: `${fileTypeColor}.50`,
+                            color: `${fileTypeColor}.main`
+                          }}>
+                            {fileIcon}
+                          </Box>
+                          <Chip 
+                            label={fileExtension.toUpperCase()} 
+                            color={fileTypeColor as any}
+                            size="small"
+                          />
+                        </Box>
 
-                    {/* Template info */}
-                    <div className="mb-4">
-                      <h3 className="font-bold text-lg text-gray-900 mb-2 leading-tight">
-                        {template.template_name}
-                      </h3>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center text-sm text-gray-600">
-                          <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a.997.997 0 01-1.414 0l-7-7A1.997 1.997 0 013 12V7a4 4 0 014-4z" />
-                          </svg>
-                          <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                            {template.template_type}
-                          </span>
-                        </div>
+                        {/* Template Info */}
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, lineHeight: 1.3 }}>
+                          {template.template_name}
+                        </Typography>
                         
-                        <div className="flex items-center text-sm text-gray-600">
-                          <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>{formatDate(template.created_at)}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <FolderIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+                            <Chip 
+                              label={template.template_type} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ fontSize: '0.75rem' }}
+                            />
+                          </Box>
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <ScheduleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="caption" color="text.secondary">
+                              {formatDate(template.created_at)}
+                            </Typography>
+                          </Box>
+                        </Box>
 
-                        <div className="flex items-center text-sm text-gray-600">
-                          <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <span>{formatFileSize(template.file_url)}</span>
-                        </div>
-                      </div>
-                    </div>
+                        {/* Actions */}
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button
+                            href={template.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            variant="contained"
+                            color="success"
+                            size="small"
+                            startIcon={<DownloadIcon />}
+                            sx={{ flex: 1 }}
+                          >
+                            Tải về
+                          </Button>
+                          
+                          {onTemplateSelect && (
+                            <Button
+                              onClick={() => onTemplateSelect(template)}
+                              variant="contained"
+                              size="small"
+                              startIcon={<CheckCircleIcon />}
+                              sx={{ flex: 1 }}
+                            >
+                              Chọn
+                            </Button>
+                          )}
+                        </Box>
 
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <a
-                        href={template.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                      >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Tải về
-                      </a>
-                      
-                      {onTemplateSelect && (
-                        <button
-                          onClick={() => onTemplateSelect(template)}
-                          className="flex-1 flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                        >
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          Chọn
-                        </button>
-                      )}
-                    </div>
+                        {/* Delete Button */}
+                        {allowDelete && (
+                          <Tooltip title="Xóa template">
+                            <IconButton
+                              onClick={() => handleDeleteClick(template)}
+                              sx={{ 
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                color: 'error.main',
+                                bgcolor: 'background.paper',
+                                boxShadow: 1,
+                                '&:hover': {
+                                  bgcolor: 'error.50'
+                                }
+                              }}
+                              size="small"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      </Container>
 
-                    {/* Delete button */}
-                    {allowDelete && (
-                      <button
-                        onClick={() => handleDelete(template)}
-                        className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-all duration-200 z-10"
-                        title="Xóa template"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>
+          Xác nhận xóa template
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn xóa template "{templateToDelete?.template_name}"?
+            <br />
+            Hành động này không thể hoàn tác.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            Hủy
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

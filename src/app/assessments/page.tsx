@@ -1,8 +1,27 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Dialog } from '@headlessui/react'
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Grid,
+  IconButton,
+  InputAdornment,
+  useTheme
+} from '@mui/material';
+import {
+  Search,
+  Add,
+  Close,
+} from '@mui/icons-material';
 import CreditAssessmentCard from '@/components/CreditAssessmentCard'
 import CreditAssessmentForm from '@/components/CreditAssessmentForm'
 import Navigation from '@/components/Navigation'
@@ -16,6 +35,7 @@ export default function AssessmentsPage() {
   const [selectedAssessment, setSelectedAssessment] = useState<any>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const theme = useTheme()
 
   const {
     isLoading,
@@ -76,71 +96,77 @@ export default function AssessmentsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
       <Navigation />
       
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Thẩm định tín dụng</h1>
-            <p className="mt-1 text-sm text-gray-500">
+      <Box sx={{ maxWidth: 1400, mx: 'auto', py: 3, px: 2 }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              Thẩm định tín dụng
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
               Quản lý các thẩm định tín dụng cho khách hàng
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
-          <button
+          <Button
+            variant="contained"
+            startIcon={<Add />}
             onClick={() => {
               setSelectedAssessment(null)
               setShowForm(true)
             }}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+            sx={{ borderRadius: 2 }}
           >
             Thẩm định mới
-          </button>
-        </div>
+          </Button>
+        </Box>
 
         {/* Search Bar */}
-        <div className="mb-6">
-          <div className="flex items-center max-w-lg">
-            <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Tìm kiếm thẩm định..."
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-          </div>
-        </div>
+        <Box sx={{ mb: 3 }}>
+          <TextField
+            fullWidth
+            placeholder="Tìm kiếm thẩm định..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ maxWidth: 400, borderRadius: 2 }}
+          />
+        </Box>
 
         {/* Assessment List */}
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card sx={{ p: 3 }}>
+          <Grid container spacing={3}>
             {filteredAssessments.map(assessment => (
-          <CreditAssessmentCard
-            key={assessment.assessment_id}
-            assessment={assessment}
-            onView={() => {
-              setSelectedAssessment(assessment)
-              setShowForm(true)
-            }}
-            onEdit={() => {
-              setSelectedAssessment(assessment)
-              setShowForm(true)
-            }}
-            onDelete={() => {
-              setSelectedAssessment(assessment)
-              setShowDeleteDialog(true)
-            }}
-          />
+              <Grid key={assessment.assessment_id} size={{ xs: 12, md: 6, lg: 4 }}>
+                <CreditAssessmentCard
+                  assessment={assessment}
+                  onView={() => {
+                    setSelectedAssessment(assessment)
+                    setShowForm(true)
+                  }}
+                  onEdit={() => {
+                    setSelectedAssessment(assessment)
+                    setShowForm(true)
+                  }}
+                  onDelete={() => {
+                    setSelectedAssessment(assessment)
+                    setShowDeleteDialog(true)
+                  }}
+                />
+              </Grid>
             ))}
-          </div>
-        </div>
-      </main>
+          </Grid>
+        </Card>
+      </Box>
 
       {/* Assessment Form Dialog */}
       {showForm && (
@@ -161,46 +187,45 @@ export default function AssessmentsPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog
-        as="div"
-        className="fixed inset-0 z-10 overflow-y-auto"
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
       >
-        <div className="min-h-screen px-4 text-center">
-          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-          
-          <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-            <Dialog.Title
-              as="h3"
-              className="text-lg font-medium leading-6 text-gray-900"
-            >
-              Xác nhận xóa
-            </Dialog.Title>
-            <div className="mt-2">
-              <p className="text-sm text-gray-500">
-                Bạn có chắc chắn muốn xóa thẩm định này? Hành động này không thể hoàn tác.
-              </p>
-            </div>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            Xác nhận xóa
+            <IconButton onClick={() => setShowDeleteDialog(false)} size="small">
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent>
+          <Typography variant="body1" color="text.secondary">
+            Bạn có chắc chắn muốn xóa thẩm định này? Hành động này không thể hoàn tác.
+          </Typography>
+        </DialogContent>
 
-            <div className="mt-4 flex justify-end space-x-3">
-              <button
-                type="button"
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none"
-                onClick={() => setShowDeleteDialog(false)}
-              >
-                Hủy
-              </button>
-              <button
-                type="button"
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none"
-                onClick={handleDeleteAssessment}
-              >
-                Xóa
-              </button>
-            </div>
-          </div>
-        </div>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button
+            onClick={() => setShowDeleteDialog(false)}
+            color="inherit"
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleDeleteAssessment}
+            variant="contained"
+            color="error"
+          >
+            Xóa
+          </Button>
+        </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   )
 }
