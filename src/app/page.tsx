@@ -125,7 +125,7 @@ export default function HomePage() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                🏠 Trang Chủ CRM
+                <BusinessIcon sx={{ fontSize: 36 }} /> Trang Chủ CRM
               </Typography>
               <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Tổng quan thống kê và quản lý hệ thống

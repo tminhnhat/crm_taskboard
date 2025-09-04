@@ -22,6 +22,7 @@ import {
   AttachMoney as MoneyIcon,
   Assessment as AssessmentIcon,
   Security as SecurityIcon,
+  CategoryOutlined as CategoryOutlinedIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material'
 import { useProducts } from '@/hooks/useProducts'
@@ -224,7 +225,7 @@ export default function ProductsPage() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                📦 Quản Lý Sản Phẩm
+                <CategoryOutlinedIcon sx={{ fontSize: 36 }} /> Quản Lý Sản Phẩm
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Quản lý và theo dõi danh mục sản phẩm một cách chuyên nghiệp
