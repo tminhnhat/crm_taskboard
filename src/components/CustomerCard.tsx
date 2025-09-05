@@ -8,9 +8,6 @@ import {
   Typography,
   Box,
   Stack,
-  Select,
-  MenuItem,
-  FormControl,
   Chip,
   Collapse,
   IconButton,
@@ -38,8 +35,7 @@ import {
   ActionButton,
   InfoBox,
   CardHeader,
-  CardActions,
-  StyledSelect
+  CardActions
 } from './StyledComponents'
 
 // Interface for numerology data structure
@@ -610,35 +606,15 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               </Box>
             )}
           </Box>
-          
-          <Box sx={{ 
-            ml: { xs: 0, sm: 2 }, 
-            minWidth: { xs: 'auto', sm: 140 },
-            mt: { xs: 2, sm: 0 }
-          }}>
-            <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-              <StyledSelect
-                value={customer.status}
-                onChange={(e) => onStatusChange(customer.customer_id, e.target.value as string)}
-                sx={{
-                  '& .MuiSelect-select': {
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
-                  }
-                }}
-              >
-                <MenuItem value="active">Đang Hoạt Động</MenuItem>
-                <MenuItem value="inactive">Không Hoạt Động</MenuItem>
-              </StyledSelect>
-            </FormControl>
-          </Box>
         </CardHeader>
         
         <CardActions sx={{ 
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: { xs: 2, sm: 0 },
-          alignItems: { xs: 'stretch', sm: 'center' }
+          flexDirection: 'row',
+          gap: { xs: 1, sm: 0 },
+          alignItems: 'center',
+          flexWrap: { xs: 'wrap', sm: 'nowrap' }
         }}>
-          <Box sx={{ order: { xs: 2, sm: 1 } }}>
+          <Box sx={{ order: { xs: 1, sm: 1 } }}>
             <ActionButton
               startIcon={<Edit />}
               onClick={() => onEdit(customer)}
@@ -647,18 +623,18 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               size="small"
               sx={{ 
                 fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                width: { xs: '100%', sm: 'auto' }
+                width: 'auto'
               }}
             >
               Sửa
             </ActionButton>
           </Box>
           <Stack 
-            direction={{ xs: 'column', sm: 'row' }} 
+            direction='row'
             spacing={1}
             sx={{ 
-              order: { xs: 1, sm: 2 },
-              width: { xs: '100%', sm: 'auto' }
+              order: { xs: 2, sm: 2 },
+              width: 'auto'
             }}
           >
             {onRecalculateNumerology && customer.full_name && customer.date_of_birth && (
@@ -667,7 +643,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                   onClick={() => onRecalculateNumerology(customer.customer_id)}
                   color="secondary"
                   size="small"
-                  sx={{ alignSelf: { xs: 'center', sm: 'auto' } }}
+                  sx={{ alignSelf: 'center' }}
                 >
                   <Calculate />
                 </IconButton>
@@ -679,7 +655,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                   onClick={() => onGenerateQR(customer)}
                   color="success"
                   size="small"
-                  sx={{ alignSelf: { xs: 'center', sm: 'auto' } }}
+                  sx={{ alignSelf: 'center' }}
                 >
                   <QrCode />
                 </IconButton>
@@ -693,7 +669,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               size="small"
               sx={{ 
                 fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                width: { xs: '100%', sm: 'auto' }
+                width: 'auto'
               }}
             >
               Xóa
