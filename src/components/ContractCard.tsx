@@ -184,29 +184,11 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
                 </Typography>
               </InfoBox>
               
-              {contract.contract_id && (
-                <InfoBox>
-                  <Badge fontSize="small" />
-                  <Typography variant="body2">
-                    ID: {contract.contract_id}
-                  </Typography>
-                </InfoBox>
-              )}
+              {/* Đã gỡ bỏ hiển thị contract id */}
             </Stack>
           </Box>
           
-          <Box sx={{ ml: 2, minWidth: 140 }}>
-            <FormControl fullWidth size="small">
-              <StyledSelect
-                value={contract.status}
-                onChange={(e) => onStatusChange(contract.contract_id, e.target.value as string)}
-              >
-                <MenuItem value="draft">Nháp</MenuItem>
-                <MenuItem value="active">Đang Hoạt Động</MenuItem>
-                <MenuItem value="expired">Hết Hạn</MenuItem>
-              </StyledSelect>
-            </FormControl>
-          </Box>
+          {/* Đã gỡ bỏ contract status input field */}
         </CardHeader>
         
         <CardActions>
