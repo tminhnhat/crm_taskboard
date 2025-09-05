@@ -127,17 +127,7 @@ export default function StaffCard({ staff, onEdit, onDelete, onStatusChange }: S
             </Stack>
           </Box>
           
-          <Box sx={{ ml: 2, minWidth: 140 }}>
-            <FormControl fullWidth size="small">
-              <StyledSelect
-                value={staff.status}
-                onChange={(e) => onStatusChange(staff.staff_id, e.target.value as string)}
-              >
-                <MenuItem value="active">Đang Hoạt Động</MenuItem>
-                <MenuItem value="inactive">Không Hoạt Động</MenuItem>
-              </StyledSelect>
-            </FormControl>
-          </Box>
+          {/* Đã gỡ bỏ staff status input field */}
         </CardHeader>
         
         <CardActions>
