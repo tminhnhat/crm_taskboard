@@ -584,13 +584,14 @@ export default function CreditAssessmentForm({
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        backgroundColor: 'primary.main',
-        color: 'primary.contrastText'
+        background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+        color: 'white',
+        fontWeight: 700
       }}>
-        <Typography variant="h6" component="div">
+        <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
           {assessment ? 'Chỉnh sửa thẩm định' : 'Thẩm định mới'}
         </Typography>
-        <IconButton onClick={onClose} sx={{ color: 'primary.contrastText' }}>
+        <IconButton onClick={onClose} sx={{ color: 'white' }}>
           <Close />
         </IconButton>
       </DialogTitle>

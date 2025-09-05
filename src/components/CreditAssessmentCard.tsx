@@ -68,7 +68,14 @@ export default function CreditAssessmentCard({
     }}>
       <CardContent sx={{ p: 3 }}>
         {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start', 
+          mb: 3,
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 2, sm: 0 }
+        }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ 
               p: 1.5, 
@@ -81,7 +88,11 @@ export default function CreditAssessmentCard({
               <Assessment sx={{ fontSize: 24, color: '#344767' }} />
             </Box>
             <Box>
-              <Typography variant="h6" fontWeight="700" sx={{ color: '#344767', mb: 0.5 }}>
+              <Typography variant="h6" fontWeight="700" sx={{ 
+                color: '#344767', 
+                mb: 0.5,
+                fontSize: { xs: '1rem', sm: '1.25rem' }
+              }}>
                 Thẩm định cho {assessment.customer?.full_name}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
@@ -89,7 +100,14 @@ export default function CreditAssessmentCard({
               </Typography>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 1,
+            flexDirection: { xs: 'row', sm: 'row' },
+            flexWrap: 'wrap',
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'center', sm: 'flex-end' }
+          }}>
             <Button
               size="small"
               startIcon={<Visibility />}
@@ -99,10 +117,12 @@ export default function CreditAssessmentCard({
                 borderColor: '#00acc1',
                 color: '#00acc1',
                 fontWeight: 600,
-                px: 2,
+                px: { xs: 1.5, sm: 2 },
                 py: 1,
                 borderRadius: 2,
                 textTransform: 'none',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minWidth: { xs: 'auto', sm: 'unset' },
                 '&:hover': {
                   borderColor: '#00acc1',
                   bgcolor: 'rgba(0, 172, 193, 0.04)',
@@ -121,10 +141,12 @@ export default function CreditAssessmentCard({
                 borderColor: '#344767',
                 color: '#344767',
                 fontWeight: 600,
-                px: 2,
+                px: { xs: 1.5, sm: 2 },
                 py: 1,
                 borderRadius: 2,
                 textTransform: 'none',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minWidth: { xs: 'auto', sm: 'unset' },
                 '&:hover': {
                   borderColor: '#344767',
                   bgcolor: 'rgba(52, 71, 103, 0.04)',
@@ -143,10 +165,12 @@ export default function CreditAssessmentCard({
                 borderColor: 'error.main',
                 color: 'error.main',
                 fontWeight: 600,
-                px: 2,
+                px: { xs: 1.5, sm: 2 },
                 py: 1,
                 borderRadius: 2,
                 textTransform: 'none',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minWidth: { xs: 'auto', sm: 'unset' },
                 '&:hover': {
                   borderColor: 'error.main',
                   bgcolor: 'rgba(211, 47, 47, 0.04)',

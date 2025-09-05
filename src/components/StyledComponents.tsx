@@ -139,9 +139,11 @@ export const CardActions = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2),
   paddingTop: theme.spacing(2),
   borderTop: `1px solid ${theme.palette.divider}`,
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
   [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
+    justifyContent: 'center',
+    flexDirection: 'row',
     gap: theme.spacing(2),
-    alignItems: 'stretch',
   },
 }));
