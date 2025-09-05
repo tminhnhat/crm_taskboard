@@ -608,35 +608,25 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
           </Box>
         </CardHeader>
         
-        <CardActions sx={{ 
+        <CardActions sx={{
+          p: 0,
           flexDirection: 'row',
-          gap: { xs: 1, sm: 0 },
           alignItems: 'center',
-          flexWrap: { xs: 'wrap', sm: 'nowrap' }
+          flexWrap: 'wrap',
+          gap: { xs: 1, sm: 2 },
+          justifyContent: { xs: 'flex-start', sm: 'flex-start' }
         }}>
-          <Box sx={{ order: { xs: 1, sm: 1 } }}>
+          <Stack direction="row" spacing={1} sx={{ width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: { xs: 'flex-start', sm: 'flex-start' } }}>
             <ActionButton
               startIcon={<Edit />}
               onClick={() => onEdit(customer)}
               color="primary"
               variant="outlined"
               size="small"
-              sx={{ 
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                width: 'auto'
-              }}
+              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, minWidth: 64 }}
             >
               Sửa
             </ActionButton>
-          </Box>
-          <Stack 
-            direction='row'
-            spacing={1}
-            sx={{ 
-              order: { xs: 2, sm: 2 },
-              width: 'auto'
-            }}
-          >
             {onRecalculateNumerology && customer.full_name && customer.date_of_birth && (
               <Tooltip title="Tính lại thần số học">
                 <IconButton
@@ -667,10 +657,7 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
               color="error"
               variant="outlined"
               size="small"
-              sx={{ 
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                width: 'auto'
-              }}
+              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, minWidth: 64 }}
             >
               Xóa
             </ActionButton>
