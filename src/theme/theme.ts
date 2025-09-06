@@ -268,7 +268,56 @@ export const darkTheme: Theme = createTheme({
     },
     divider: 'rgba(255, 255, 255, 0.1)',
   },
-  typography: lightTheme.typography,
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontWeight: 500,
+      fontSize: '2.5rem',
+      lineHeight: 1.2,
+      color: '#f7fafc', // Use dark mode text color
+    },
+    h2: {
+      fontWeight: 500,
+      fontSize: '2rem',
+      lineHeight: 1.3,
+      color: '#f7fafc', // Use dark mode text color
+    },
+    h3: {
+      fontWeight: 500,
+      fontSize: '1.75rem',
+      lineHeight: 1.3,
+      color: '#f7fafc', // Use dark mode text color
+    },
+    h4: {
+      fontWeight: 500,
+      fontSize: '1.5rem',
+      lineHeight: 1.4,
+      color: '#f7fafc', // Use dark mode text color
+    },
+    h5: {
+      fontWeight: 500,
+      fontSize: '1.25rem',
+      lineHeight: 1.4,
+      color: '#f7fafc', // Use dark mode text color
+    },
+    h6: {
+      fontWeight: 500,
+      fontSize: '1rem',
+      lineHeight: 1.5,
+      color: '#f7fafc', // Use dark mode text color
+    },
+    body1: {
+      color: '#f7fafc', // Use dark mode text color
+    },
+    body2: {
+      color: '#a0aec0', // Use dark mode secondary text color
+    },
+    button: {
+      textTransform: 'none',
+      fontWeight: 500,
+      color: '#f7fafc', // Use dark mode text color
+    },
+  },
   shape: lightTheme.shape,
   components: {
     MuiCard: {

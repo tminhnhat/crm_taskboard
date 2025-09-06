@@ -1,6 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import {
+  Card,
+  CardContent,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Typography,
+  Button,
+  Box,
+  Chip,
+  Collapse,
+  Divider
+} from '@mui/material'
 
 interface CollateralFiltersProps {
   onFiltersChange: (filters: {
@@ -71,185 +86,198 @@ export default function CollateralFilters({
   ]
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-      <div className="p-4">
+    <Card sx={{ mb: 3 }}>
+      <CardContent>
         {/* Search and Toggle */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Tìm kiếm tài sản theo mô tả, vị trí hoặc khách hàng..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 2 }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Tìm kiếm tài sản theo mô tả, vị trí hoặc khách hàng..."
+            value={filters.search}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            sx={{ flexGrow: 1 }}
+          />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="px-3 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              size="small"
             >
               {isExpanded ? 'Ẩn Bộ Lọc' : 'Hiển Thị Bộ Lọc'}
-            </button>
+            </Button>
             {hasActiveFilters && (
-              <button
+              <Button
+                variant="outlined"
+                color="error"
                 onClick={clearFilters}
-                className="px-3 py-2 text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
+                size="small"
               >
                 Xóa Tất Cả
-              </button>
+              </Button>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Expanded Filters */}
-        {isExpanded && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-gray-100">
-            {/* Collateral Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Loại Tài Sản
-              </label>
-              <select
-                value={filters.type}
-                onChange={(e) => handleFilterChange('type', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Tất Cả Loại</option>
-                {collateralTypes.map(type => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <Collapse in={isExpanded}>
+          <Box sx={{ pt: 2 }}>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
+              {/* Collateral Type */}
+              <FormControl fullWidth size="small">
+                <InputLabel>Loại Tài Sản</InputLabel>
+                <Select
+                  value={filters.type}
+                  onChange={(e) => handleFilterChange('type', e.target.value)}
+                  label="Loại Tài Sản"
+                >
+                  <MenuItem value="">Tất Cả Loại</MenuItem>
+                  {collateralTypes.map(type => (
+                    <MenuItem key={type.value} value={type.value}>
+                      {type.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Trạng Thái
-              </label>
-              <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Tất Cả Trạng Thái</option>
-                {statusOptions.map(status => (
-                  <option key={status.value} value={status.value}>
-                    {status.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Status */}
+              <FormControl fullWidth size="small">
+                <InputLabel>Trạng Thái</InputLabel>
+                <Select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  label="Trạng Thái"
+                >
+                  <MenuItem value="">Tất Cả Trạng Thái</MenuItem>
+                  {statusOptions.map(status => (
+                    <MenuItem key={status.value} value={status.value}>
+                      {status.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            {/* Customer */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Khách Hàng
-              </label>
-              <select
-                value={filters.customerId}
-                onChange={(e) => handleFilterChange('customerId', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Tất Cả Khách Hàng</option>
-                {availableCustomers.map(customer => (
-                  <option key={customer.customer_id} value={customer.customer_id.toString()}>
-                    {customer.full_name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Customer */}
+              <FormControl fullWidth size="small">
+                <InputLabel>Khách Hàng</InputLabel>
+                <Select
+                  value={filters.customerId}
+                  onChange={(e) => handleFilterChange('customerId', e.target.value)}
+                  label="Khách Hàng"
+                >
+                  <MenuItem value="">Tất Cả Khách Hàng</MenuItem>
+                  {availableCustomers.map(customer => (
+                    <MenuItem key={customer.customer_id} value={customer.customer_id.toString()}>
+                      {customer.full_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            {/* Value Range */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Khoảng Giá Trị (VND)
-              </label>
-              <select
-                value={filters.valueRange}
-                onChange={(e) => handleFilterChange('valueRange', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Tất Cả Giá Trị</option>
-                <option value="0-100000000">Dưới 100 Triệu</option>
-                <option value="100000000-500000000">100 Triệu - 500 Triệu</option>
-                <option value="500000000-1000000000">500 Triệu - 1 Tỷ</option>
-                <option value="1000000000-5000000000">1 Tỷ - 5 Tỷ</option>
-                <option value="5000000000+">Trên 5 Tỷ</option>
-              </select>
-            </div>
+              {/* Value Range */}
+              <FormControl fullWidth size="small">
+                <InputLabel>Khoảng Giá Trị (VND)</InputLabel>
+                <Select
+                  value={filters.valueRange}
+                  onChange={(e) => handleFilterChange('valueRange', e.target.value)}
+                  label="Khoảng Giá Trị (VND)"
+                >
+                  <MenuItem value="">Tất Cả Giá Trị</MenuItem>
+                  <MenuItem value="0-100000000">Dưới 100 Triệu</MenuItem>
+                  <MenuItem value="100000000-500000000">100 Triệu - 500 Triệu</MenuItem>
+                  <MenuItem value="500000000-1000000000">500 Triệu - 1 Tỷ</MenuItem>
+                  <MenuItem value="1000000000-5000000000">1 Tỷ - 5 Tỷ</MenuItem>
+                  <MenuItem value="5000000000+">Trên 5 Tỷ</MenuItem>
+                </Select>
+              </FormControl>
 
-            {/* Date Range */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Thời Gian Thẩm Định
-              </label>
-              <select
-                value={filters.dateRange}
-                onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Tất Cả Thời Gian</option>
-                <option value="month">Tháng Này</option>
-                <option value="quarter">Quý Này</option>
-                <option value="year">Năm Này</option>
-                <option value="older">Trên 1 Năm</option>
-              </select>
-            </div>
-          </div>
+              {/* Date Range */}
+              <FormControl fullWidth size="small">
+                <InputLabel>Thời Gian Thẩm Định</InputLabel>
+                <Select
+                  value={filters.dateRange}
+                  onChange={(e) => handleFilterChange('dateRange', e.target.value)}
+                  label="Thời Gian Thẩm Định"
+                >
+                  <MenuItem value="">Tất Cả Thời Gian</MenuItem>
+                  <MenuItem value="month">Tháng Này</MenuItem>
+                  <MenuItem value="quarter">Quý Này</MenuItem>
+                  <MenuItem value="year">Năm Này</MenuItem>
+                  <MenuItem value="older">Trên 1 Năm</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+        </Collapse>
+        {/* Active Filters Summary */}
+        {hasActiveFilters && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {filters.search && (
+                <Chip
+                  label={`Tìm kiếm: ${filters.search}`}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+              {filters.type && (
+                <Chip
+                  label={`Loại: ${collateralTypes.find(t => t.value === filters.type)?.label}`}
+                  color="success"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+              {filters.status && (
+                <Chip
+                  label={`Trạng thái: ${statusOptions.find(s => s.value === filters.status)?.label}`}
+                  color="secondary"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+              {filters.customerId && (
+                <Chip
+                  label={`Khách hàng: ${availableCustomers.find(c => c.customer_id.toString() === filters.customerId)?.full_name}`}
+                  color="info"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+              {filters.valueRange && (
+                <Chip
+                  label={`Giá trị: ${
+                    filters.valueRange === '0-100000000' ? 'Dưới 100 Triệu' :
+                    filters.valueRange === '100000000-500000000' ? '100 Triệu - 500 Triệu' :
+                    filters.valueRange === '500000000-1000000000' ? '500 Triệu - 1 Tỷ' :
+                    filters.valueRange === '1000000000-5000000000' ? '1 Tỷ - 5 Tỷ' :
+                    filters.valueRange === '5000000000+' ? 'Trên 5 Tỷ' : filters.valueRange
+                  }`}
+                  color="warning"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+              {filters.dateRange && (
+                <Chip
+                  label={`Thời gian: ${
+                    filters.dateRange === 'month' ? 'Tháng này' :
+                    filters.dateRange === 'quarter' ? 'Quý này' :
+                    filters.dateRange === 'year' ? 'Năm này' :
+                    filters.dateRange === 'older' ? 'Trên 1 năm' : filters.dateRange
+                  }`}
+                  color="error"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+            </Box>
+          </>
         )}
-      </div>
-
-      {/* Active Filters Summary */}
-      {hasActiveFilters && (
-        <div className="px-4 py-2 bg-gray-50 border-t border-gray-100">
-          <div className="flex flex-wrap gap-2">
-            {filters.search && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                Tìm kiếm: {filters.search}
-              </span>
-            )}
-            {filters.type && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Loại: {collateralTypes.find(t => t.value === filters.type)?.label}
-              </span>
-            )}
-            {filters.status && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                Trạng thái: {statusOptions.find(s => s.value === filters.status)?.label}
-              </span>
-            )}
-            {filters.customerId && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                Khách hàng: {availableCustomers.find(c => c.customer_id.toString() === filters.customerId)?.full_name}
-              </span>
-            )}
-            {filters.valueRange && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                Giá trị: {
-                  filters.valueRange === '0-100000000' ? 'Dưới 100 Triệu' :
-                  filters.valueRange === '100000000-500000000' ? '100 Triệu - 500 Triệu' :
-                  filters.valueRange === '500000000-1000000000' ? '500 Triệu - 1 Tỷ' :
-                  filters.valueRange === '1000000000-5000000000' ? '1 Tỷ - 5 Tỷ' :
-                  filters.valueRange === '5000000000+' ? 'Trên 5 Tỷ' : filters.valueRange
-                }
-              </span>
-            )}
-            {filters.dateRange && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                Thời gian: {
-                  filters.dateRange === 'month' ? 'Tháng này' :
-                  filters.dateRange === 'quarter' ? 'Quý này' :
-                  filters.dateRange === 'year' ? 'Năm này' :
-                  filters.dateRange === 'older' ? 'Trên 1 năm' : filters.dateRange
-                }
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   )
 }
