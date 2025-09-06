@@ -608,60 +608,37 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
           </Box>
         </CardHeader>
         
-        <CardActions sx={{
-          p: 0,
-          flexDirection: 'row',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: { xs: 1, sm: 2 },
-          justifyContent: { xs: 'flex-start', sm: 'flex-start' }
-        }}>
-          <Stack direction="row" spacing={1} sx={{ width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: { xs: 'flex-start', sm: 'flex-start' } }}>
+        <CardActions>
+          <Box sx={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 2
+          }}>
             <ActionButton
               startIcon={<Edit />}
               onClick={() => onEdit(customer)}
               color="primary"
               variant="outlined"
               size="small"
-              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, minWidth: 64 }}
+              sx={{ minWidth: 90 }}
             >
               Sửa
             </ActionButton>
-            {onRecalculateNumerology && customer.full_name && customer.date_of_birth && (
-              <Tooltip title="Tính lại thần số học">
-                <IconButton
-                  onClick={() => onRecalculateNumerology(customer.customer_id)}
-                  color="secondary"
-                  size="small"
-                  sx={{ alignSelf: 'center' }}
-                >
-                  <Calculate />
-                </IconButton>
-              </Tooltip>
-            )}
-            {onGenerateQR && (
-              <Tooltip title="Tạo mã QR thanh toán">
-                <IconButton
-                  onClick={() => onGenerateQR(customer)}
-                  color="success"
-                  size="small"
-                  sx={{ alignSelf: 'center' }}
-                >
-                  <QrCode />
-                </IconButton>
-              </Tooltip>
-            )}
+            <Box sx={{ flex: 1 }} />
             <ActionButton
               startIcon={<DeleteOutline />}
               onClick={() => onDelete(customer.customer_id)}
               color="error"
               variant="outlined"
               size="small"
-              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, minWidth: 64 }}
+              sx={{ minWidth: 90 }}
             >
               Xóa
             </ActionButton>
-          </Stack>
+          </Box>
         </CardActions>
       </CardContent>
     </StyledCard>
