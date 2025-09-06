@@ -131,24 +131,36 @@ export default function StaffCard({ staff, onEdit, onDelete, onStatusChange }: S
         </CardHeader>
         
         <CardActions>
-          <ActionButton
-            startIcon={<Edit />}
-            onClick={() => onEdit(staff)}
-            color="primary"
-            variant="outlined"
-            size="small"
-          >
-            Sửa
-          </ActionButton>
-          <ActionButton
-            startIcon={<DeleteOutline />}
-            onClick={() => onDelete(staff.staff_id)}
-            color="error"
-            variant="outlined"
-            size="small"
-          >
-            Xóa
-          </ActionButton>
+          <Box sx={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: { xs: 'row', sm: 'row' },
+            justifyContent: { xs: 'space-between', sm: 'flex-start' },
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <ActionButton
+              startIcon={<Edit />}
+              onClick={() => onEdit(staff)}
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
+            >
+              Sửa
+            </ActionButton>
+            <Box sx={{ flex: 1, display: { xs: 'block', sm: 'none' } }} />
+            <ActionButton
+              startIcon={<DeleteOutline />}
+              onClick={() => onDelete(staff.staff_id)}
+              color="error"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
+            >
+              Xóa
+            </ActionButton>
+          </Box>
         </CardActions>
       </CardContent>
     </StyledCard>

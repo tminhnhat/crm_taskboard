@@ -57,14 +57,13 @@ export default function HomePage() {
     const total = customers.length
     const individual = customers.filter(c => c.customer_type === 'individual').length
     const corporate = customers.filter(c => c.customer_type === 'corporate').length
-    const business = customers.filter(c => c.customer_type === 'business_individual').length
     
     // Recent customers (last 30 days)
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const recent = customers.filter(c => new Date(c.created_at) > thirtyDaysAgo).length
 
-    return { total, individual, corporate, business, recent }
+    return { total, individual, corporate, recent }
   }, [customers])
 
   // Contract statistics  
