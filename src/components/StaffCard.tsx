@@ -134,8 +134,8 @@ export default function StaffCard({ staff, onEdit, onDelete, onStatusChange }: S
           <Box sx={{
             display: 'flex',
             width: '100%',
-            flexDirection: { xs: 'row', sm: 'row' },
-            justifyContent: { xs: 'space-between', sm: 'flex-start' },
+            flexDirection: 'row',
+            justifyContent: 'space-between',
             alignItems: 'center',
             gap: 2
           }}>
@@ -149,7 +149,7 @@ export default function StaffCard({ staff, onEdit, onDelete, onStatusChange }: S
             >
               Sửa
             </ActionButton>
-            <Box sx={{ flex: 1, display: { xs: 'block', sm: 'none' } }} />
+            <Box sx={{ flex: 1 }} />
             <ActionButton
               startIcon={<DeleteOutline />}
               onClick={() => onDelete(staff.staff_id)}
