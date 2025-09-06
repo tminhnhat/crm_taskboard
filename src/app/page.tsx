@@ -714,6 +714,8 @@ export default function HomePage() {
                 p: 3,
                 borderRadius: 3,
                 background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                color: '#fff',
+                '& .MuiTypography-root': { color: '#fff' },
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)'
@@ -737,6 +739,8 @@ export default function HomePage() {
                 p: 3,
                 borderRadius: 3,
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: '#fff',
+                '& .MuiTypography-root': { color: '#fff' },
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: '0px 6px 16px rgba(102, 126, 234, 0.3)'
@@ -760,6 +764,8 @@ export default function HomePage() {
                 p: 3,
                 borderRadius: 3,
                 background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                color: '#fff',
+                '& .MuiTypography-root': { color: '#fff' },
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: '0px 6px 16px rgba(240, 147, 251, 0.3)'
@@ -783,6 +789,8 @@ export default function HomePage() {
                 p: 3,
                 borderRadius: 3,
                 background: 'linear-gradient(135deg, #5ee7df 0%, #66a6ff 100%)',
+                color: '#344767',
+                '& .MuiTypography-root': { color: '#344767' },
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: '0px 6px 16px rgba(94, 231, 223, 0.3)'
