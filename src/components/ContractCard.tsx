@@ -195,8 +195,8 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
           <Box sx={{
             display: 'flex',
             width: '100%',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
+            flexDirection: { xs: 'row', sm: 'row' },
+            justifyContent: { xs: 'space-between', sm: 'flex-start' },
             alignItems: 'center',
             gap: 2
           }}>
@@ -210,7 +210,7 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
             >
               Sửa
             </ActionButton>
-            <Box sx={{ flex: 1 }} />
+            <Box sx={{ flex: 1, display: { xs: 'block', sm: 'none' } }} />
             <ActionButton
               startIcon={<DeleteOutline />}
               onClick={() => onDelete(contract.contract_id)}
