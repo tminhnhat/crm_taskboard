@@ -15,22 +15,8 @@ import {
   ChartBarIcon,
   CubeIcon
 } from '@heroicons/react/24/outline'
-import { 
-  Pagination, 
-  Box, 
-  Container, 
-  Paper, 
-  Typography, 
-  Button, 
-  Card, 
-  CardContent, 
-  Alert,
-  useTheme
-} from '@mui/material'
-import { Add as AddIcon, TrendingUp as TrendingUpIcon } from '@mui/icons-material'
 
 export default function CollateralsPage() {
-  const theme = useTheme()
   const { 
     collaterals, 
     loading, 
@@ -52,8 +38,6 @@ export default function CollateralsPage() {
     valueRange: '',
     dateRange: ''
   })
-  const [currentPage, setCurrentPage] = useState(1)
-  const collateralsPerPage = 6 // Show 6 items per page in grid layout
 
   const stats = getCollateralStats()
 
@@ -144,23 +128,6 @@ export default function CollateralsPage() {
     })
   }, [collaterals, filters])
 
-  // Calculate total pages
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredCollaterals.length / collateralsPerPage)), [filteredCollaterals.length, collateralsPerPage])
-
-  // Reset current page when filters change or if current page is beyond total pages
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(1)
-    }
-  }, [totalPages, currentPage])
-
-  // Get paginated collaterals
-  const paginatedCollaterals = useMemo(() => {
-    const startIndex = (currentPage - 1) * collateralsPerPage
-    const endIndex = startIndex + collateralsPerPage
-    return filteredCollaterals.slice(startIndex, endIndex)
-  }, [filteredCollaterals, currentPage, collateralsPerPage])
-
 
 
     const handleCloseForm = () => {
@@ -213,126 +180,72 @@ export default function CollateralsPage() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <div className="min-h-screen bg-gray-50">
         <Navigation />
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <LoadingSpinner />
-        </Container>
-      </Box>
+        </div>
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <div className="min-h-screen bg-gray-50">
         <Navigation />
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-          <Alert severity="error">
-            Lỗi: {error}
-          </Alert>
-        </Container>
-      </Box>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <p className="text-red-600">Lỗi: {error}</p>
+          </div>
+        </div>
+      </div>
     )
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       
-      {/* Header Section */}
-      <Paper sx={{ 
-        background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
-        color: 'white',
-        py: 6,
-        borderRadius: 0
-      }}>
-        <Container maxWidth="xl">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
-            <Box>
-              <Typography variant="h3" fontWeight="bold" gutterBottom>
-                Tài Sản Đảm Bảo
-              </Typography>
-              <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                Quản lý tài sản đảm bảo và định giá của khách hàng
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              onClick={handleNewCollateral}
-              startIcon={<AddIcon />}
-              size="large"
-              sx={{ 
-                px: 4,
-                py: 1.5,
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                borderRadius: 3,
-                textTransform: 'none',
-                bgcolor: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                color: 'white',
-                '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.3)',
-                  transform: 'translateY(-2px)'
-                },
-                transition: 'all 0.2s ease-in-out'
-              }}
-            >
-              Thêm Tài Sản
-            </Button>
-          </Box>
-        </Container>
-      </Paper>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Tài Sản Đảm Bảo</h1>
+            <p className="text-gray-600 mt-1">Quản lý tài sản đảm bảo và định giá của khách hàng</p>
+          </div>
+          <button
+            onClick={handleNewCollateral}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Thêm Tài Sản
+          </button>
+        </div>
 
-      {/* Main Content */}
-      <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Statistics Cards */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" fontWeight="600" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <TrendingUpIcon color="primary" />
-            Thống Kê Tài Sản
-          </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              '&:hover': { transform: 'translateY(-4px)' },
-              transition: 'transform 0.2s ease-in-out'
-            }}>
-              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <CubeIcon className="h-8 w-8" />
-                <Box>
-                  <Typography variant="h6" fontWeight="600">
-                    Tổng Tài Sản
-                  </Typography>
-                  <Typography variant="h4" fontWeight="bold">
-                    {stats.total}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <CubeIcon className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Tổng Tài Sản</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              </div>
+            </div>
+          </div>
 
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              color: 'white',
-              '&:hover': { transform: 'translateY(-4px)' },
-              transition: 'transform 0.2s ease-in-out'
-            }}>
-              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <HomeIcon className="h-8 w-8" />
-                <Box>
-                  <Typography variant="h6" fontWeight="600">
-                    Loại Phổ Biến
-                  </Typography>
-                  <Typography variant="h6" fontWeight="bold">
-                    {stats.mostCommonType || 'Không có'}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        </Box>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <HomeIcon className="h-8 w-8 text-indigo-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Loại Phổ Biến</p>
+                <p className="text-sm font-bold text-indigo-600">
+                  {stats.mostCommonType || 'Không có'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Filters */}
         <CollateralFilters
@@ -341,52 +254,44 @@ export default function CollateralsPage() {
         />
 
         {/* Results Summary */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-          <Typography variant="body1" color="text.secondary">
-            Hiển thị {((currentPage - 1) * collateralsPerPage) + 1}-{Math.min(currentPage * collateralsPerPage, filteredCollaterals.length)} trong tổng số {filteredCollaterals.length} tài sản đảm bảo
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ChartBarIcon className="h-5 w-5" />
-            <Typography variant="body2" color="text.secondary">
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-gray-600">
+            Hiển thị {filteredCollaterals.length} trong tổng số {collaterals.length} tài sản đảm bảo
+          </p>
+          <div className="flex items-center space-x-4">
+            <ChartBarIcon className="h-5 w-5 text-gray-400" />
+            <span className="text-sm text-gray-600">
               {filteredCollaterals.length > 0 
-                ? `Tổng giá trị: ${formatCurrency(filteredCollaterals.reduce((sum, c) => sum + (c.value || 0), 0))}`
+                ? `Tổng giá trị đã lọc: ${formatCurrency(filteredCollaterals.reduce((sum, c) => sum + (c.value || 0), 0))}`
                 : 'Không có dữ liệu'
               }
-            </Typography>
-          </Box>
-        </Box>
+            </span>
+          </div>
+        </div>
 
         {/* Collaterals Grid */}
         {filteredCollaterals.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <HomeIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <Typography variant="h6" color="text.primary" gutterBottom>
-              Không tìm thấy tài sản đảm bảo nào
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+          <div className="text-center py-12">
+            <HomeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy tài sản đảm bảo nào</h3>
+            <p className="text-gray-500 mb-6">
               {filters.search || filters.type || filters.status || filters.customerId || filters.valueRange || filters.dateRange
                 ? 'Hãy thử điều chỉnh bộ lọc để xem thêm kết quả.'
                 : 'Bắt đầu bằng cách thêm tài sản đảm bảo đầu tiên của bạn.'
               }
-            </Typography>
-            <Button
-              variant="contained"
+            </p>
+            <button
               onClick={handleNewCollateral}
-              startIcon={<AddIcon />}
-              sx={{ 
-                px: 4,
-                py: 1.5,
-                borderRadius: 3,
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)'
-              }}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
+              <PlusIcon className="h-5 w-5 mr-2" />
               Thêm Tài Sản
-            </Button>
-          </Box>
+            </button>
+          </div>
         ) : (
           <>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)', xl: 'repeat(3, 1fr)' }, gap: 3, mb: 4 }}>
-              {paginatedCollaterals.map((collateral: Collateral) => (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredCollaterals.map((collateral: Collateral) => (
                 <CollateralCard
                   key={collateral.collateral_id}
                   collateral={collateral}
@@ -394,22 +299,7 @@ export default function CollateralsPage() {
                   onDelete={handleDeleteCollateral}
                 />
               ))}
-            </Box>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={(event, value) => setCurrentPage(value)}
-                  color="primary"
-                  size="large"
-                  showFirstButton
-                  showLastButton
-                />
-              </Box>
-            )}
+            </div>
           </>
         )}
 
@@ -422,7 +312,7 @@ export default function CollateralsPage() {
           isLoading={loading}
           fetchCustomers={fetchCustomers}
         />
-      </Container>
-    </Box>
+      </div>
+    </div>
   )
 }
