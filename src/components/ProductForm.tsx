@@ -114,7 +114,7 @@ export default function ProductForm({ isOpen, onClose, onSave, product, isLoadin
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+        background: 'linear-gradient(135deg, #8ca3caff 0%, #5281eeff 100%)',
         color: 'white',
         fontWeight: 700
       }}>
@@ -151,7 +151,7 @@ export default function ProductForm({ isOpen, onClose, onSave, product, isLoadin
               >
                 <MenuItem value="">Chọn loại sản phẩm</MenuItem>
                 <MenuItem value="Savings Account">Tài Khoản Tiết Kiệm</MenuItem>
-                <MenuItem value="Current Account">Tài Khoản Vãng Lai</MenuItem>
+                <MenuItem value="Current Account">Tài Khoản Thanh Toán</MenuItem>
                 <MenuItem value="Term Deposit">Gửi Tiết Kiệm Có Kỳ Hạn</MenuItem>
                 <MenuItem value="Personal Loan">Vay Cá Nhân</MenuItem>
                 <MenuItem value="Home Loan">Vay Thế Chấp Nhà Đất</MenuItem>
@@ -159,6 +159,7 @@ export default function ProductForm({ isOpen, onClose, onSave, product, isLoadin
                 <MenuItem value="Business Loan">Vay Kinh Doanh</MenuItem>
                 <MenuItem value="Credit Card">Thẻ Tín Dụng</MenuItem>
                 <MenuItem value="Debit Card">Thẻ Ghi Nợ</MenuItem>
+                <MenuItem value="Bank Guarantee">Phát hành bảo lãnh</MenuItem>
                 <MenuItem value="Life Insurance">Bảo Hiểm Nhân Thọ</MenuItem>
                 <MenuItem value="Health Insurance">Bảo Hiểm Sức Khỏe</MenuItem>
                 <MenuItem value="Property Insurance">Bảo Hiểm Tài Sản</MenuItem>
@@ -169,7 +170,6 @@ export default function ProductForm({ isOpen, onClose, onSave, product, isLoadin
                 <MenuItem value="Cash Management">Quản Lý Tiền Mặt</MenuItem>
                 <MenuItem value="Trade Finance">Tài Chính Thương Mại</MenuItem>
                 <MenuItem value="Payment Services">Dịch Vụ Thanh Toán</MenuItem>
-                <MenuItem value="Safe Deposit Box">Két An Toàn</MenuItem>
                 <MenuItem value="Financial Advisory">Tư Vấn Tài Chính</MenuItem>
               </Select>
             </FormControl>
@@ -206,8 +206,6 @@ export default function ProductForm({ isOpen, onClose, onSave, product, isLoadin
                 >
                   <MenuItem value="VND">VND</MenuItem>
                   <MenuItem value="USD">USD</MenuItem>
-                  <MenuItem value="EUR">EUR</MenuItem>
-                  <MenuItem value="JPY">JPY</MenuItem>
                 </Select>
               </FormControl>
             </Box>
@@ -222,7 +220,7 @@ export default function ProductForm({ isOpen, onClose, onSave, product, isLoadin
                   name="minimum_amount"
                   value={formData.minimum_amount}
                   onChange={handleChange}
-                  placeholder="VD: 100000"
+                  placeholder="VD: 100,000"
                 />
 
               <TextField
@@ -233,7 +231,7 @@ export default function ProductForm({ isOpen, onClose, onSave, product, isLoadin
                 name="maximum_amount"
                 value={formData.maximum_amount}
                 onChange={handleChange}
-                placeholder="VD: 5000000000"
+                placeholder="VD: 500,000,000,000"
               />
             </Box>
 
@@ -353,7 +351,7 @@ export default function ProductForm({ isOpen, onClose, onSave, product, isLoadin
           disabled={isLoading || !formData.product_name.trim()}
           sx={{ 
             flex: 1,
-            background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)'
+            background: 'linear-gradient(135deg, #8ca3caff 0%, #5281eeff 100%)'
           }}
         >
           {isLoading ? 'Đang lưu...' : (product ? 'Cập Nhật Sản Phẩm' : 'Tạo Sản Phẩm')}

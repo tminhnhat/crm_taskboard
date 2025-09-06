@@ -127,38 +127,40 @@ export default function StaffCard({ staff, onEdit, onDelete, onStatusChange }: S
             </Stack>
           </Box>
           
-          <Box sx={{ ml: 2, minWidth: 140 }}>
-            <FormControl fullWidth size="small">
-              <StyledSelect
-                value={staff.status}
-                onChange={(e) => onStatusChange(staff.staff_id, e.target.value as string)}
-              >
-                <MenuItem value="active">Đang Hoạt Động</MenuItem>
-                <MenuItem value="inactive">Không Hoạt Động</MenuItem>
-              </StyledSelect>
-            </FormControl>
-          </Box>
+          {/* Đã gỡ bỏ staff status input field */}
         </CardHeader>
         
         <CardActions>
-          <ActionButton
-            startIcon={<Edit />}
-            onClick={() => onEdit(staff)}
-            color="primary"
-            variant="outlined"
-            size="small"
-          >
-            Sửa
-          </ActionButton>
-          <ActionButton
-            startIcon={<DeleteOutline />}
-            onClick={() => onDelete(staff.staff_id)}
-            color="error"
-            variant="outlined"
-            size="small"
-          >
-            Xóa
-          </ActionButton>
+          <Box sx={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <ActionButton
+              startIcon={<Edit />}
+              onClick={() => onEdit(staff)}
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
+            >
+              Sửa
+            </ActionButton>
+            <Box sx={{ flex: 1 }} />
+            <ActionButton
+              startIcon={<DeleteOutline />}
+              onClick={() => onDelete(staff.staff_id)}
+              color="error"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
+            >
+              Xóa
+            </ActionButton>
+          </Box>
         </CardActions>
       </CardContent>
     </StyledCard>

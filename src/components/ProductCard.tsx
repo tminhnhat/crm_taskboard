@@ -228,17 +228,7 @@ export default function ProductCard({ product, onEdit, onDelete, onStatusChange 
             </Stack>
           </Box>
           
-          <Box sx={{ ml: 2, minWidth: 120 }}>
-            <FormControl fullWidth size="small">
-              <StyledSelect
-                value={product.status}
-                onChange={(e) => onStatusChange(product.product_id, e.target.value as string)}
-              >
-                <MenuItem value="active">Hoạt Động</MenuItem>
-                <MenuItem value="inactive">Tạm Ngưng</MenuItem>
-              </StyledSelect>
-            </FormControl>
-          </Box>
+          {/* Đã gỡ bỏ Product Status input field */}
         </CardHeader>
         
         <Divider sx={{ my: 2 }} />

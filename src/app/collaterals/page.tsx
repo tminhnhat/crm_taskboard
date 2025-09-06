@@ -15,6 +15,10 @@ import {
   ChartBarIcon,
   CubeIcon
 } from '@heroicons/react/24/outline'
+import { 
+  Pagination, 
+  Box
+} from '@mui/material'
 
 export default function CollateralsPage() {
   const { 
@@ -38,6 +42,8 @@ export default function CollateralsPage() {
     valueRange: '',
     dateRange: ''
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const collateralsPerPage = 6 // Show 6 items per page in grid layout
 
   const stats = getCollateralStats()
 
@@ -128,6 +134,23 @@ export default function CollateralsPage() {
     })
   }, [collaterals, filters])
 
+  // Calculate total pages
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredCollaterals.length / collateralsPerPage)), [filteredCollaterals.length, collateralsPerPage])
+
+  // Reset current page when filters change or if current page is beyond total pages
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1)
+    }
+  }, [totalPages, currentPage])
+
+  // Get paginated collaterals
+  const paginatedCollaterals = useMemo(() => {
+    const startIndex = (currentPage - 1) * collateralsPerPage
+    const endIndex = startIndex + collateralsPerPage
+    return filteredCollaterals.slice(startIndex, endIndex)
+  }, [filteredCollaterals, currentPage, collateralsPerPage])
+
 
 
     const handleCloseForm = () => {
@@ -176,6 +199,7 @@ export default function CollateralsPage() {
 
   const handleFiltersChange = useCallback((newFilters: any) => {
     setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
   }, [])
 
   if (loading) {
@@ -256,7 +280,7 @@ export default function CollateralsPage() {
         {/* Results Summary */}
         <div className="flex justify-between items-center mb-6">
           <p className="text-gray-600">
-            Hiển thị {filteredCollaterals.length} trong tổng số {collaterals.length} tài sản đảm bảo
+            Hiển thị {((currentPage - 1) * collateralsPerPage) + 1}-{Math.min(currentPage * collateralsPerPage, filteredCollaterals.length)} trong tổng số {filteredCollaterals.length} tài sản đảm bảo
           </p>
           <div className="flex items-center space-x-4">
             <ChartBarIcon className="h-5 w-5 text-gray-400" />
@@ -291,7 +315,7 @@ export default function CollateralsPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredCollaterals.map((collateral: Collateral) => (
+              {paginatedCollaterals.map((collateral: Collateral) => (
                 <CollateralCard
                   key={collateral.collateral_id}
                   collateral={collateral}
@@ -300,6 +324,21 @@ export default function CollateralsPage() {
                 />
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(event, value) => setCurrentPage(value)}
+                  color="primary"
+                  size="large"
+                  showFirstButton
+                  showLastButton
+                />
+              </Box>
+            )}
           </>
         )}
 
