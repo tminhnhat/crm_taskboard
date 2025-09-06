@@ -276,7 +276,7 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
           }}>
             <Icon sx={{ fontSize: 20, color: 'primary.contrastText' }} />
           </Box>
-          <Typography variant="h6" fontWeight="medium">
+          <Typography variant="h6" fontWeight="medium" sx={{ color: 'primary.contrastText' }}>
             {title}
           </Typography>
         </Box>
