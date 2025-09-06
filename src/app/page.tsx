@@ -678,7 +678,13 @@ export default function HomePage() {
 
         {/* Quick Actions */}
         <Box>
-          <Typography variant="h4" fontWeight="700" sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h4" fontWeight="700" sx={{ 
+            mb: 4, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            color: 'text.primary'
+          }}>
             <AssessmentIcon color="primary" fontSize="large" />
             Truy Cập Nhanh
           </Typography>

@@ -588,7 +588,7 @@ export default function CreditAssessmentForm({
         color: 'white',
         fontWeight: 700
       }}>
-        <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 700, color: 'white' }}>
           {assessment ? 'Chỉnh sửa thẩm định' : 'Thẩm định mới'}
         </Typography>
         <IconButton onClick={onClose} sx={{ color: 'white' }}>
