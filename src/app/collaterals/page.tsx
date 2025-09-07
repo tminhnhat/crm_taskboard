@@ -371,14 +371,14 @@ export default function CollateralsPage() {
           </Card>
 
           <Card sx={{ 
-            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)',
-            border: '1px solid rgba(76, 175, 80, 0.2)',
+            background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
+            border: '1px solid rgba(255, 152, 0, 0.2)',
             borderRadius: 3,
-            boxShadow: '0px 2px 8px rgba(76, 175, 80, 0.08)',
+            boxShadow: '0px 2px 8px rgba(255, 152, 0, 0.08)',
             transition: 'all 0.2s ease-in-out',
             '&:hover': {
               transform: 'translateY(-2px)',
-              boxShadow: '0px 4px 16px rgba(76, 175, 80, 0.15)'
+              boxShadow: '0px 4px 16px rgba(255, 152, 0, 0.15)'
             }
           }}>
             <CardContent sx={{ p: 3 }}>
@@ -386,19 +386,28 @@ export default function CollateralsPage() {
                 <Box sx={{ 
                   p: 2, 
                   borderRadius: 2, 
-                  background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                  background: 'linear-gradient(135deg, #ff9800 0%, #ffc107 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <BankIcon sx={{ fontSize: 28, color: 'white' }} />
+                  <ScheduleIcon sx={{ fontSize: 28, color: 'white' }} />
                 </Box>
                 <Box>
                   <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                    Loại Phổ Biến
+                    Sắp Đến Hạn Đánh Giá Lại
                   </Typography>
-                  <Typography variant="h6" fontWeight="700" sx={{ color: '#4caf50' }}>
-                    {stats.mostCommonType || 'Không có'}
+                  <Typography variant="h6" fontWeight="700" sx={{ color: '#ff9800' }}>
+                    {(() => {
+                      const today = new Date();
+                      const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+                      const dueForReEvaluation = filteredCollaterals.filter(c => {
+                        if (!c.re_evaluation_date) return false;
+                        const reEvalDate = new Date(c.re_evaluation_date);
+                        return reEvalDate >= today && reEvalDate <= thirtyDaysFromNow;
+                      }).length;
+                      return dueForReEvaluation;
+                    })()}
                   </Typography>
                 </Box>
               </Box>
