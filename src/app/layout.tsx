@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/theme/ThemeProvider";
-import { ThemeCustomizerFab } from "@/components/ThemeCustomizer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,7 +17,6 @@ export default function RootLayout({
       <body className="antialiased">
         <ThemeProvider>
           {children}
-          <ThemeCustomizerFab />
         </ThemeProvider>
       </body>
     </html>

@@ -29,7 +29,8 @@ import {
   Description,
   Home,
   Search,
-  Folder
+  Folder,
+  Settings
 } from '@mui/icons-material'
 import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
 
@@ -57,7 +58,10 @@ export default function Navigation() {
     
     // Document management
     { name: 'Tài Liệu', href: '/documents', icon: Description },
-    { name: 'Mẫu Tài Liệu', href: '/templates', icon: Folder }
+    { name: 'Mẫu Tài Liệu', href: '/templates', icon: Folder },
+    
+    // Settings
+    { name: 'Cài Đặt', href: '/settings', icon: Settings }
   ]
 
   const handleDrawerToggle = () => {
