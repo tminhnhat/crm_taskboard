@@ -45,58 +45,52 @@ export default function CollateralOwnerInfoSection({
     }
   }
 
+  const [displayValues, setDisplayValues] = React.useState<{[key: string]: string}>({})
+
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name } = e.target
-    let inputValue = e.target.value
+    const { name, value } = e.target
     
-    // Remove any non-digit characters except slashes
-    inputValue = inputValue.replace(/[^\d/]/g, '')
+    // Store the display value for this field
+    setDisplayValues(prev => ({ ...prev, [name]: value }))
     
-    // Don't process if longer than 10 characters
-    if (inputValue.length > 10) return
-    
-    // Auto-format as user types
-    const digits = inputValue.replace(/\D/g, '')
-    
-    // Format with slashes
-    if (digits.length > 4) {
-      inputValue = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`
-    } else if (digits.length > 2) {
-      inputValue = `${digits.slice(0, 2)}/${digits.slice(2)}`
+    // Allow user to type freely without validation interference
+    // Only convert to ISO when we have a complete DD/MM/YYYY format
+    if (value.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+      try {
+        const [day, month, year] = value.split('/').map(Number)
+        
+        // Validate date parts
+        if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 1900 && year <= 2100) {
+          // Create ISO date string
+          const isoDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+          
+          // Validate the resulting date
+          const date = new Date(isoDate)
+          if (date.toString() !== 'Invalid Date') {
+            if (onFormDataChange) {
+              onFormDataChange(name, isoDate)
+            }
+          }
+        }
+      } catch {
+        // Invalid date - do nothing but keep the display value
+      }
     } else {
-      inputValue = digits
-    }
-
-    // For incomplete input, just show what they're typing
-    if (!inputValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      // For incomplete dates, clear the ISO value but keep the display
       if (onFormDataChange) {
-        onFormDataChange(name, '') // Clear ISO date if input is incomplete
+        onFormDataChange(name, '')
       }
-      e.target.value = inputValue // Show what they're typing
-      return
     }
+  }
 
-    // Convert to ISO format when input is complete
-    try {
-      const [day, month, year] = inputValue.split('/').map(Number)
-      // Validate date parts
-      if (month < 1 || month > 12) return
-      if (day < 1 || day > 31) return
-      if (year < 1900 || year > 2100) return
-      
-      // Create ISO date string
-      const isoDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
-      
-      // Validate the resulting date
-      const date = new Date(isoDate)
-      if (date.toString() === 'Invalid Date') return
-      
-      if (onFormDataChange) {
-        onFormDataChange(name, isoDate)
-      }
-    } catch {
-      // Invalid date - do nothing
+  // Get display value for a date field
+  const getDisplayValue = (fieldName: string, isoValue: string) => {
+    // If user is actively typing, show their input
+    if (displayValues[fieldName] !== undefined) {
+      return displayValues[fieldName]
     }
+    // Otherwise show formatted ISO value
+    return isoValue ? toVNDate(isoValue) : ''
   }
 
   const handleOwnerInfoChange = (field: string, value: string) => {
@@ -158,7 +152,7 @@ export default function CollateralOwnerInfoSection({
             <TextField
               name="valuation_date"
               label="Ngày Định Giá"
-              value={formData.valuation_date ? toVNDate(formData.valuation_date) : ''}
+              value={getDisplayValue('valuation_date', formData.valuation_date || '')}
               onChange={handleDateChange}
               placeholder="dd/mm/yyyy"
               inputProps={{ maxLength: 10 }}
@@ -194,7 +188,7 @@ export default function CollateralOwnerInfoSection({
             <TextField
               name="re_evaluation_date"
               label="Ngày Đánh Giá Lại"
-              value={formData.re_evaluation_date ? toVNDate(formData.re_evaluation_date) : ''}
+              value={getDisplayValue('re_evaluation_date', formData.re_evaluation_date || '')}
               onChange={handleDateChange}
               placeholder="dd/mm/yyyy"
               inputProps={{ maxLength: 10 }}
