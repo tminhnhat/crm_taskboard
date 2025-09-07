@@ -418,3 +418,228 @@ declare module '@mui/material/styles' {
     surface?: string;
   }
 }
+
+// Interface for custom color settings
+export interface CustomColors {
+  primary: string;
+  primaryLight: string;
+  primaryDark: string;
+  secondary: string;
+  secondaryLight: string;
+  secondaryDark: string;
+  background: string;
+  paper: string;
+  surface: string;
+  success: string;
+  warning: string;
+  error: string;
+  info: string;
+  textPrimary: string;
+  textSecondary: string;
+  divider: string;
+}
+
+// Function to create custom theme with user-defined colors
+export const createCustomTheme = (customColors: CustomColors, isDark: boolean): Theme => {
+  return createTheme({
+    palette: {
+      mode: isDark ? 'dark' : 'light',
+      primary: {
+        main: customColors.primary,
+        light: customColors.primaryLight,
+        dark: customColors.primaryDark,
+        contrastText: '#ffffff',
+      },
+      secondary: {
+        main: customColors.secondary,
+        light: customColors.secondaryLight,
+        dark: customColors.secondaryDark,
+        contrastText: '#ffffff',
+      },
+      success: {
+        main: customColors.success,
+        light: isDark ? '#a8e6cf' : '#81c784',
+        dark: isDark ? '#66bb6a' : '#388e3c',
+      },
+      warning: {
+        main: customColors.warning,
+        light: isDark ? '#ffb347' : '#ffb74d',
+        dark: '#f57c00',
+      },
+      error: {
+        main: customColors.error,
+        light: isDark ? '#ff6b6b' : '#e57373',
+        dark: '#d32f2f',
+      },
+      info: {
+        main: customColors.info,
+        light: isDark ? '#5dade2' : '#64b5f6',
+        dark: '#1976d2',
+      },
+      background: {
+        default: customColors.background,
+        paper: customColors.paper,
+      },
+      surface: customColors.surface,
+      text: {
+        primary: customColors.textPrimary,
+        secondary: customColors.textSecondary,
+      },
+      divider: customColors.divider,
+    },
+    typography: {
+      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+      h1: {
+        fontWeight: 500,
+        fontSize: '2.5rem',
+        lineHeight: 1.2,
+        color: customColors.textPrimary,
+      },
+      h2: {
+        fontWeight: 500,
+        fontSize: '2rem',
+        lineHeight: 1.3,
+        color: customColors.textPrimary,
+      },
+      h3: {
+        fontWeight: 500,
+        fontSize: '1.75rem',
+        lineHeight: 1.3,
+        color: customColors.textPrimary,
+      },
+      h4: {
+        fontWeight: 500,
+        fontSize: '1.5rem',
+        lineHeight: 1.4,
+        color: customColors.textPrimary,
+      },
+      h5: {
+        fontWeight: 500,
+        fontSize: '1.25rem',
+        lineHeight: 1.4,
+        color: customColors.textPrimary,
+      },
+      h6: {
+        fontWeight: 500,
+        fontSize: '1rem',
+        lineHeight: 1.5,
+        color: customColors.textPrimary,
+      },
+      body1: {
+        color: customColors.textPrimary,
+      },
+      body2: {
+        color: customColors.textSecondary,
+      },
+      button: {
+        textTransform: 'none',
+        fontWeight: 500,
+        color: customColors.textPrimary,
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+    components: {
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            borderRadius: 16,
+            boxShadow: isDark 
+              ? '0px 0px 1px rgba(255,255,255,0.05), 0px 0px 2px rgba(255,255,255,0.05), 0px 4px 8px rgba(0,0,0,0.2)'
+              : '0px 0px 1px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.05), 0px 4px 8px rgba(0,0,0,0.05)',
+            transition: 'all 0.2s ease-in-out',
+            border: isDark 
+              ? '1px solid rgba(255, 255, 255, 0.1)'
+              : `1px solid ${customColors.divider}`,
+            backgroundColor: customColors.paper,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: isDark
+                ? '0px 0px 2px rgba(255,255,255,0.1), 0px 2px 8px rgba(255,255,255,0.1), 0px 8px 16px rgba(0,0,0,0.3)'
+                : '0px 0px 2px rgba(0,0,0,0.1), 0px 2px 8px rgba(0,0,0,0.1), 0px 8px 16px rgba(0,0,0,0.1)',
+            },
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 12,
+            textTransform: 'none',
+            fontWeight: 600,
+            padding: '10px 24px',
+            fontSize: '0.875rem',
+            boxShadow: 'none',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              boxShadow: isDark ? '0px 4px 8px rgba(0,0,0,0.2)' : '0px 4px 8px rgba(0,0,0,0.1)',
+              transform: 'translateY(-1px)',
+            },
+          },
+          contained: {
+            boxShadow: isDark ? '0px 2px 4px rgba(0,0,0,0.2)' : '0px 2px 4px rgba(0,0,0,0.1)',
+            '&:hover': {
+              boxShadow: isDark ? '0px 4px 8px rgba(0,0,0,0.3)' : '0px 4px 8px rgba(0,0,0,0.15)',
+              transform: 'translateY(-1px)',
+            },
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 12,
+              backgroundColor: customColors.paper,
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: customColors.primary,
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: customColors.primary,
+                borderWidth: 2,
+              },
+            },
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            borderRadius: 16,
+            boxShadow: isDark 
+              ? '0px 4px 16px rgba(0,0,0,0.3), 0px 8px 24px rgba(0,0,0,0.2)'
+              : '0px 4px 16px rgba(0,0,0,0.1), 0px 8px 24px rgba(0,0,0,0.1)',
+            border: isDark 
+              ? '1px solid rgba(255, 255, 255, 0.1)'
+              : `1px solid ${customColors.divider}`,
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            borderRadius: 16,
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none',
+          },
+          elevation1: {
+            boxShadow: isDark
+              ? '0px 2px 1px -1px rgba(0,0,0,0.4), 0px 1px 1px 0px rgba(0,0,0,0.28), 0px 1px 3px 0px rgba(0,0,0,0.24)'
+              : '0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)',
+          },
+          elevation2: {
+            boxShadow: isDark
+              ? '0px 3px 1px -2px rgba(0,0,0,0.4), 0px 2px 2px 0px rgba(0,0,0,0.28), 0px 1px 5px 0px rgba(0,0,0,0.24)'
+              : '0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)',
+          },
+        },
+      },
+    },
+  });
+};
