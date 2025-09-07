@@ -210,7 +210,7 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
             >
               Sửa
             </ActionButton>
-            <Box sx={{ flex: 1, display: { xs: 'block', sm: 'none' } }} />
+            <Box sx={{ flex: 1, display: { xs: 'row', sm: 'row' } }} />
             <ActionButton
               startIcon={<DeleteOutline />}
               onClick={() => onDelete(contract.contract_id)}
