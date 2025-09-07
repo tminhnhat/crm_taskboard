@@ -388,6 +388,19 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
             </Box>
           </Box>
 
+          {/* Re-evaluation Date */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2 }}>
+            <Assessment sx={{ color: '#344767', fontSize: 20 }} />
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Ngày đánh giá lại:
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#344767', fontWeight: 600 }}>
+                {collateral.re_evaluation_date ? new Date(collateral.re_evaluation_date).toLocaleDateString('vi-VN') : 'Chưa xác định'}
+              </Typography>
+            </Box>
+          </Box>
+
           {/* Description */}
           {collateral.description && (
             <Box sx={{ p: 2, borderLeft: 4, borderColor: '#344767', bgcolor: 'rgba(248, 250, 252, 0.5)' }}>

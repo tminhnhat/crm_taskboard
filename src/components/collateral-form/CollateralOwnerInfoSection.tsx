@@ -8,7 +8,7 @@ import {
   InputAdornment,
   Paper
 } from '@mui/material'
-import { DateRange, Today, Person, Group } from '@mui/icons-material'
+import { DateRange, Today, Person, Group, Schedule } from '@mui/icons-material'
 import { CollateralSectionProps, CollateralOwnerInfo } from './types'
 import { toVNDate } from '@/lib/date'
 
@@ -32,7 +32,21 @@ export default function CollateralOwnerInfoSection({
     }
   }
 
+  const setNextYearDate = () => {
+    const nextYear = new Date()
+    nextYear.setFullYear(nextYear.getFullYear() + 1)
+    const year = nextYear.getFullYear()
+    const month = String(nextYear.getMonth() + 1).padStart(2, '0')
+    const day = String(nextYear.getDate()).padStart(2, '0')
+    const isoDate = `${year}-${month}-${day}`
+    
+    if (onFormDataChange) {
+      onFormDataChange('re_evaluation_date', isoDate)
+    }
+  }
+
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name } = e.target
     let inputValue = e.target.value
     
     // Remove any non-digit characters except slashes
@@ -56,7 +70,7 @@ export default function CollateralOwnerInfoSection({
     // For incomplete input, just show what they're typing
     if (!inputValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
       if (onFormDataChange) {
-        onFormDataChange('valuation_date', '') // Clear ISO date if input is incomplete
+        onFormDataChange(name, '') // Clear ISO date if input is incomplete
       }
       e.target.value = inputValue // Show what they're typing
       return
@@ -78,7 +92,7 @@ export default function CollateralOwnerInfoSection({
       if (date.toString() === 'Invalid Date') return
       
       if (onFormDataChange) {
-        onFormDataChange('valuation_date', isoDate)
+        onFormDataChange(name, isoDate)
       }
     } catch {
       // Invalid date - do nothing
@@ -137,38 +151,78 @@ export default function CollateralOwnerInfoSection({
       <Divider sx={{ mb: 3 }} />
       
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {/* Valuation Date */}
-        <Box sx={{ maxWidth: { xs: '100%', md: '50%' } }}>
-          <TextField
-            label="Ngày Định Giá"
-            value={formData.valuation_date ? toVNDate(formData.valuation_date) : ''}
-            onChange={handleDateChange}
-            placeholder="dd/mm/yyyy"
-            inputProps={{ maxLength: 10 }}
-            error={!!(formData.valuation_date && !formData.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/))}
-            helperText={
-              formData.valuation_date && !formData.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/)
-                ? 'Vui lòng chọn ngày hợp lệ'
-                : 'Ngày thực hiện định giá tài sản'
-            }
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <DateRange />
-                </InputAdornment>
-              )
-            }}
-            fullWidth
-          />
-          <Box sx={{ mt: 1 }}>
-            <Chip 
-              label="Hôm nay"
-              size="small"
-              icon={<Today />}
-              onClick={setTodayDate}
-              variant="outlined"
-              sx={{ cursor: 'pointer' }}
+        {/* Date Fields Grid */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+          {/* Valuation Date */}
+          <Box>
+            <TextField
+              name="valuation_date"
+              label="Ngày Định Giá"
+              value={formData.valuation_date ? toVNDate(formData.valuation_date) : ''}
+              onChange={handleDateChange}
+              placeholder="dd/mm/yyyy"
+              inputProps={{ maxLength: 10 }}
+              error={!!(formData.valuation_date && !formData.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/))}
+              helperText={
+                formData.valuation_date && !formData.valuation_date.match(/^\d{4}-\d{2}-\d{2}$/)
+                  ? 'Vui lòng chọn ngày hợp lệ'
+                  : 'Ngày thực hiện định giá tài sản'
+              }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <DateRange />
+                  </InputAdornment>
+                )
+              }}
+              fullWidth
             />
+            <Box sx={{ mt: 1 }}>
+              <Chip 
+                label="Hôm nay"
+                size="small"
+                icon={<Today />}
+                onClick={setTodayDate}
+                variant="outlined"
+                sx={{ cursor: 'pointer' }}
+              />
+            </Box>
+          </Box>
+
+          {/* Re-evaluation Date */}
+          <Box>
+            <TextField
+              name="re_evaluation_date"
+              label="Ngày Đánh Giá Lại"
+              value={formData.re_evaluation_date ? toVNDate(formData.re_evaluation_date) : ''}
+              onChange={handleDateChange}
+              placeholder="dd/mm/yyyy"
+              inputProps={{ maxLength: 10 }}
+              error={!!(formData.re_evaluation_date && !formData.re_evaluation_date.match(/^\d{4}-\d{2}-\d{2}$/))}
+              helperText={
+                formData.re_evaluation_date && !formData.re_evaluation_date.match(/^\d{4}-\d{2}-\d{2}$/)
+                  ? 'Vui lòng chọn ngày hợp lệ'
+                  : 'Ngày cần đánh giá lại tài sản'
+              }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Schedule />
+                  </InputAdornment>
+                )
+              }}
+              fullWidth
+            />
+            <Box sx={{ mt: 1 }}>
+              <Chip 
+                label="+1 năm"
+                size="small"
+                icon={<Schedule />}
+                onClick={setNextYearDate}
+                variant="outlined"
+                sx={{ cursor: 'pointer' }}
+              />
+            </Box>
           </Box>
         </Box>
 

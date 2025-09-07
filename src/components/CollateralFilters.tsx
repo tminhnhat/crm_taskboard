@@ -25,6 +25,7 @@ interface CollateralFiltersProps {
     customerId: string
     valueRange: string
     dateRange: string
+    reEvaluationDateRange: string
   }) => void
   availableCustomers: Array<{ customer_id: number; full_name: string }>
 }
@@ -39,7 +40,8 @@ export default function CollateralFilters({
     status: '',
     customerId: '',
     valueRange: '',
-    dateRange: ''
+    dateRange: '',
+    reEvaluationDateRange: ''
   })
 
   const [isExpanded, setIsExpanded] = useState(false)
@@ -62,7 +64,8 @@ export default function CollateralFilters({
       status: '',
       customerId: '',
       valueRange: '',
-      dateRange: ''
+      dateRange: '',
+      reEvaluationDateRange: ''
     })
   }
 
@@ -207,6 +210,23 @@ export default function CollateralFilters({
                   <MenuItem value="older">Trên 1 Năm</MenuItem>
                 </Select>
               </FormControl>
+
+              {/* Re-evaluation Date Range */}
+              <FormControl fullWidth size="small">
+                <InputLabel>Thời Gian Đánh Giá Lại</InputLabel>
+                <Select
+                  value={filters.reEvaluationDateRange}
+                  onChange={(e) => handleFilterChange('reEvaluationDateRange', e.target.value)}
+                  label="Thời Gian Đánh Giá Lại"
+                >
+                  <MenuItem value="">Tất Cả Thời Gian</MenuItem>
+                  <MenuItem value="overdue">Quá Hạn</MenuItem>
+                  <MenuItem value="month">Tháng Này</MenuItem>
+                  <MenuItem value="quarter">Quý Này</MenuItem>
+                  <MenuItem value="year">Năm Này</MenuItem>
+                  <MenuItem value="future">Trong Tương Lai</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
           </Box>
         </Collapse>
@@ -270,6 +290,20 @@ export default function CollateralFilters({
                     filters.dateRange === 'older' ? 'Trên 1 năm' : filters.dateRange
                   }`}
                   color="error"
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+              {filters.reEvaluationDateRange && (
+                <Chip
+                  label={`Đánh giá lại: ${
+                    filters.reEvaluationDateRange === 'overdue' ? 'Quá hạn' :
+                    filters.reEvaluationDateRange === 'month' ? 'Tháng này' :
+                    filters.reEvaluationDateRange === 'quarter' ? 'Quý này' :
+                    filters.reEvaluationDateRange === 'year' ? 'Năm này' :
+                    filters.reEvaluationDateRange === 'future' ? 'Trong tương lai' : filters.reEvaluationDateRange
+                  }`}
+                  color="warning"
                   variant="outlined"
                   size="small"
                 />

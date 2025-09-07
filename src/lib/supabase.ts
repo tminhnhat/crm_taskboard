@@ -500,6 +500,7 @@ export interface Collateral {
   description: string | null
   value: number | null // NUMERIC(18,0)
   valuation_date: string | null // DATE
+  re_evaluation_date: string | null // DATE - Ngày đánh giá lại tài sản
   legal_status: string | null // legal status
   location: string | null
   owner_info: string | null
