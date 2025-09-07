@@ -346,10 +346,6 @@ export default function AssessmentsPage() {
             <CreditAssessmentCard
               key={assessment.assessment_id}
               assessment={assessment}
-              onView={() => {
-                setSelectedAssessment(assessment)
-                setShowForm(true)
-              }}
               onEdit={() => {
                 setSelectedAssessment(assessment)
                 setShowForm(true)
