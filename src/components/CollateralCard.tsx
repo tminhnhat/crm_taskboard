@@ -471,7 +471,7 @@ export default function CollateralCard({ collateral, onEdit, onDelete }: Collate
           >
             Sửa
           </ActionButton>
-          <Box sx={{ flex: 1, display: { xs: 'block', sm: 'none' } }} />
+          <Box sx={{ flex: 1, display: { xs: 'row', sm: 'row' } }} />
           <ActionButton
             startIcon={<Delete />}
             onClick={() => onDelete(collateral)}
