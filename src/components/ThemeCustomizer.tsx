@@ -21,6 +21,7 @@ import {
   Divider,
   Chip,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -105,6 +106,7 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
   const [lightColors, setLightColors] = useState<CustomColors>(defaultLightColors);
   const [darkColors, setDarkColors] = useState<CustomColors>(defaultDarkColors);
   const [previewMode, setPreviewMode] = useState<'light' | 'dark'>('light');
+  const [loading, setLoading] = useState(false);
 
   // Load current theme settings
   useEffect(() => {
@@ -126,21 +128,47 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
     }
   };
 
-  const handleSaveTheme = () => {
+  const handleSaveTheme = async () => {
     const settings: ThemeSettings = { lightColors, darkColors };
-    updateThemeSettings(settings);
-    alert('Cài đặt theme đã được lưu!');
+    setLoading(true);
+    try {
+      await updateThemeSettings(settings);
+      alert('Cài đặt theme đã được lưu thành công trên Vercel Blob!');
+    } catch (error) {
+      console.error('Error saving theme:', error);
+      alert('Lỗi khi lưu cài đặt theme!');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResetTheme = () => {
+  const handleResetTheme = async () => {
+    setLoading(true);
     setLightColors(defaultLightColors);
     setDarkColors(defaultDarkColors);
     const defaultSettings: ThemeSettings = {
       lightColors: defaultLightColors,
       darkColors: defaultDarkColors,
     };
-    updateThemeSettings(defaultSettings);
-    localStorage.removeItem('customThemeSettings');
+    
+    try {
+      // Delete theme settings from Vercel Blob
+      await fetch('/api/theme', { method: 'DELETE' });
+      // Also remove from localStorage backup
+      localStorage.removeItem('customThemeSettings');
+      
+      // Apply default theme
+      await updateThemeSettings(defaultSettings);
+      alert('Theme đã được reset về mặc định trên Vercel Blob!');
+    } catch (error) {
+      console.error('Error resetting theme:', error);
+      // Fallback to local reset
+      localStorage.removeItem('customThemeSettings');
+      await updateThemeSettings(defaultSettings);
+      alert('Theme đã được reset về mặc định (local fallback)!');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExportTheme = () => {
@@ -155,19 +183,23 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
     linkElement.click();
   };
 
-  const handleImportTheme = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportTheme = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setLoading(true);
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
           const settings: ThemeSettings = JSON.parse(e.target?.result as string);
           setLightColors(settings.lightColors);
           setDarkColors(settings.darkColors);
-          updateThemeSettings(settings);
-          alert('Theme đã được import thành công!');
+          await updateThemeSettings(settings);
+          alert('Theme đã được import thành công vào Vercel Blob!');
         } catch (error) {
+          console.error('Error importing theme:', error);
           alert('Lỗi khi import theme file!');
+        } finally {
+          setLoading(false);
         }
       };
       reader.readAsText(file);
@@ -186,10 +218,10 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
     const colors = mode === 'light' ? lightColors : darkColors;
     return (
       <Grid container spacing={2} alignItems="center">
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Typography variant="body2">{label}</Typography>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <TextField
             type="color"
             value={colors[colorKey]}
@@ -198,7 +230,7 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
             sx={{ '& .MuiInputBase-input': { padding: '4px', width: '50px', height: '30px' } }}
           />
         </Grid>
-        <Grid item xs={2}>
+        <Grid size={2}>
           <Box
             sx={{
               width: 30,
@@ -226,13 +258,13 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Màu chính" colorKey="primary" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Màu chính nhạt" colorKey="primaryLight" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Màu chính đậm" colorKey="primaryDark" mode={mode} />
             </Grid>
           </Grid>
@@ -245,13 +277,13 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Màu phụ" colorKey="secondary" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Màu phụ nhạt" colorKey="secondaryLight" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Màu phụ đậm" colorKey="secondaryDark" mode={mode} />
             </Grid>
           </Grid>
@@ -264,13 +296,13 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Nền chính" colorKey="background" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Nền card/paper" colorKey="paper" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Nền surface" colorKey="surface" mode={mode} />
             </Grid>
           </Grid>
@@ -283,16 +315,16 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Thành công" colorKey="success" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Cảnh báo" colorKey="warning" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Lỗi" colorKey="error" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Thông tin" colorKey="info" mode={mode} />
             </Grid>
           </Grid>
@@ -305,13 +337,13 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Chữ chính" colorKey="textPrimary" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Chữ phụ" colorKey="textSecondary" mode={mode} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ColorInput label="Đường viền" colorKey="divider" mode={mode} />
             </Grid>
           </Grid>
@@ -344,8 +376,15 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
 
       <DialogContent dividers sx={{ padding: 2 }}>
         <Alert severity="info" sx={{ mb: 2 }}>
-          Tùy chỉnh màu sắc cho toàn bộ ứng dụng CRM. Thay đổi sẽ được áp dụng ngay lập tức và lưu tự động.
+          Tùy chỉnh màu sắc cho toàn bộ ứng dụng CRM. Thay đổi sẽ được áp dụng ngay lập tức và lưu tự động trên Vercel Blob Storage để đảm bảo tính toàn cầu và persistence trong môi trường serverless.
         </Alert>
+
+        {loading && (
+          <Alert severity="warning" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CircularProgress size={20} />
+            Đang xử lý cài đặt theme trên Vercel Blob...
+          </Alert>
+        )}
 
         <Box mb={3}>
           <FormControlLabel
@@ -366,7 +405,7 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
           <Typography variant="h6" gutterBottom>Xem Trước Màu Sắc</Typography>
           <Grid container spacing={1}>
             {Object.entries(previewMode === 'light' ? lightColors : darkColors).map(([key, color]) => (
-              <Grid item key={key}>
+              <Grid size="auto" key={key}>
                 <Chip
                   label={key}
                   sx={{
@@ -398,8 +437,13 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
           id="import-theme-input"
         />
         <label htmlFor="import-theme-input">
-          <Button variant="outlined" component="span" startIcon={<ImportIcon />}>
-            Import
+          <Button 
+            variant="outlined" 
+            component="span" 
+            startIcon={loading ? <CircularProgress size={20} /> : <ImportIcon />}
+            disabled={loading}
+          >
+            {loading ? 'Importing...' : 'Import'}
           </Button>
         </label>
         
@@ -414,18 +458,20 @@ export default function ThemeCustomizer({ open, onClose }: ThemeCustomizerProps)
         <Button
           variant="outlined"
           onClick={handleResetTheme}
-          startIcon={<ResetIcon />}
+          startIcon={loading ? <CircularProgress size={20} /> : <ResetIcon />}
           color="warning"
+          disabled={loading}
         >
-          Reset
+          {loading ? 'Đang reset...' : 'Reset'}
         </Button>
         
         <Button
           variant="contained"
           onClick={handleSaveTheme}
-          startIcon={<SaveIcon />}
+          startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+          disabled={loading}
         >
-          Lưu Theme
+          {loading ? 'Đang lưu...' : 'Lưu Theme'}
         </Button>
       </DialogActions>
     </Dialog>
