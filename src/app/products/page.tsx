@@ -298,55 +298,7 @@ export default function ProductsPage() {
                 </Typography>
               </CardContent>
             </Card>
-            
-            {/* Active Products */}
-            <Card elevation={0} sx={{ 
-              bgcolor: 'background.paper',
-              border: 1,
-              borderColor: 'divider',
-              '&:hover': { 
-                transform: 'translateY(-2px)', 
-                boxShadow: '0px 4px 12px rgba(130, 214, 22, 0.1)' 
-              },
-              transition: 'all 0.2s ease-in-out'
-            }}>
-              <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                  Hoạt Động
-                </Typography>
-                <Typography variant="h6" fontWeight="700" sx={{ color: 'success.main' }}>
-                  {stats.active}
-                </Typography>
-              </CardContent>
-            </Card>
-            
-            {/* Inactive Products */}
-            <Card elevation={0} sx={{ 
-              bgcolor: 'background.paper',
-              border: 1,
-              borderColor: 'divider',
-              '&:hover': { 
-                transform: 'translateY(-2px)', 
-                boxShadow: '0px 4px 12px rgba(123, 128, 154, 0.1)' 
-              },
-              transition: 'all 0.2s ease-in-out'
-            }}>
-              <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <WarningIcon sx={{ color: 'warning.main', fontSize: 20 }} />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                  Tạm Dừng
-                </Typography>
-                <Typography variant="h6" fontWeight="700" sx={{ color: 'warning.main' }}>
-                  {stats.inactive}
-                </Typography>
-              </CardContent>
-            </Card>
-            
+
             {/* Loan Products */}
             <Card elevation={0} sx={{ 
               bgcolor: 'background.paper',
