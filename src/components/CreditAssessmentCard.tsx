@@ -23,7 +23,7 @@ import { StyledCard, ActionButton } from './StyledComponents'
 
 interface CreditAssessmentCardProps {
   assessment: any
-  onView: (assessment: any) => void
+  // onView: (assessment: any) => void
   onEdit: (assessment: any) => void
   onDelete: (assessment: any) => void
 }
@@ -45,7 +45,7 @@ const getStatusConfig = (status: string) => {
 
 export default function CreditAssessmentCard({
   assessment,
-  onView,
+  // onView,
   onEdit,
   onDelete,
 }: CreditAssessmentCardProps) {
@@ -130,22 +130,7 @@ export default function CreditAssessmentCard({
           flexDirection: { xs: 'row', sm: 'row' },
           justifyContent: { xs: 'center', sm: 'flex-end' }
         }}>
-          <ActionButton
-            size="small"
-            startIcon={<Visibility />}
-            onClick={() => onView(assessment)}
-            variant="outlined"
-            sx={{
-              borderColor: '#00acc1',
-              color: '#00acc1',
-              '&:hover': {
-                borderColor: '#00acc1',
-                bgcolor: 'rgba(0, 172, 193, 0.04)'
-              }
-            }}
-          >
-            Xem
-          </ActionButton>
+          {/* View button removed */}
           <ActionButton
             size="small"
             startIcon={<Edit />}
@@ -162,6 +147,7 @@ export default function CreditAssessmentCard({
           >
             Sửa
           </ActionButton>
+          <Box sx={{ flex: 1, display: { xs: 'row', sm: 'row' } }} />
           <ActionButton
             size="small"
             startIcon={<Delete />}
