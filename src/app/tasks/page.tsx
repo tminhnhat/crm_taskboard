@@ -141,14 +141,12 @@ export default function TaskDashboard() {
     }
   }
 
-  const handleDeleteTask = async (taskId: number) => {
-    if (confirm('Bạn có chắc chắn muốn xóa công việc này không?')) {
-      try {
-        await deleteTask(taskId)
-      } catch (err) {
-        console.error('Failed to delete task:', err)
-        // You could show a toast notification here
-      }
+  const handleDeleteTask = async (taskId: number, deleteRecurring: boolean = false) => {
+    try {
+      await deleteTask(taskId, deleteRecurring)
+    } catch (err) {
+      console.error('Failed to delete task:', err)
+      // You could show a toast notification here
     }
   }
 

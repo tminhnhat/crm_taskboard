@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Task, TaskStatusEnum } from '@/lib/supabase'
 import { toVNDate } from '@/lib/date'
 import {
@@ -9,6 +9,12 @@ import {
   Select,
   MenuItem,
   FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Chip
 } from '@mui/material'
 import { 
   Schedule,
@@ -21,7 +27,9 @@ import {
   Event,
   AccessTime,
   Edit,
-  DeleteOutline
+  DeleteOutline,
+  Repeat,
+  DeleteSweep
 } from '@mui/icons-material'
 import {
   StyledCard,
@@ -34,7 +42,7 @@ import {
 interface TaskCardProps {
   task: Task
   onEdit: (task: Task) => void
-  onDelete: (taskId: number) => void
+  onDelete: (taskId: number, deleteRecurring?: boolean) => void
   onStatusChange: (taskId: number, status: TaskStatusEnum) => void
 }
 
@@ -79,11 +87,17 @@ const taskTypeLabels: { [key: string]: string } = {
 }
 
 export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: TaskCardProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  
   const StatusIcon = statusIcons[task.task_status]
   // Check if task is overdue by comparing ISO dates to avoid timezone issues
   const isOverdue = task.task_due_date && 
     new Date(task.task_due_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && 
     task.task_status !== 'completed'
+
+  // Check if this task is part of a recurring series
+  const isRecurringTask = task.is_recurring || task.parent_task_id
+  const isChildTask = Boolean(task.parent_task_id)
 
   // Helper function to format date using utility function
   const formatDateDisplay = (dateString: string | null): string => {
@@ -93,6 +107,19 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
     } catch {
       return '';
     }
+  }
+
+  const handleDeleteClick = () => {
+    if (isRecurringTask) {
+      setDeleteDialogOpen(true)
+    } else {
+      onDelete(task.task_id)
+    }
+  }
+
+  const handleDeleteConfirm = (deleteRecurring: boolean = false) => {
+    onDelete(task.task_id, deleteRecurring)
+    setDeleteDialogOpen(false)
   }
 
   return (
@@ -186,6 +213,16 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
                 sx={{ fontSize: '0.75rem' }}
               />
             )}
+            {isRecurringTask && (
+              <Chip
+                icon={<Repeat />}
+                label={isChildTask ? 'Phần lặp lại' : 'Lặp lại'}
+                size="small"
+                color="info"
+                variant="outlined"
+                sx={{ fontSize: '0.75rem' }}
+              />
+            )}
           </Stack>
         </Box>
 
@@ -266,7 +303,7 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
           <Box sx={{ flex: 1 }} />
           <ActionButton
             startIcon={<DeleteOutline />}
-            onClick={() => onDelete(task.task_id)}
+            onClick={handleDeleteClick}
             variant="outlined"
             size="small"
             sx={{
@@ -288,6 +325,56 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
           </ActionButton>
         </Box>
       </CardContent>
+
+      {/* Delete Confirmation Dialog for Recurring Tasks */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Repeat color="primary" />
+            Xóa Công Việc Lặp Lại
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Đây là công việc {isChildTask ? 'thuộc chuỗi lặp lại' : 'có thiết lập lặp lại'}. 
+            Bạn muốn xóa như thế nào?
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<DeleteOutline />}
+              onClick={() => handleDeleteConfirm(false)}
+              fullWidth
+              sx={{ justifyContent: 'flex-start' }}
+            >
+              <Box sx={{ textAlign: 'left' }}>
+                <Typography variant="subtitle2">Chỉ xóa công việc này</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Các công việc khác trong chuỗi lặp lại vẫn được giữ
+                </Typography>
+              </Box>
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteSweep />}
+              onClick={() => handleDeleteConfirm(true)}
+              fullWidth
+              sx={{ justifyContent: 'flex-start' }}
+            >
+              <Box sx={{ textAlign: 'left' }}>
+                <Typography variant="subtitle2">Xóa toàn bộ chuỗi lặp lại</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Xóa tất cả công việc trong chuỗi lặp lại này
+                </Typography>
+              </Box>
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Hủy</Button>
+        </DialogActions>
+      </Dialog>
     </StyledCard>
   )
 }

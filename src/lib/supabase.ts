@@ -70,6 +70,8 @@ export type TaskStatusEnum = 'needsAction' | 'inProgress' | 'completed' | 'delet
 
 export type TaskPriority = 'Do first' | 'Schedule' | 'Delegate' | 'Eliminate'
 
+export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly'
+
 export interface Task {
   task_id: number
   task_name: string
@@ -90,6 +92,13 @@ export interface Task {
   timezone_offset: number
   timezone: string
   google_task_id: string | null
+  // Recurring task fields
+  recurrence_type: RecurrenceType
+  recurrence_interval: number
+  recurrence_end_date: string | null
+  recurrence_duration_months: number | null
+  is_recurring: boolean
+  parent_task_id: number | null
 }
 
 // Customer types
