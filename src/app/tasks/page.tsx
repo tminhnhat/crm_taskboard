@@ -531,9 +531,13 @@ export default function TaskDashboard() {
                   background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
                   color: 'white'
                 }}>
-                  <Typography variant="body2" fontWeight="700">
+                    <Typography 
+                    variant="body2" 
+                    fontWeight="700"
+                    sx={{ color: 'secondary.light', textShadow: '0 1px 4px rgba(52, 71, 103, 0.2)' }}
+                    >
                     {Math.round((stats.completed / stats.total) * 100)}%
-                  </Typography>
+                    </Typography>
                 </Box>
               </Box>
               <LinearProgress 
