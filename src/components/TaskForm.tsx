@@ -577,15 +577,19 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
                                   size="small"
                                   variant="outlined"
                                   onClick={() => {
+                                    // Use start date if available and valid, otherwise use current date
+                                    let baseDate: Date
                                     if (formData.task_date_start && isValidDate(formData.task_date_start)) {
-                                      const startDate = new Date(toISODate(formData.task_date_start))
-                                      startDate.setMonth(startDate.getMonth() + item.months)
-                                      setFormData(prev => ({
-                                        ...prev,
-                                        recurrence_end_date: toVNDate(startDate.toISOString().split('T')[0]),
-                                        recurrence_duration_months: null
-                                      }))
+                                      baseDate = new Date(toISODate(formData.task_date_start))
+                                    } else {
+                                      baseDate = new Date()
                                     }
+                                    baseDate.setMonth(baseDate.getMonth() + item.months)
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      recurrence_end_date: toVNDate(baseDate.toISOString().split('T')[0]),
+                                      recurrence_duration_months: null
+                                    }))
                                   }}
                                   sx={{ cursor: 'pointer' }}
                                 />
