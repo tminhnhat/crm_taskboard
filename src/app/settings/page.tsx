@@ -31,6 +31,7 @@ import {
   Settings as SettingsIcon,
   BrightnessMedium as BrightnessIcon,
   ColorLens as ColorLensIcon,
+  Diamond as DiamondIcon,
 } from '@mui/icons-material';
 import { useTheme } from '@/theme/ThemeProvider';
 import Navigation from '@/components/Navigation';
@@ -99,7 +100,7 @@ const defaultDarkColors: CustomColors = {
 };
 
 // Bright theme presets
-const themePresets = [
+const brightThemePresets = [
   {
     name: 'Vibrant Ocean',
     description: 'Màu xanh dương tươi sáng và năng động',
@@ -129,6 +130,40 @@ const themePresets = [
     description: 'Màu xanh điện tử và sống động',
     file: 'electric-blue.json',
     preview: '#3b82f6'
+  }
+];
+
+// Luxury theme presets
+const luxuryThemePresets = [
+  {
+    name: 'Royal Burgundy',
+    description: 'Đỏ burgundy hoàng gia với điểm nhấn vàng sang trọng',
+    file: 'royal-burgundy.json',
+    preview: '#8B1538'
+  },
+  {
+    name: 'Elegant Gold',
+    description: 'Vàng thanh lịch với tông nâu ấm áp và tinh tế',
+    file: 'elegant-gold.json',
+    preview: '#D4AF37'
+  },
+  {
+    name: 'Midnight Navy',
+    description: 'Xanh navy đậm với điểm nhấn bạc sang trọng',
+    file: 'midnight-navy.json',
+    preview: '#1B263B'
+  },
+  {
+    name: 'Emerald Luxury',
+    description: 'Xanh ngọc lục bảo với chi tiết vàng quý phái',
+    file: 'emerald-luxury.json',
+    preview: '#064E3B'
+  },
+  {
+    name: 'Platinum Elite',
+    description: 'Bạch kim tinh tế với xanh dương nhẹ nhàng',
+    file: 'platinum-elite.json',
+    preview: '#71717A'
   }
 ];
 
@@ -461,7 +496,7 @@ export default function SettingsPage() {
                 </Typography>
 
                 <Grid container spacing={2}>
-                  {themePresets.map((preset) => (
+                  {brightThemePresets.map((preset) => (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={preset.file}>
                       <Paper
                         elevation={2}
@@ -503,6 +538,84 @@ export default function SettingsPage() {
                             startIcon={<ColorLensIcon />}
                             disabled={loading}
                             sx={{ borderColor: preset.preview, color: preset.preview }}
+                          >
+                            Áp dụng
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* Luxury Theme Presets Section */}
+            <Card elevation={1} sx={{ mb: 4, backgroundColor: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)' }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={2} mb={3}>
+                  <DiamondIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Theme Sang Trọng Cao Cấp
+                  </Typography>
+                </Box>
+                
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Lựa chọn các theme sang trọng và tinh tế cho doanh nghiệp cao cấp:
+                </Typography>
+
+                <Grid container spacing={2}>
+                  {luxuryThemePresets.map((preset) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={preset.file}>
+                      <Paper
+                        elevation={3}
+                        sx={{
+                          p: 2.5,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          border: '2px solid transparent',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.8) 100%)',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            borderColor: preset.preview,
+                            boxShadow: `0 10px 25px -5px ${preset.preview}20, 0 10px 10px -5px ${preset.preview}10`,
+                          },
+                        }}
+                        onClick={() => handleImportPreset(preset.file)}
+                      >
+                        <Box display="flex" alignItems="center" gap={2} mb={1.5}>
+                          <Box
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: '8px',
+                              background: `linear-gradient(135deg, ${preset.preview} 0%, ${preset.preview}80 100%)`,
+                              border: '2px solid white',
+                              boxShadow: `0 4px 8px ${preset.preview}30`,
+                            }}
+                          />
+                          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                            {preset.name}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.5 }}>
+                          {preset.description}
+                        </Typography>
+                        <Box mt={1.5} display="flex" justifyContent="center">
+                          <Button 
+                            size="small" 
+                            variant="outlined"
+                            startIcon={<DiamondIcon />}
+                            disabled={loading}
+                            sx={{ 
+                              borderColor: preset.preview, 
+                              color: preset.preview,
+                              fontWeight: 'bold',
+                              '&:hover': {
+                                backgroundColor: `${preset.preview}10`,
+                                borderColor: preset.preview,
+                              }
+                            }}
                           >
                             Áp dụng
                           </Button>
