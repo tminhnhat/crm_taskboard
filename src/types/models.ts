@@ -37,9 +37,6 @@ export interface Customer extends BaseModel {
   annual_revenue: string | null
   code: string;
   name: string;
-  email: string;
-  phone: string;
-  address: string;
 }
 
 export interface CreditAssessment extends BaseModel {
