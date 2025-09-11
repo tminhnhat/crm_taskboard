@@ -23,6 +23,8 @@ import {
 } from '@mui/icons-material'
 import { useStaff } from '@/hooks/useStaff'
 import { Staff } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from "@/theme/ThemeProvider"
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from "@/lib/themeUtils"
 import Navigation from '@/components/Navigation'
 import StaffCard from '@/components/StaffCard'
 import StaffForm from '@/components/StaffForm'
@@ -30,6 +32,7 @@ import StaffFilters from '@/components/StaffFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function StaffPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { staff, loading, error, createStaff, updateStaff, deleteStaff } = useStaff()
   const [showForm, setShowForm] = useState(false)
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null)
@@ -179,7 +182,7 @@ export default function StaffPage() {
               <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
                 mb: 1, 
                 color: 'text.primary',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -202,7 +205,7 @@ export default function StaffPage() {
                 fontWeight: 700,
                 borderRadius: 3,
                 textTransform: 'none',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                 '&:hover': {
                   boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
@@ -241,7 +244,7 @@ export default function StaffPage() {
                 <Box sx={{ 
                   p: 2, 
                   borderRadius: 2, 
-                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  background: getThemeTextGradient(themeSettings, darkMode),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -382,7 +385,7 @@ export default function StaffPage() {
                   fontWeight: 700,
                   borderRadius: 3,
                   textTransform: 'none',
-                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  background: getThemeTextGradient(themeSettings, darkMode),
                   boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                   '&:hover': {
                     boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',

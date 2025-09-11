@@ -23,6 +23,8 @@ import {
 } from '@mui/icons-material'
 import { useCollaterals } from '@/hooks/useCollaterals'
 import { Collateral } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from "@/theme/ThemeProvider"
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from "@/lib/themeUtils"
 import { formatCurrency } from '@/lib/currency'
 import Navigation from '@/components/Navigation'
 import CollateralCard from '@/components/CollateralCard'
@@ -31,6 +33,7 @@ import CollateralFilters from '@/components/CollateralFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function CollateralsPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { 
     collaterals, 
     loading, 
@@ -289,7 +292,7 @@ export default function CollateralsPage() {
               <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
                 mb: 1, 
                 color: 'text.primary',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -312,7 +315,7 @@ export default function CollateralsPage() {
                 fontWeight: 700,
                 borderRadius: 3,
                 textTransform: 'none',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                 '&:hover': {
                   boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
@@ -351,7 +354,7 @@ export default function CollateralsPage() {
                 <Box sx={{ 
                   p: 2, 
                   borderRadius: 2, 
-                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  background: getThemeTextGradient(themeSettings, darkMode),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -515,7 +518,7 @@ export default function CollateralsPage() {
                 fontWeight: 700,
                 borderRadius: 3,
                 textTransform: 'none',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                 '&:hover': {
                   boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',

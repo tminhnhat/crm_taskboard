@@ -34,6 +34,7 @@ import {
 } from '@mui/icons-material';
 import { useTheme } from '@/theme/ThemeProvider';
 import Navigation from '@/components/Navigation';
+import { getThemePrimaryGradient } from '@/lib/themeUtils';
 
 interface CustomColors {
   primary: string;
@@ -406,7 +407,7 @@ export default function SettingsPage() {
       {/* Header Section */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+          background: getThemePrimaryGradient(themeSettings, darkMode),
           color: 'white',
           py: 6,
           position: 'relative',

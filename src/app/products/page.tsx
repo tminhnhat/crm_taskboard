@@ -27,6 +27,8 @@ import {
 } from '@mui/icons-material'
 import { useProducts } from '@/hooks/useProducts'
 import { Product } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from "@/theme/ThemeProvider"
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from "@/lib/themeUtils"
 import Navigation from '@/components/Navigation'
 import ProductCard from '@/components/ProductCard'
 import ProductForm from '@/components/ProductForm'
@@ -34,6 +36,7 @@ import ProductFilters from '@/components/ProductFilters'
 import { ProductCardSkeleton } from '@/components/LoadingSpinner'
 
 export default function ProductsPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
   const [showForm, setShowForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -220,7 +223,7 @@ export default function ProductsPage() {
               <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
                 mb: 1, 
                 color: 'text.primary',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -243,7 +246,7 @@ export default function ProductsPage() {
                 fontWeight: 700,
                 borderRadius: 3,
                 textTransform: 'none',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemePrimaryGradient(themeSettings, darkMode),
                 boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                 '&:hover': {
                   boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',

@@ -36,8 +36,11 @@ import useCreditAssessments from '@/hooks/useCreditAssessments'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useStaff } from '@/hooks/useStaff'
 import { useProducts } from '@/hooks/useProducts'
+import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from '@/lib/themeUtils'
 
 export default function AssessmentsPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const [showForm, setShowForm] = useState(false)
   const [selectedAssessment, setSelectedAssessment] = useState<any>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -152,7 +155,7 @@ export default function AssessmentsPage() {
               <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
                 mb: 1, 
                 color: 'text.primary',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -178,7 +181,7 @@ export default function AssessmentsPage() {
                 fontWeight: 700,
                 borderRadius: 3,
                 textTransform: 'none',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                 '&:hover': {
                   boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
@@ -217,7 +220,7 @@ export default function AssessmentsPage() {
                 <Box sx={{ 
                   p: 2, 
                   borderRadius: 2, 
-                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  background: getThemeTextGradient(themeSettings, darkMode),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -384,10 +387,10 @@ export default function AssessmentsPage() {
                   borderRadius: 2,
                   fontWeight: 600,
                   '&.Mui-selected': {
-                    background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                    background: getThemeTextGradient(themeSettings, darkMode),
                     color: 'white',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                      background: getThemeTextGradient(themeSettings, darkMode),
                       opacity: 0.9
                     }
                   }

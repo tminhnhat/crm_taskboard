@@ -24,6 +24,8 @@ import {
 } from '@mui/icons-material'
 import { useContracts } from '@/hooks/useContracts'
 import { Contract } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from "@/theme/ThemeProvider"
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from "@/lib/themeUtils"
 import Navigation from '@/components/Navigation'
 import ContractCard from '@/components/ContractCard'
 import ContractForm from '@/components/ContractForm'
@@ -31,6 +33,7 @@ import ContractFilters from '@/components/ContractFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function ContractsPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { 
     contracts, 
     loading, 
@@ -314,7 +317,7 @@ export default function ContractsPage() {
               <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
                 mb: 1, 
                 color: 'text.primary',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -337,7 +340,7 @@ export default function ContractsPage() {
                 fontWeight: 700,
                 borderRadius: 3,
                 textTransform: 'none',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                 '&:hover': {
                   boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
@@ -392,7 +395,7 @@ export default function ContractsPage() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                    background: getThemeSecondaryGradient(themeSettings, darkMode),
                     color: 'white'
                   }}>
                     <ChartBarIcon fontSize="large" />
@@ -468,7 +471,7 @@ export default function ContractsPage() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #82d616 0%, #a8e6cf 100%)',
+                    background: getThemeStatusGradient('success', themeSettings, darkMode),
                     color: 'white'
                   }}>
                     <CheckCircleIcon fontSize="large" />

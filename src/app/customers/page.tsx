@@ -34,8 +34,11 @@ import QRPaymentGenerator from '@/components/QRPaymentGenerator'
 import { useCustomers } from '@/hooks/useCustomers'
 import type { CustomerType } from '@/lib/supabase'
 import { Customer } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient } from '@/lib/themeUtils'
 
 export default function CustomersPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { customers, loading, error, createCustomer, updateCustomer, deleteCustomer, updateCustomerStatus, recalculateNumerology } = useCustomers()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
@@ -255,7 +258,7 @@ export default function CustomersPage() {
               <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
                 mb: 1, 
                 color: 'text.primary',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -296,7 +299,7 @@ export default function CustomersPage() {
                   fontWeight: 700,
                   borderRadius: 3,
                   textTransform: 'none',
-                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  background: getThemePrimaryGradient(themeSettings, darkMode),
                   boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                   '&:hover': {
                     boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
@@ -352,7 +355,7 @@ export default function CustomersPage() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                    background: getThemeSecondaryGradient(themeSettings, darkMode),
                     color: 'white'
                   }}>
                     <TrendingUpIcon fontSize="large" />

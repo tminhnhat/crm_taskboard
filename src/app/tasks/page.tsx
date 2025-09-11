@@ -34,9 +34,12 @@ import TaskFilters from '@/components/TaskFilters'
 import { TaskCardSkeleton } from '@/components/LoadingSpinner'
 import { useTasks } from '@/hooks/useTasks'
 import { Task, TaskStatusEnum } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from '@/lib/themeUtils'
 
 export default function TaskDashboard() {
   const theme = useTheme()
+  const { darkMode, themeSettings } = useCustomTheme()
   const { tasks, loading, error, createTask, updateTask, deleteTask, updateTaskStatus, refetch } = useTasks()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -237,7 +240,7 @@ export default function TaskDashboard() {
               <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
                 mb: 1, 
                 color: 'text.primary',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -281,7 +284,7 @@ export default function TaskDashboard() {
                   fontWeight: 700,
                   borderRadius: 3,
                   textTransform: 'none',
-                  background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                  background: getThemePrimaryGradient(themeSettings, darkMode),
                   boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                   '&:hover': {
                     boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
@@ -337,7 +340,7 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                    background: getThemeSecondaryGradient(themeSettings, darkMode),
                     color: 'white'
                   }}>
                     <TrendingUpIcon fontSize="large" />
@@ -375,7 +378,7 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #fb8500 0%, #ffb347 100%)',
+                    background: getThemeStatusGradient('warning', themeSettings, darkMode),
                     color: 'white'
                   }}>
                     <ScheduleIcon fontSize="large" />
@@ -413,7 +416,7 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #49a3f1 0%, #5dade2 100%)',
+                    background: getThemeStatusGradient('info', themeSettings, darkMode),
                     color: 'white'
                   }}>
                     <WarningIcon fontSize="large" />
@@ -451,7 +454,7 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #82d616 0%, #a8e6cf 100%)',
+                    background: getThemeStatusGradient('success', themeSettings, darkMode),
                     color: 'white'
                   }}>
                     <CheckCircleIcon fontSize="large" />
@@ -489,7 +492,7 @@ export default function TaskDashboard() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #ea0606 0%, #ff6b6b 100%)',
+                    background: getThemeStatusGradient('error', themeSettings, darkMode),
                     color: 'white'
                   }}>
                     <ErrorIcon fontSize="large" />
@@ -526,7 +529,7 @@ export default function TaskDashboard() {
                   px: 2,
                   py: 0.5,
                   borderRadius: 2,
-                  background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                  background: getThemeSecondaryGradient(themeSettings, darkMode),
                   color: 'white'
                 }}>
                     <Typography 
@@ -547,7 +550,7 @@ export default function TaskDashboard() {
                   bgcolor: 'grey.200',
                   '& .MuiLinearProgress-bar': {
                     borderRadius: 5,
-                    background: 'linear-gradient(90deg, #3867d6 0%, #8854d0 100%)'
+                    background: getThemeSecondaryGradient(themeSettings, darkMode).replace('135deg', '90deg')
                   }
                 }}
               />
