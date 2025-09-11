@@ -29,6 +29,8 @@ import {
   GetApp as ImportIcon,
   Publish as ExportIcon,
   Settings as SettingsIcon,
+  BrightnessMedium as BrightnessIcon,
+  ColorLens as ColorLensIcon,
 } from '@mui/icons-material';
 import { useTheme } from '@/theme/ThemeProvider';
 import Navigation from '@/components/Navigation';
@@ -94,6 +96,40 @@ const defaultDarkColors: CustomColors = {
   textSecondary: '#a0aec0',
   divider: 'rgba(255, 255, 255, 0.1)',
 };
+
+// Bright theme presets
+const themePresets = [
+  {
+    name: 'Vibrant Ocean',
+    description: 'Màu xanh dương tươi sáng và năng động',
+    file: 'vibrant-ocean.json',
+    preview: '#0ea5e9'
+  },
+  {
+    name: 'Fresh Spring',
+    description: 'Màu xanh lá tươi mới và tự nhiên',
+    file: 'fresh-spring.json',
+    preview: '#22c55e'
+  },
+  {
+    name: 'Sunset Glow',
+    description: 'Màu cam ấm áp và rực rỡ',
+    file: 'sunset-glow.json',
+    preview: '#f97316'
+  },
+  {
+    name: 'Modern Purple',
+    description: 'Màu tím hiện đại và sang trọng',
+    file: 'modern-purple.json',
+    preview: '#a855f7'
+  },
+  {
+    name: 'Electric Blue',
+    description: 'Màu xanh điện tử và sống động',
+    file: 'electric-blue.json',
+    preview: '#3b82f6'
+  }
+];
 
 export default function SettingsPage() {
   const { darkMode, updateThemeSettings, themeSettings } = useTheme();
@@ -175,6 +211,23 @@ export default function SettingsPage() {
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
+  };
+
+  const handleImportPreset = async (presetFile: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/theme-presets/${presetFile}`);
+      const settings: ThemeSettings = await response.json();
+      setLightColors(settings.lightColors);
+      setDarkColors(settings.darkColors);
+      await updateThemeSettings(settings);
+      alert(`Theme "${presetFile.replace('.json', '')}" đã được áp dụng thành công!`);
+    } catch (error) {
+      console.error('Error importing preset theme:', error);
+      alert('Lỗi khi import preset theme!');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleImportTheme = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -391,6 +444,74 @@ export default function SettingsPage() {
             <Alert severity="info" sx={{ mb: 3 }}>
               Tùy chỉnh màu sắc cho toàn bộ ứng dụng CRM. Thay đổi sẽ được áp dụng ngay lập tức và lưu tự động trên Vercel Blob Storage để đảm bảo tính toàn cầu và persistence trong môi trường serverless.
             </Alert>
+
+            {/* Bright Theme Presets Section */}
+            <Card elevation={1} sx={{ mb: 4, backgroundColor: 'rgba(0,0,0,0.02)' }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={2} mb={3}>
+                  <BrightnessIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Theme Tươi Sáng Có Sẵn
+                  </Typography>
+                </Box>
+                
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Chọn một trong các theme tươi sáng và năng động có sẵn để làm mới giao diện:
+                </Typography>
+
+                <Grid container spacing={2}>
+                  {themePresets.map((preset) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={preset.file}>
+                      <Paper
+                        elevation={2}
+                        sx={{
+                          p: 2,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          border: '2px solid transparent',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            borderColor: preset.preview,
+                            boxShadow: 4,
+                          },
+                        }}
+                        onClick={() => handleImportPreset(preset.file)}
+                      >
+                        <Box display="flex" alignItems="center" gap={2} mb={1}>
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: '50%',
+                              backgroundColor: preset.preview,
+                              border: '2px solid white',
+                              boxShadow: 1,
+                            }}
+                          />
+                          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                            {preset.name}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary">
+                          {preset.description}
+                        </Typography>
+                        <Box mt={1} display="flex" justifyContent="center">
+                          <Button 
+                            size="small" 
+                            variant="outlined"
+                            startIcon={<ColorLensIcon />}
+                            disabled={loading}
+                            sx={{ borderColor: preset.preview, color: preset.preview }}
+                          >
+                            Áp dụng
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
 
             {loading && (
               <Alert severity="warning" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
