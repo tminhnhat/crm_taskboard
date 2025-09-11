@@ -24,9 +24,11 @@ import {
   Error as ErrorIcon,
   PersonAdd as PersonAddIcon,
   Business as BusinessIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
+  CakeOutlined as CakeIcon
 } from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
+import BirthdayCustomers from '@/components/BirthdayCustomers'
 import { useTasks } from '@/hooks/useTasks'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useContracts } from '@/hooks/useContracts'
@@ -673,6 +675,39 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </Box>
+        </Box>
+
+        {/* Birthday Customers Section */}
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Typography variant="h4" fontWeight="700" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: '50%', 
+                background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <CakeIcon fontSize="medium" />
+              </Box>
+              Sinh Nhật Tháng Này
+            </Typography>
+            <Button
+              variant="outlined"
+              endIcon={<ArrowForwardIcon />}
+              href="/customers"
+              sx={{ borderRadius: 3 }}
+            >
+              Xem Tất Cả Khách Hàng
+            </Button>
+          </Box>
+          
+          <BirthdayCustomers 
+            customers={customers} 
+            loading={customersLoading} 
+          />
         </Box>
 
         {/* Quick Actions */}
