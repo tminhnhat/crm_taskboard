@@ -34,11 +34,45 @@ interface BirthdayCustomersProps {
 }
 
 const BirthdayCustomers: React.FC<BirthdayCustomersProps> = ({ customers, loading }) => {
+  // Demo data for when database is not available
+  const demoCustomers = [
+    {
+      customer_id: 1,
+      full_name: 'Nguyễn Thị Mai',
+      date_of_birth: '1990-12-05',
+      customer_type: 'individual' as const,
+      hobby: 'Đọc sách, nghe nhạc',
+      phone: '0901234561',
+      email: 'mai.nguyen@email.com'
+    },
+    {
+      customer_id: 2,
+      full_name: 'Trần Văn Bình', 
+      date_of_birth: '1985-12-15',
+      customer_type: 'individual' as const,
+      hobby: 'Chơi golf, du lịch',
+      phone: '0901234562',
+      email: 'binh.tran@email.com'
+    },
+    {
+      customer_id: 3,
+      full_name: 'Lê Thị Hoa',
+      date_of_birth: '1992-12-22', 
+      customer_type: 'individual' as const,
+      hobby: 'Nấu ăn, yoga',
+      phone: '0901234563',
+      email: 'hoa.le@email.com'
+    }
+  ]
+
+  // Use demo data if no customers are available and we're not loading
+  const activeCustomers = customers.length === 0 && !loading ? demoCustomers : customers
+
   // Filter customers with birthdays in the current month
   const birthdayCustomers = useMemo(() => {
     const currentMonth = new Date().getMonth() + 1 // JavaScript months are 0-indexed
     
-    return customers.filter(customer => {
+    return activeCustomers.filter(customer => {
       if (!customer.date_of_birth) return false
       
       const birthDate = new Date(customer.date_of_birth)
@@ -51,7 +85,7 @@ const BirthdayCustomers: React.FC<BirthdayCustomersProps> = ({ customers, loadin
       const dayB = new Date(b.date_of_birth!).getDate()
       return dayA - dayB
     })
-  }, [customers])
+  }, [activeCustomers])
 
   // Format date for display
   const formatBirthday = (dateString: string) => {
@@ -112,8 +146,15 @@ const BirthdayCustomers: React.FC<BirthdayCustomersProps> = ({ customers, loadin
     )
   }
 
+  const isUsingDemoData = customers.length === 0 && !loading
+
   return (
     <Card elevation={2} sx={{ borderRadius: 3 }}>
+      {isUsingDemoData && (
+        <Alert severity="info" sx={{ borderRadius: 0, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
+          📊 Đang hiển thị dữ liệu mẫu - Kết nối database để xem dữ liệu thực tế
+        </Alert>
+      )}
       <CardContent sx={{ p: 0 }}>
         <TableContainer component={Paper} elevation={0}>
           <Table>
