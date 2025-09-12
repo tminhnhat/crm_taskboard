@@ -86,9 +86,9 @@ export default function StaffFilters({
         </Box>
 
         <Stack 
-          direction={{ xs: 'column', lg: 'row' }} 
-          spacing={2} 
-          sx={{ mb: 2 }}
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          sx={{ mb: 2, flexWrap: 'wrap', alignItems: 'center' }}
         >
           <TextField
             size="small"

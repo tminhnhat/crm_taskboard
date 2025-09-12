@@ -1,22 +1,39 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  Paper,
+  useTheme,
+  Pagination
+} from '@mui/material'
+import { 
+  Add as AddIcon,
+  Description as DocumentTextIcon,
+  TrendingUp as ChartBarIcon,
+  Warning as ExclamationTriangleIcon,
+  AttachMoney as BanknotesIcon,
+  CheckCircle as CheckCircleIcon,
+  Schedule as ScheduleIcon
+} from '@mui/icons-material'
 import { useContracts } from '@/hooks/useContracts'
 import { Contract } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from "@/theme/ThemeProvider"
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from "@/lib/themeUtils"
 import Navigation from '@/components/Navigation'
 import ContractCard from '@/components/ContractCard'
 import ContractForm from '@/components/ContractForm'
 import ContractFilters from '@/components/ContractFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { 
-  PlusIcon, 
-  DocumentTextIcon,
-  ChartBarIcon,
-  ExclamationTriangleIcon,
-  BanknotesIcon
-} from '@heroicons/react/24/outline'
 
 export default function ContractsPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { 
     contracts, 
     loading, 
@@ -41,7 +58,7 @@ export default function ContractsPage() {
     creditRange: ''
   })
   const [currentPage, setCurrentPage] = useState(1)
-  const contractsPerPage = 9 // 3x3 grid layout
+  const contractsPerPage = 8 // 4 rows in 2 columns
 
   // Get available options for filter dropdowns
   const availableCustomers = useMemo(() => {
@@ -194,7 +211,13 @@ export default function ContractsPage() {
       return endDate >= today && endDate <= monthFromNow
     }).length
 
-    return { total, totalCreditLimit, active, expiringSoon }
+    const expired = contracts.filter(c => {
+      if (!c.end_date) return false
+      const endDate = new Date(c.end_date)
+      return endDate < today
+    }).length
+
+    return { total, totalCreditLimit, active, expiringSoon, expired }
   }, [contracts])
 
   const formatCurrency = (value: number) => {
@@ -251,213 +274,412 @@ export default function ContractsPage() {
     setEditingContract(null)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <LoadingSpinner />
-        </div>
-      </div>
-    )
-  }
-
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex items-center">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
-              <p className="text-red-800">Lỗi khi tải danh sách hợp đồng: {error}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <Box sx={{ maxWidth: '7xl', mx: 'auto', px: { xs: 2, sm: 3, lg: 4 }, py: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Lỗi khi tải danh sách hợp đồng: {error}
+              </Alert>
+              <Typography color="text.secondary">
+                Vui lòng kiểm tra cấu hình Supabase trong file .env.local
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Navigation */}
       <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <DocumentTextIcon className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Quản Lý Hợp Đồng</h1>
-                <p className="text-gray-600">Quản lý hợp đồng và thỏa thuận với khách hàng</p>
-              </div>
-            </div>
-            <button
+
+      {/* Header */}
+      <Paper elevation={0} sx={{ 
+        bgcolor: 'background.paper', 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.05)'
+      }}>
+        <Container maxWidth="xl">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            py: 4 
+          }}>
+            <Box>
+              <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
+                mb: 1, 
+                color: 'text.primary',
+                background: getThemeTextGradient(themeSettings, darkMode),
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                <DocumentTextIcon sx={{ fontSize: 36 }} /> Quản Lý Hợp Đồng
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Quản lý hợp đồng và thỏa thuận với khách hàng một cách chuyên nghiệp
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
               onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2"
+              size="large"
+              sx={{ 
+                px: 4,
+                py: 1.5,
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                borderRadius: 3,
+                textTransform: 'none',
+                background: getThemeTextGradient(themeSettings, darkMode),
+                boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
+                '&:hover': {
+                  boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
             >
-              <PlusIcon className="h-5 w-5" />
-              Thêm Hợp Đồng
-            </button>
-          </div>
-        </div>
+              Hợp Đồng Mới
+            </Button>
+          </Box>
+        </Container>
+      </Paper>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <ChartBarIcon className="h-8 w-8 text-gray-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Tổng Hợp Đồng</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <BanknotesIcon className="h-8 w-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Tổng Hạn Mức Tín Dụng</p>
-                <p className="text-xl font-semibold text-blue-600">{formatCurrency(stats.totalCreditLimit)}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-green-600 rounded-full"></div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Hợp Đồng Đang Hoạt Động</p>
-                <p className="text-2xl font-semibold text-green-600">{stats.active}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-yellow-600 rounded-full"></div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Sắp Hết Hạn</p>
-                <p className="text-2xl font-semibold text-yellow-600">{stats.expiringSoon}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Main Content */}
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Statistics Cards */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" fontWeight="600" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ChartBarIcon color="primary" />
+            Thống Kê Hợp Đồng
+          </Typography>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(5, 1fr)' 
+            }, 
+            gap: 3
+          }}>
+            {/* Total Contracts */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(52, 71, 103, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: getThemeSecondaryGradient(themeSettings, darkMode),
+                    color: 'white'
+                  }}>
+                    <ChartBarIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.total}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Tổng Hợp Đồng
+                </Typography>
+              </CardContent>
+            </Card>
 
-        {/* Filters */}
-        <ContractFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          availableStatuses={availableStatuses}
-          availableCustomers={availableCustomers}
-          availableProducts={availableProducts}
-          availableStaff={availableStaff}
-          totalCount={contracts.length}
-          filteredCount={filteredContracts.length}
-        />
+            {/* Total Credit Limit */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(72, 187, 120, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #48bb78 0%, #68d391 100%)',
+                    color: 'white'
+                  }}>
+                    <BanknotesIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h4" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary', fontSize: '1.5rem' }}>
+                  {formatCurrency(stats.totalCreditLimit)}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Tổng Hạn Mức
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Active Contracts */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(130, 214, 22, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: getThemeStatusGradient('success', themeSettings, darkMode),
+                    color: 'white'
+                  }}>
+                    <CheckCircleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.active}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Đang Hoạt Động
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Expiring Soon */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(245, 158, 11, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+                    color: 'white'
+                  }}>
+                    <ScheduleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.expiringSoon}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Sắp Hết Hạn
+                </Typography>
+              </CardContent>
+            </Card>
 
-        {/* Results Summary */}
-        <div className="flex justify-between items-center mb-6">
-          <p className="text-gray-600">
-            Hiển thị {Math.min(contractsPerPage, filteredContracts.length - (currentPage - 1) * contractsPerPage)} kết quả
-            {' '}({(currentPage - 1) * contractsPerPage + 1}-{Math.min(currentPage * contractsPerPage, filteredContracts.length)})
-            {' '}trong tổng số {filteredContracts.length} hợp đồng
-          </p>
-          <div className="flex items-center space-x-4">
-            <ChartBarIcon className="h-5 w-5 text-gray-400" />
-            <span className="text-sm text-gray-600">
-              {filteredContracts.length > 0 
-                ? `${Math.round((filteredContracts.filter(c => c.status === 'active').length / filteredContracts.length) * 100)}% đang hoạt động`
-                : 'Không có dữ liệu'
-              }
-            </span>
-          </div>
-        </div>
+            {/* Expired */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(220, 38, 38, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+                    color: 'white'
+                  }}>
+                    <ExclamationTriangleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.expired}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Đã Hết Hạn
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+
+        {/* Filters Section */}
+        <Paper elevation={1} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+          <ContractFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableStatuses={availableStatuses}
+            availableCustomers={availableCustomers}
+            availableProducts={availableProducts}
+            availableStaff={availableStaff}
+            totalCount={contracts.length}
+            filteredCount={filteredContracts.length}
+          />
+        </Paper>
 
         {/* Contracts List */}
-        {filteredContracts.length === 0 ? (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              {contracts.length === 0 ? 'Chưa có hợp đồng nào' : 'Không có hợp đồng nào phù hợp với bộ lọc'}
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {contracts.length === 0 
-                ? 'Bắt đầu bằng cách tạo hợp đồng đầu tiên của bạn.' 
-                : 'Hãy thử điều chỉnh tiêu chí tìm kiếm.'}
-            </p>
-            {contracts.length === 0 && (
-              <div className="mt-6">
-                <button
+        <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+              <LoadingSpinner />
+            </Box>
+          ) : filteredContracts.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Box sx={{ 
+                width: 120, 
+                height: 120, 
+                bgcolor: 'grey.100', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 3
+              }}>
+                <DocumentTextIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+              </Box>
+              <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                {contracts.length === 0 ? 'Chưa có hợp đồng nào' : 'Không có kết quả phù hợp'}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                {contracts.length === 0 
+                  ? 'Tạo hợp đồng đầu tiên của bạn để bắt đầu!' 
+                  : 'Thử điều chỉnh bộ lọc để tìm thấy hợp đồng bạn cần.'
+                }
+              </Typography>
+              {contracts.length === 0 && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
                   onClick={() => setShowForm(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 mx-auto"
+                  size="large"
                 >
-                  <PlusIcon className="h-5 w-5" />
                   Tạo Hợp Đồng Đầu Tiên
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredContracts
-                .slice((currentPage - 1) * contractsPerPage, currentPage * contractsPerPage)
-                .map((contract) => (
-                  <ContractCard
-                    key={contract.contract_id}
-                    contract={contract}
-                    onEdit={handleEditContract}
-                    onDelete={handleDeleteContract}
-                    onStatusChange={handleStatusChange}
-                  />
-                ))}
-            </div>
-            
-            <div className="mt-8 flex justify-center items-center gap-4">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white"
-              >
-                Trang Trước
-              </button>
-              <div className="flex items-center gap-1 text-sm text-gray-600">
-                <span>Trang</span>
-                <span className="font-medium text-gray-900">{currentPage}</span>
-                <span>trên</span>
-                <span className="font-medium text-gray-900">{totalPages}</span>
-              </div>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white"
-              >
-                Trang Sau
-              </button>
-            </div>
-          </>
-        )}
+                </Button>
+              )}
+            </Box>
+          ) : (
+            <>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Danh sách hợp đồng ({filteredContracts.length})
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Hiển thị {((currentPage - 1) * contractsPerPage) + 1}-{Math.min(currentPage * contractsPerPage, filteredContracts.length)} trong tổng số {filteredContracts.length} hợp đồng
+                </Typography>
+              </Box>
+              
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, 
+                gap: 3,
+                mb: 4
+              }}>
+                {filteredContracts
+                  .slice((currentPage - 1) * contractsPerPage, currentPage * contractsPerPage)
+                  .map((contract) => (
+                    <ContractCard
+                      key={contract.contract_id}
+                      contract={contract}
+                      onEdit={handleEditContract}
+                      onDelete={handleDeleteContract}
+                      onStatusChange={handleStatusChange}
+                    />
+                  ))}
+              </Box>
 
-        {/* Contract Form Modal */}
-        <ContractForm
-          isOpen={showForm}
-          onClose={handleCancelForm}
-          onSubmit={handleSaveContract}
-          contract={editingContract}
-          isLoading={loading}
-          checkContractNumberExists={checkContractNumberExists}
-          fetchCustomers={fetchCustomers}
-          fetchProducts={fetchProducts}
-          fetchStaff={fetchStaff}
-        />
-      </div>
-    </div>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={(event, value) => setCurrentPage(value)}
+                    color="primary"
+                    size="large"
+                    showFirstButton
+                    showLastButton
+                  />
+                </Box>
+              )}
+            </>
+          )}
+        </Paper>
+      </Container>
+
+      {/* Contract Form Modal */}
+      <ContractForm
+        isOpen={showForm}
+        onClose={handleCancelForm}
+        onSubmit={handleSaveContract}
+        contract={editingContract}
+        isLoading={loading}
+        checkContractNumberExists={checkContractNumberExists}
+        fetchCustomers={fetchCustomers}
+        fetchProducts={fetchProducts}
+        fetchStaff={fetchStaff}
+      />
+    </Box>
   )
 }

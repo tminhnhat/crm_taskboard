@@ -88,7 +88,7 @@ export default function StaffForm({ staff, onSave, onCancel, isLoading, open }: 
         color: 'primary.contrastText'
       }}>
         <PersonIcon />
-        <Typography variant="h6" component="div">
+        <Typography variant="h6" component="div" sx={{ color: 'primary.contrastText' }}>
           {staff ? 'Sửa Thông Tin Nhân Viên' : 'Thêm Nhân Viên Mới'}
         </Typography>
       </DialogTitle>

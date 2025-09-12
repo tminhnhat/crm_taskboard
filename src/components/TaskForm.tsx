@@ -16,11 +16,22 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
-  IconButton
+  IconButton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  FormControlLabel,
+  Switch,
+  Alert
 } from '@mui/material'
-import { Close as CloseIcon } from '@mui/icons-material'
-import { Task, TaskStatusEnum, TaskPriority } from '@/lib/supabase'
+import { 
+  Close as CloseIcon, 
+  ExpandMore as ExpandMoreIcon,
+  Repeat as RepeatIcon 
+} from '@mui/icons-material'
+import { Task, TaskStatusEnum, TaskPriority, RecurrenceType } from '@/lib/supabase'
 import { toVNDate, toISODate, isValidDate } from '@/lib/date'
+import { validateRecurrenceConfig } from '@/lib/recurringTasks'
 
 interface TaskFormProps {
   isOpen: boolean
@@ -46,8 +57,18 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     task_start_time: '',
     sync_status: 'pending',
     timezone_offset: 7,
-    timezone: 'Asia/Ho_Chi_Minh'
+    timezone: 'Asia/Ho_Chi_Minh',
+    // Recurring task fields
+    recurrence_type: 'none' as RecurrenceType,
+    recurrence_interval: 1,
+    recurrence_end_date: '',
+    recurrence_duration_months: null as number | null,
+    is_recurring: false,
+    parent_task_id: null as number | null
   })
+
+  const [isRecurringEnabled, setIsRecurringEnabled] = useState(false)
+  const [recurrenceError, setRecurrenceError] = useState<string | null>(null)
 
   const formatTimeDurationForDisplay = (dbDuration: string | null): string => {
     if (!dbDuration) return ''
@@ -90,7 +111,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     }))
   }
 
-  const handleDateChange = (field: 'task_date_start' | 'task_due_date', value: string): void => {
+  const handleDateChange = (field: 'task_date_start' | 'task_due_date' | 'recurrence_end_date', value: string): void => {
     let formattedValue = value.replace(/\D/g, '')
     
     if (formattedValue.length >= 2) {
@@ -103,8 +124,30 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
     setFormData(prev => ({ ...prev, [field]: formattedValue }))
   }
 
+  const handleRecurrenceToggle = (enabled: boolean): void => {
+    setIsRecurringEnabled(enabled)
+    if (!enabled) {
+      setFormData(prev => ({
+        ...prev,
+        recurrence_type: 'none',
+        recurrence_interval: 1,
+        recurrence_end_date: '',
+        recurrence_duration_months: null
+      }))
+      setRecurrenceError(null)
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        recurrence_type: 'daily'
+      }))
+    }
+  }
+
   useEffect(() => {
     if (task) {
+      const hasRecurrence = task.recurrence_type && task.recurrence_type !== 'none'
+      setIsRecurringEnabled(hasRecurrence)
+      
       setFormData({
         task_name: task.task_name,
         task_type: task.task_type || '',
@@ -118,9 +161,17 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
         task_start_time: task.task_start_time || '',
         sync_status: task.sync_status,
         timezone_offset: task.timezone_offset,
-        timezone: task.timezone
+        timezone: task.timezone,
+        // Recurring task fields
+        recurrence_type: task.recurrence_type || 'none',
+        recurrence_interval: task.recurrence_interval || 1,
+        recurrence_end_date: task.recurrence_end_date ? toVNDate(task.recurrence_end_date) : '',
+        recurrence_duration_months: task.recurrence_duration_months,
+        is_recurring: task.is_recurring || false,
+        parent_task_id: task.parent_task_id
       })
     } else {
+      setIsRecurringEnabled(false)
       setFormData({
         task_name: '',
         task_type: '',
@@ -134,9 +185,17 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
         task_start_time: '',
         sync_status: 'pending',
         timezone_offset: 7,
-        timezone: 'Asia/Ho_Chi_Minh'
+        timezone: 'Asia/Ho_Chi_Minh',
+        // Recurring task fields
+        recurrence_type: 'none',
+        recurrence_interval: 1,
+        recurrence_end_date: '',
+        recurrence_duration_months: null,
+        is_recurring: false,
+        parent_task_id: null
       })
     }
+    setRecurrenceError(null)
   }, [task, isOpen])
 
   const handleSubmit = (e: React.FormEvent): void => {
@@ -152,7 +211,28 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       return
     }
 
-    onSubmit({
+    if (formData.recurrence_end_date && !isValidDate(formData.recurrence_end_date)) {
+      alert('Định dạng ngày kết thúc lặp lại không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy')
+      return
+    }
+
+    // Validate recurrence if enabled
+    if (isRecurringEnabled) {
+      const validation = validateRecurrenceConfig(
+        formData.recurrence_type,
+        formData.recurrence_interval,
+        formData.recurrence_end_date ? toISODate(formData.recurrence_end_date) : null,
+        formData.recurrence_duration_months,
+        formData.task_date_start ? toISODate(formData.task_date_start) : null
+      )
+      
+      if (!validation.isValid) {
+        setRecurrenceError(validation.error || 'Cấu hình lặp lại không hợp lệ')
+        return
+      }
+    }
+
+    const submitData = {
       ...Object.fromEntries(
         Object.entries(formData).filter(([key]) => key !== 'task_time_process_display')
       ),
@@ -162,8 +242,17 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
       task_time_process: formData.task_time_process || null,
       task_due_date: formData.task_due_date ? toISODate(formData.task_due_date) : null,
       task_date_start: formData.task_date_start ? toISODate(formData.task_date_start) : null,
-      task_start_time: formData.task_start_time || null
-    })
+      task_start_time: formData.task_start_time || null,
+      // Recurring task fields
+      recurrence_type: isRecurringEnabled ? formData.recurrence_type : 'none',
+      recurrence_interval: isRecurringEnabled ? formData.recurrence_interval : 1,
+      recurrence_end_date: isRecurringEnabled && formData.recurrence_end_date ? toISODate(formData.recurrence_end_date) : null,
+      recurrence_duration_months: isRecurringEnabled ? formData.recurrence_duration_months : null,
+      is_recurring: isRecurringEnabled,
+      parent_task_id: null
+    }
+
+    onSubmit(submitData)
     onClose()
   }
 
@@ -381,6 +470,184 @@ export default function TaskForm({ isOpen, onClose, onSubmit, task }: TaskFormPr
               onChange={(e) => setFormData(prev => ({ ...prev, task_note: e.target.value }))}
               size="small"
             />
+
+            {/* Recurring Task Section */}
+            {!task?.parent_task_id && ( // Don't show recurring options for child tasks
+              <Accordion>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  sx={{
+                    backgroundColor: 'action.hover',
+                    '&:hover': {
+                      backgroundColor: 'action.selected',
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <RepeatIcon color="primary" />
+                    <Typography variant="subtitle1" fontWeight="medium">
+                      Lặp Lại Công Việc
+                    </Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails sx={{ pt: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={isRecurringEnabled}
+                          onChange={(e) => handleRecurrenceToggle(e.target.checked)}
+                          color="primary"
+                        />
+                      }
+                      label="Tạo công việc lặp lại"
+                    />
+
+                    {isRecurringEnabled && (
+                      <>
+                        {recurrenceError && (
+                          <Alert severity="error" sx={{ mb: 2 }}>
+                            {recurrenceError}
+                          </Alert>
+                        )}
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+                          <FormControl fullWidth size="small">
+                            <InputLabel>Chu kỳ lặp lại</InputLabel>
+                            <Select
+                              value={formData.recurrence_type}
+                              label="Chu kỳ lặp lại"
+                              onChange={(e) => setFormData(prev => ({ 
+                                ...prev, 
+                                recurrence_type: e.target.value as RecurrenceType 
+                              }))}
+                            >
+                              <MenuItem value="daily">Hàng ngày</MenuItem>
+                              <MenuItem value="weekly">Hàng tuần</MenuItem>
+                              <MenuItem value="monthly">Hàng tháng</MenuItem>
+                            </Select>
+                          </FormControl>
+
+                          <TextField
+                            fullWidth
+                            label={`Mỗi ${formData.recurrence_type === 'daily' ? 'ngày' : 
+                                          formData.recurrence_type === 'weekly' ? 'tuần' : 'tháng'}`}
+                            value={formData.recurrence_interval}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 1
+                              setFormData(prev => ({ ...prev, recurrence_interval: Math.max(1, value) }))
+                            }}
+                            type="number"
+                            size="small"
+                            inputProps={{ min: 1, max: 12 }}
+                          />
+                        </Box>
+
+                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                          Thời gian kết thúc lặp lại (chọn một trong hai)
+                        </Typography>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+                          <Box>
+                            <TextField
+                              fullWidth
+                              label="Ngày kết thúc"
+                              value={formData.recurrence_end_date}
+                              onChange={(e) => {
+                                handleDateChange('recurrence_end_date', e.target.value)
+                                if (e.target.value) {
+                                  setFormData(prev => ({ ...prev, recurrence_duration_months: null }))
+                                }
+                              }}
+                              placeholder="dd/mm/yyyy"
+                              size="small"
+                              error={Boolean(formData.recurrence_end_date && !isValidDate(formData.recurrence_end_date))}
+                              helperText={formData.recurrence_end_date && !isValidDate(formData.recurrence_end_date) ? 
+                                'Định dạng không hợp lệ' : 'Hoặc chọn số tháng bên phải'}
+                            />
+                            <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
+                              {[
+                                { label: '3 tháng', months: 3 },
+                                { label: '6 tháng', months: 6 },
+                                { label: '1 năm', months: 12 }
+                              ].map((item) => (
+                                <Chip
+                                  key={item.label}
+                                  label={item.label}
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => {
+                                    // Use start date if available and valid, otherwise use current date
+                                    let baseDate: Date
+                                    if (formData.task_date_start && isValidDate(formData.task_date_start)) {
+                                      baseDate = new Date(toISODate(formData.task_date_start))
+                                    } else {
+                                      baseDate = new Date()
+                                    }
+                                    baseDate.setMonth(baseDate.getMonth() + item.months)
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      recurrence_end_date: toVNDate(baseDate.toISOString().split('T')[0]),
+                                      recurrence_duration_months: null
+                                    }))
+                                  }}
+                                  sx={{ cursor: 'pointer' }}
+                                />
+                              ))}
+                            </Stack>
+                          </Box>
+
+                          <Box>
+                            <TextField
+                              fullWidth
+                              label="Số tháng lặp lại"
+                              value={formData.recurrence_duration_months || ''}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value) || null
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  recurrence_duration_months: value,
+                                  recurrence_end_date: value ? '' : prev.recurrence_end_date
+                                }))
+                              }}
+                              type="number"
+                              size="small"
+                              inputProps={{ min: 1, max: 60 }}
+                              helperText="Hoặc chọn ngày kết thúc bên trái"
+                            />
+                            <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
+                              {[1, 3, 6, 12].map((months) => (
+                                <Chip
+                                  key={months}
+                                  label={`${months} tháng`}
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => setFormData(prev => ({ 
+                                    ...prev, 
+                                    recurrence_duration_months: months,
+                                    recurrence_end_date: ''
+                                  }))}
+                                  sx={{ cursor: 'pointer' }}
+                                />
+                              ))}
+                            </Stack>
+                          </Box>
+                        </Box>
+
+                        <Alert severity="info" sx={{ mt: 1 }}>
+                          <Typography variant="body2">
+                            <strong>Lưu ý:</strong> Công việc lặp lại sẽ được tạo tự động từ ngày bắt đầu đến ngày kết thúc. 
+                            {formData.recurrence_type === 'daily' && ` Mỗi ${formData.recurrence_interval} ngày.`}
+                            {formData.recurrence_type === 'weekly' && ` Mỗi ${formData.recurrence_interval} tuần.`}
+                            {formData.recurrence_type === 'monthly' && ` Mỗi ${formData.recurrence_interval} tháng.`}
+                          </Typography>
+                        </Alert>
+                      </>
+                    )}
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            )}
           </Box>
         </DialogContent>
 

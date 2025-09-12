@@ -184,50 +184,44 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
                 </Typography>
               </InfoBox>
               
-              {contract.contract_id && (
-                <InfoBox>
-                  <Badge fontSize="small" />
-                  <Typography variant="body2">
-                    ID: {contract.contract_id}
-                  </Typography>
-                </InfoBox>
-              )}
+              {/* Đã gỡ bỏ hiển thị contract id */}
             </Stack>
           </Box>
           
-          <Box sx={{ ml: 2, minWidth: 140 }}>
-            <FormControl fullWidth size="small">
-              <StyledSelect
-                value={contract.status}
-                onChange={(e) => onStatusChange(contract.contract_id, e.target.value as string)}
-              >
-                <MenuItem value="draft">Nháp</MenuItem>
-                <MenuItem value="active">Đang Hoạt Động</MenuItem>
-                <MenuItem value="expired">Hết Hạn</MenuItem>
-              </StyledSelect>
-            </FormControl>
-          </Box>
+          {/* Đã gỡ bỏ contract status input field */}
         </CardHeader>
         
         <CardActions>
-          <ActionButton
-            startIcon={<Edit />}
-            onClick={() => onEdit(contract)}
-            color="primary"
-            variant="outlined"
-            size="small"
-          >
-            Sửa
-          </ActionButton>
-          <ActionButton
-            startIcon={<DeleteOutline />}
-            onClick={() => onDelete(contract.contract_id)}
-            color="error"
-            variant="outlined"
-            size="small"
-          >
-            Xóa
-          </ActionButton>
+          <Box sx={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: { xs: 'row', sm: 'row' },
+            justifyContent: { xs: 'space-between', sm: 'flex-start' },
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <ActionButton
+              startIcon={<Edit />}
+              onClick={() => onEdit(contract)}
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
+            >
+              Sửa
+            </ActionButton>
+            <Box sx={{ flex: 1, display: { xs: 'row', sm: 'row' } }} />
+            <ActionButton
+              startIcon={<DeleteOutline />}
+              onClick={() => onDelete(contract.contract_id)}
+              color="error"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
+            >
+              Xóa
+            </ActionButton>
+          </Box>
         </CardActions>
       </CardContent>
     </StyledCard>

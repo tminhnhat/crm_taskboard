@@ -9,80 +9,82 @@ import {
   Card,
   CardContent,
   Alert,
+  Pagination,
   Paper,
   IconButton,
   Tooltip,
-  useTheme,
-  Pagination
+  LinearProgress,
+  useTheme
 } from '@mui/material'
 import { 
   Add as AddIcon,
-  QrCode as QrCodeIcon,
   TrendingUp as TrendingUpIcon,
-  Business as BusinessIcon,
-  Person as PersonIcon,
+  Schedule as ScheduleIcon,
   CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
   Error as ErrorIcon,
-  PermContactCalendar as PermContactCalendarOutlinedIcon
+  Assessment as AssessmentIcon,
+  Refresh as RefreshIcon,
+  AssignmentOutlined as AssignmentOutlinedIcon
 } from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
-import CustomerCard from '@/components/CustomerCard'
-import CustomerForm from '@/components/CustomerForm'
-import CustomerFilters from '@/components/CustomerFilters'
-import { CustomerCardSkeleton } from '@/components/LoadingSpinner'
-import QRPaymentGenerator from '@/components/QRPaymentGenerator'
-import { useCustomers } from '@/hooks/useCustomers'
-import type { CustomerType } from '@/lib/supabase'
-import { Customer } from '@/lib/supabase'
+import TaskCard from '@/components/TaskCard'
+import TaskForm from '@/components/TaskForm'
+import TaskFilters from '@/components/TaskFilters'
+import { TaskCardSkeleton } from '@/components/LoadingSpinner'
+import { useTasks } from '@/hooks/useTasks'
+import { Task, TaskStatusEnum } from '@/lib/supabase'
 import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
-import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient } from '@/lib/themeUtils'
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from '@/lib/themeUtils'
 
-export default function CustomersPage() {
+export default function TaskDashboard() {
+  const theme = useTheme()
   const { darkMode, themeSettings } = useCustomTheme()
-  const { customers, loading, error, createCustomer, updateCustomer, deleteCustomer, updateCustomerStatus, recalculateNumerology } = useCustomers()
+  const { tasks, loading, error, createTask, updateTask, deleteTask, updateTaskStatus, refetch } = useTasks()
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
-  const [isQRGeneratorOpen, setIsQRGeneratorOpen] = useState(false)
-  const [selectedCustomerForQR, setSelectedCustomerForQR] = useState<number | undefined>(undefined)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState({
-    customerType: '',
-    status: 'active',
+    status: 'needsAction',
+    priority: '',
     search: '',
-    sortBy: 'created_at'
+    sortBy: 'task_date_start',
+    taskType: ''
   })
   const [currentPage, setCurrentPage] = useState(1)
-  const customersPerPage = 8 // Show 4 rows in 2 columns
+  const tasksPerPage = 10
 
-  // Filter and sort customers based on current filters
-  const filteredCustomers = useMemo(() => {
-    const filtered = customers.filter(customer => {
-      const matchesType = !filters.customerType || customer.customer_type === filters.customerType
-      const matchesStatus = !filters.status || customer.status === filters.status
+  // Filter and sort tasks based on current filters
+  const filteredTasks = useMemo(() => {
+    const filtered = tasks.filter(task => {
+      const matchesStatus = !filters.status || task.task_status === filters.status
+      const matchesPriority = !filters.priority || task.task_priority === filters.priority
+      const matchesTaskType = !filters.taskType || task.task_type === filters.taskType
       const matchesSearch = !filters.search || 
-        customer.full_name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        customer.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        customer.phone?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        customer.account_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        customer.cif_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        (customer.customer_type === 'corporate' && (
-          customer.business_registration_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
-          customer.registration_date?.toLowerCase().includes(filters.search.toLowerCase())
-        )) ||
-        (customer.customer_type === 'individual' && (
-          customer.id_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
-          customer.id_issue_authority?.toLowerCase().includes(filters.search.toLowerCase()) ||
-          customer.id_issue_date?.toLowerCase().includes(filters.search.toLowerCase())
-        ))
+        task.task_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+        task.task_note?.toLowerCase().includes(filters.search.toLowerCase())
       
-      return matchesType && matchesStatus && matchesSearch
+      return matchesStatus && matchesPriority && matchesTaskType && matchesSearch
     })
 
     // Sort the filtered results
     return filtered.sort((a, b) => {
-      const sortBy = filters.sortBy as keyof Customer
+      const sortBy = filters.sortBy as keyof Task
       
-      // Handle date fields
-      if (sortBy === 'created_at' || sortBy === 'updated_at' || sortBy === 'date_of_birth') {
+      // Handle sorting by start date first (prioritize tasks with start dates)
+      if (sortBy === 'task_date_start') {
+        // Tasks with start dates come first, sorted by start date
+        // Tasks without start dates come last, sorted by created date
+        if (a.task_date_start && !b.task_date_start) return -1
+        if (!a.task_date_start && b.task_date_start) return 1
+        if (a.task_date_start && b.task_date_start) {
+          return new Date(a.task_date_start).getTime() - new Date(b.task_date_start).getTime()
+        }
+        // Both don't have start dates, sort by created date
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      }
+      
+      // Handle other date fields
+      if (sortBy === 'task_due_date' || sortBy === 'created_at' || sortBy === 'updated_at') {
         const aValue = a[sortBy]
         const bValue = b[sortBy]
         if (!aValue && !bValue) return 0
@@ -91,22 +93,25 @@ export default function CustomersPage() {
         return new Date(aValue).getTime() - new Date(bValue).getTime()
       }
       
-      // Handle customer type sorting
-      if (sortBy === 'customer_type') {
-        const typeOrder: Record<CustomerType, number> = {
-          'individual': 1,
-          'corporate': 2,
-          'business_individual': 3
-        }
-        return typeOrder[a.customer_type] - typeOrder[b.customer_type]
+      // Handle priority sorting (custom order)
+      if (sortBy === 'task_priority') {
+        const priorityOrder = { 'Do first': 1, 'Schedule': 2, 'Delegate': 3, 'Eliminate': 4 }
+        const aPriority = a.task_priority ? priorityOrder[a.task_priority] || 5 : 5
+        const bPriority = b.task_priority ? priorityOrder[b.task_priority] || 5 : 5
+        return aPriority - bPriority
       }
       
-      // Handle status sorting
-      if (sortBy === 'status') {
-        const statusOrder = { 'active': 1, 'inactive': 2 }
-        const aStatus = statusOrder[a.status as keyof typeof statusOrder] || 3
-        const bStatus = statusOrder[b.status as keyof typeof statusOrder] || 3
-        return aStatus - bStatus
+      // Handle status sorting (custom order)
+      if (sortBy === 'task_status') {
+        const statusOrder = { 
+          'needsAction': 1, 
+          'inProgress': 2, 
+          'onHold': 3, 
+          'completed': 4, 
+          'cancelled': 5, 
+          'deleted': 6 
+        }
+        return statusOrder[a.task_status] - statusOrder[b.task_status]
       }
       
       // Handle string fields
@@ -114,88 +119,61 @@ export default function CustomersPage() {
       const bValue = String(b[sortBy] || '')
       return aValue.localeCompare(bValue)
     })
-  }, [customers, filters])
+  }, [tasks, filters])
 
-  const handleCreateCustomer = async (customerData: Partial<Customer>) => {
+  const handleCreateTask = async (taskData: Partial<Task>) => {
     try {
-      await createCustomer(customerData as Omit<Customer, 'customer_id' | 'created_at' | 'updated_at'>)
+      await createTask(taskData as Omit<Task, 'task_id' | 'created_at' | 'updated_at'>)
       setIsFormOpen(false)
     } catch (err) {
-      console.error('Failed to create customer:', err)
-      alert('Tạo khách hàng thất bại. Vui lòng thử lại.')
+      console.error('Failed to create task:', err)
+      // You could show a toast notification here
     }
   }
 
-  const handleUpdateCustomer = async (customerData: Partial<Customer>) => {
-    if (!editingCustomer) return
+  const handleUpdateTask = async (taskData: Partial<Task>) => {
+    if (!editingTask) return
     
     try {
-      await updateCustomer(editingCustomer.customer_id, customerData)
-      setEditingCustomer(null)
+      await updateTask(editingTask.task_id, taskData)
+      setEditingTask(null)
       setIsFormOpen(false)
     } catch (err) {
-      console.error('Failed to update customer:', err)
-      alert('Cập nhật khách hàng thất bại. Vui lòng thử lại.')
+      console.error('Failed to update task:', err)
+      // You could show a toast notification here
     }
   }
 
-  const handleDeleteCustomer = async (customerId: number) => {
-    if (confirm('Bạn có chắc chắn muốn xóa khách hàng này không?')) {
-      try {
-        await deleteCustomer(customerId)
-      } catch (err) {
-        console.error('Failed to delete customer:', err)
-        alert('Xóa khách hàng thất bại. Vui lòng thử lại.')
-      }
+  const handleDeleteTask = async (taskId: number, deleteRecurring: boolean = false) => {
+    try {
+      await deleteTask(taskId, deleteRecurring)
+    } catch (err) {
+      console.error('Failed to delete task:', err)
+      // You could show a toast notification here
     }
   }
 
-  const handleEditCustomer = (customer: Customer) => {
-    setEditingCustomer(customer)
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task)
     setIsFormOpen(true)
   }
 
-  const handleStatusChange = async (customerId: number, status: string) => {
+  const handleStatusChange = async (taskId: number, status: TaskStatusEnum) => {
     try {
-      await updateCustomerStatus(customerId, status)
+      await updateTaskStatus(taskId, status)
     } catch (err) {
-      console.error('Failed to update customer status:', err)
-      alert('Cập nhật trạng thái khách hàng thất bại. Vui lòng thử lại.')
+      console.error('Failed to update task status:', err)
+      // You could show a toast notification here
     }
   }
 
   const handleCloseForm = () => {
     setIsFormOpen(false)
-    setEditingCustomer(null)
-  }
-
-  const handleRecalculateNumerology = async (customerId: number) => {
-    try {
-      await recalculateNumerology(customerId)
-      alert('Đã tính toán lại dữ liệu thần số học thành công!')
-    } catch (err) {
-      console.error('Failed to recalculate numerology:', err)
-      alert('Tính toán thần số học thất bại. Vui lòng thử lại.')
-    }
-  }
-
-  const handleOpenQRGenerator = (customerId?: number) => {
-    setSelectedCustomerForQR(customerId)
-    setIsQRGeneratorOpen(true)
-  }
-
-  const handleOpenQRGeneratorForCustomer = (customer: Customer) => {
-    setSelectedCustomerForQR(customer.customer_id)
-    setIsQRGeneratorOpen(true)
-  }
-
-  const handleCloseQRGenerator = () => {
-    setIsQRGeneratorOpen(false)
-    setSelectedCustomerForQR(undefined)
+    setEditingTask(null)
   }
 
   // Calculate total pages
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredCustomers.length / customersPerPage)), [filteredCustomers.length, customersPerPage])
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredTasks.length / tasksPerPage)), [filteredTasks.length, tasksPerPage])
 
   // Reset current page when filters change or if current page is beyond total pages
   useEffect(() => {
@@ -204,16 +182,20 @@ export default function CustomersPage() {
     }
   }, [totalPages, currentPage])
 
-  // Customer statistics
+  // Task statistics
   const stats = useMemo(() => {
-    const total = customers.length
-    const active = customers.filter(c => c.status === 'active').length
-    const inactive = customers.filter(c => c.status === 'inactive').length
-    const individual = customers.filter(c => c.customer_type === 'individual').length
-    const corporate = customers.filter(c => c.customer_type === 'corporate').length
+    const total = tasks.length
+    const completed = tasks.filter(t => t.task_status === 'completed').length
+    const inProgress = tasks.filter(t => t.task_status === 'inProgress').length
+    const pending = tasks.filter(t => t.task_status === 'needsAction').length
+    const overdue = tasks.filter(t => 
+      t.task_due_date && 
+      new Date(t.task_due_date) < new Date() && 
+      t.task_status !== 'completed'
+    ).length
 
-    return { total, active, inactive, individual, corporate }
-  }, [customers])
+    return { total, completed, inProgress, pending, overdue }
+  }, [tasks])
 
   if (error) {
     return (
@@ -223,7 +205,7 @@ export default function CustomersPage() {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Box sx={{ textAlign: 'center' }}>
               <Alert severity="error" sx={{ mb: 2 }}>
-                Lỗi khi tải danh sách khách hàng: {error}
+                Lỗi khi tải danh sách công việc: {error}
               </Alert>
               <Typography color="text.secondary">
                 Vui lòng kiểm tra cấu hình Supabase trong file .env.local
@@ -263,29 +245,32 @@ export default function CustomersPage() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                <PermContactCalendarOutlinedIcon sx={{ fontSize: 36 }} /> Quản Lý Khách Hàng
+                <AssignmentOutlinedIcon sx={{ fontSize: 36 }} /> Bảng Điều Khiển Công Việc
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
-                Quản lý và theo dõi thông tin khách hàng một cách chuyên nghiệp
+                Quản lý và theo dõi tất cả công việc của bạn một cách hiệu quả
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Tooltip title="Tạo QR thanh toán">
-                <Button
-                  variant="outlined"
-                  startIcon={<QrCodeIcon />}
-                  onClick={() => handleOpenQRGenerator()}
+              <Tooltip title="Làm mới dữ liệu">
+                <IconButton 
+                  onClick={() => refetch?.()}
+                  disabled={loading}
                   sx={{ 
+                    bgcolor: 'background.paper',
+                    border: 1,
                     borderColor: 'divider',
-                    color: 'text.primary',
+                    boxShadow: '0px 2px 4px rgba(0,0,0,0.05)',
                     '&:hover': { 
-                      borderColor: 'primary.main',
-                      bgcolor: 'action.hover'
-                    }
+                      boxShadow: '0px 4px 8px rgba(0,0,0,0.1)',
+                      transform: 'translateY(-1px)',
+                      borderColor: 'primary.main'
+                    },
+                    transition: 'all 0.2s ease-in-out'
                   }}
                 >
-                  QR Thanh Toán
-                </Button>
+                  <RefreshIcon />
+                </IconButton>
               </Tooltip>
               <Button
                 variant="contained"
@@ -308,7 +293,7 @@ export default function CustomersPage() {
                   transition: 'all 0.2s ease-in-out'
                 }}
               >
-                Khách Hàng Mới
+                Công Việc Mới
               </Button>
             </Box>
           </Box>
@@ -320,8 +305,8 @@ export default function CustomersPage() {
         {/* Statistics Cards */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h5" fontWeight="600" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <TrendingUpIcon color="primary" />
-            Thống Kê Khách Hàng
+            <AssessmentIcon color="primary" />
+            Thống Kê Tổng Quan
           </Typography>
           <Box sx={{ 
             display: 'grid', 
@@ -332,7 +317,7 @@ export default function CustomersPage() {
             }, 
             gap: 3
           }}>
-            {/* Total Customers */}
+            {/* Total Tasks */}
             <Card elevation={0} sx={{ 
               bgcolor: 'background.paper',
               position: 'relative',
@@ -365,12 +350,12 @@ export default function CustomersPage() {
                   {stats.total}
                 </Typography>
                 <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
-                  Tổng Cộng
+                  Tổng Công Việc
                 </Typography>
               </CardContent>
             </Card>
             
-            {/* Active Customers */}
+            {/* Pending Tasks */}
             <Card elevation={0} sx={{ 
               bgcolor: 'background.paper',
               position: 'relative',
@@ -379,7 +364,7 @@ export default function CustomersPage() {
               borderColor: 'divider',
               '&:hover': { 
                 transform: 'translateY(-4px)', 
-                boxShadow: '0px 4px 16px rgba(130, 214, 22, 0.1)' 
+                boxShadow: '0px 4px 16px rgba(251, 133, 0, 0.1)' 
               },
               transition: 'all 0.2s ease-in-out'
             }}>
@@ -393,60 +378,22 @@ export default function CustomersPage() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #82d616 0%, #a8e6cf 100%)',
+                    background: getThemeStatusGradient('warning', themeSettings, darkMode),
                     color: 'white'
                   }}>
-                    <CheckCircleIcon fontSize="large" />
+                    <ScheduleIcon fontSize="large" />
                   </Box>
                 </Box>
                 <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
-                  {stats.active}
+                  {stats.pending}
                 </Typography>
                 <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
-                  Đang Hoạt Động
+                  Chờ Xử Lý
                 </Typography>
               </CardContent>
             </Card>
             
-            {/* Inactive Customers */}
-            <Card elevation={0} sx={{ 
-              bgcolor: 'background.paper',
-              position: 'relative',
-              overflow: 'hidden',
-              border: 1,
-              borderColor: 'divider',
-              '&:hover': { 
-                transform: 'translateY(-4px)', 
-                boxShadow: '0px 4px 16px rgba(123, 128, 154, 0.1)' 
-              },
-              transition: 'all 0.2s ease-in-out'
-            }}>
-              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  mb: 2
-                }}>
-                  <Box sx={{ 
-                    p: 2, 
-                    borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #7b809a 0%, #9ca3af 100%)',
-                    color: 'white'
-                  }}>
-                    <ErrorIcon fontSize="large" />
-                  </Box>
-                </Box>
-                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
-                  {stats.inactive}
-                </Typography>
-                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
-                  Không Hoạt Động
-                </Typography>
-              </CardContent>
-            </Card>
-            
-            {/* Individual Customers */}
+            {/* In Progress Tasks */}
             <Card elevation={0} sx={{ 
               bgcolor: 'background.paper',
               position: 'relative',
@@ -469,22 +416,22 @@ export default function CustomersPage() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #49a3f1 0%, #5dade2 100%)',
+                    background: getThemeStatusGradient('info', themeSettings, darkMode),
                     color: 'white'
                   }}>
-                    <PersonIcon fontSize="large" />
+                    <WarningIcon fontSize="large" />
                   </Box>
                 </Box>
                 <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
-                  {stats.individual}
+                  {stats.inProgress}
                 </Typography>
                 <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
-                  Cá Nhân
+                  Đang Thực Hiện
                 </Typography>
               </CardContent>
             </Card>
             
-            {/* Corporate Customers */}
+            {/* Completed Tasks */}
             <Card elevation={0} sx={{ 
               bgcolor: 'background.paper',
               position: 'relative',
@@ -493,7 +440,7 @@ export default function CustomersPage() {
               borderColor: 'divider',
               '&:hover': { 
                 transform: 'translateY(-4px)', 
-                boxShadow: '0px 4px 16px rgba(168, 85, 247, 0.1)' 
+                boxShadow: '0px 4px 16px rgba(130, 214, 22, 0.1)' 
               },
               transition: 'all 0.2s ease-in-out'
             }}>
@@ -507,37 +454,132 @@ export default function CustomersPage() {
                   <Box sx={{ 
                     p: 2, 
                     borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #a855f7 0%, #d946ef 100%)',
+                    background: getThemeStatusGradient('success', themeSettings, darkMode),
                     color: 'white'
                   }}>
-                    <BusinessIcon fontSize="large" />
+                    <CheckCircleIcon fontSize="large" />
                   </Box>
                 </Box>
                 <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
-                  {stats.corporate}
+                  {stats.completed}
                 </Typography>
                 <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
-                  Doanh Nghiệp
+                  Hoàn Thành
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Overdue Tasks */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(234, 6, 6, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: getThemeStatusGradient('error', themeSettings, darkMode),
+                    color: 'white'
+                  }}>
+                    <ErrorIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {stats.overdue}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Quá Hạn
                 </Typography>
               </CardContent>
             </Card>
           </Box>
+          
+          {/* Progress Bar */}
+          {stats.total > 0 && (
+            <Card elevation={0} sx={{ 
+              mt: 4, 
+              p: 4, 
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 3
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" fontWeight="600" sx={{ color: 'text.primary' }}>
+                  Tiến Độ Hoàn Thành Tổng Thể
+                </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: 2,
+                  background: getThemeSecondaryGradient(themeSettings, darkMode),
+                  color: 'white'
+                }}>
+                    <Typography 
+                    variant="body2" 
+                    fontWeight="700"
+                    sx={{ color: 'white', textShadow: '0 1px 4px rgba(52, 71, 103, 0.2)' }}
+                    >
+                    {Math.round((stats.completed / stats.total) * 100)}%
+                    </Typography>
+                </Box>
+              </Box>
+              <LinearProgress 
+                variant="determinate" 
+                value={(stats.completed / stats.total) * 100}
+                sx={{ 
+                  height: 10, 
+                  borderRadius: 5,
+                  bgcolor: 'grey.200',
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 5,
+                    background: getThemeSecondaryGradient(themeSettings, darkMode).replace('135deg', '90deg')
+                  }
+                }}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  <strong>{stats.completed}</strong> / {stats.total} công việc hoàn thành
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  <strong>{stats.total - stats.completed}</strong> công việc còn lại
+                </Typography>
+              </Box>
+            </Card>
+          )}
         </Box>
 
         {/* Filters Section */}
         <Paper elevation={1} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <CustomerFilters filters={filters} onFiltersChange={setFilters} />
+          <TaskFilters filters={filters} onFiltersChange={setFilters} />
         </Paper>
 
-        {/* Customers List */}
+        {/* Tasks List */}
         <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
           {loading ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {[...Array(4)].map((_, i) => (
-                <CustomerCardSkeleton key={i} />
+              {[...Array(3)].map((_, i) => (
+                <TaskCardSkeleton key={i} />
               ))}
             </Box>
-          ) : filteredCustomers.length === 0 ? (
+          ) : filteredTasks.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8 }}>
               <Box sx={{ 
                 width: 120, 
@@ -550,25 +592,22 @@ export default function CustomersPage() {
                 mx: 'auto',
                 mb: 3
               }}>
-                <PersonIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+                <TrendingUpIcon sx={{ fontSize: 48, color: 'grey.400' }} />
               </Box>
               <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
-                {customers.length === 0 ? 'Chưa có khách hàng nào' : 'Không có kết quả phù hợp'}
+                {tasks.length === 0 ? 'Chưa có công việc nào' : 'Không có kết quả phù hợp'}
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                {customers.length === 0 
-                  ? 'Tạo khách hàng đầu tiên của bạn để bắt đầu!' 
-                  : 'Thử điều chỉnh bộ lọc để tìm thấy khách hàng bạn cần.'
-                }
+                {tasks.length === 0 ? 'Tạo công việc đầu tiên của bạn để bắt đầu!' : 'Thử điều chỉnh bộ lọc để tìm thấy công việc bạn cần.'}
               </Typography>
-              {customers.length === 0 && (
+              {tasks.length === 0 && (
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => setIsFormOpen(true)}
                   size="large"
                 >
-                  Tạo Khách Hàng Đầu Tiên
+                  Tạo Công Việc Đầu Tiên
                 </Button>
               )}
             </Box>
@@ -576,30 +615,23 @@ export default function CustomersPage() {
             <>
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" fontWeight="bold">
-                  Danh sách khách hàng ({filteredCustomers.length})
+                  Danh sách công việc ({filteredTasks.length})
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Hiển thị {((currentPage - 1) * customersPerPage) + 1}-{Math.min(currentPage * customersPerPage, filteredCustomers.length)} trong tổng số {filteredCustomers.length} khách hàng
+                  Hiển thị {((currentPage - 1) * tasksPerPage) + 1}-{Math.min(currentPage * tasksPerPage, filteredTasks.length)} trong tổng số {filteredTasks.length} công việc
                 </Typography>
               </Box>
               
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, 
-                gap: 3,
-                mb: 4
-              }}>
-                {filteredCustomers
-                  .slice((currentPage - 1) * customersPerPage, currentPage * customersPerPage)
-                  .map((customer) => (
-                    <CustomerCard
-                      key={customer.customer_id}
-                      customer={customer}
-                      onEdit={handleEditCustomer}
-                      onDelete={handleDeleteCustomer}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {filteredTasks
+                  .slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage)
+                  .map((task) => (
+                    <TaskCard
+                      key={task.task_id}
+                      task={task}
+                      onEdit={handleEditTask}
+                      onDelete={handleDeleteTask}
                       onStatusChange={handleStatusChange}
-                      onRecalculateNumerology={handleRecalculateNumerology}
-                      onGenerateQR={handleOpenQRGeneratorForCustomer}
                     />
                   ))}
               </Box>
@@ -623,19 +655,12 @@ export default function CustomersPage() {
         </Paper>
       </Container>
 
-      {/* Customer Form Modal */}
-      <CustomerForm
+      {/* Task Form Modal */}
+      <TaskForm
         isOpen={isFormOpen}
         onClose={handleCloseForm}
-        onSubmit={editingCustomer ? handleUpdateCustomer : handleCreateCustomer}
-        customer={editingCustomer}
-      />
-
-      {/* QR Payment Generator Modal */}
-      <QRPaymentGenerator
-        isOpen={isQRGeneratorOpen}
-        onClose={handleCloseQRGenerator}
-        prefilledCustomerId={selectedCustomerForQR}
+        onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
+        task={editingTask}
       />
     </Box>
   )

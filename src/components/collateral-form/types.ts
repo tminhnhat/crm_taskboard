@@ -5,6 +5,7 @@ export interface CollateralFormData {
   value: string
   customer_id: string
   valuation_date: string
+  re_evaluation_date: string
   status: string
   location: string
   description: string

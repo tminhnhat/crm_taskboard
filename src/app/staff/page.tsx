@@ -1,21 +1,38 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  Paper,
+  useTheme
+} from '@mui/material'
+import { 
+  Add as AddIcon,
+  Person as UserIcon,
+  TrendingUp as ChartBarIcon,
+  Warning as ExclamationTriangleIcon,
+  Group as GroupIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon
+} from '@mui/icons-material'
 import { useStaff } from '@/hooks/useStaff'
 import { Staff } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from "@/theme/ThemeProvider"
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from "@/lib/themeUtils"
 import Navigation from '@/components/Navigation'
 import StaffCard from '@/components/StaffCard'
 import StaffForm from '@/components/StaffForm'
 import StaffFilters from '@/components/StaffFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { 
-  PlusIcon, 
-  UserIcon,
-  ChartBarIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
 
 export default function StaffPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { staff, loading, error, createStaff, updateStaff, deleteStaff } = useStaff()
   const [showForm, setShowForm] = useState(false)
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null)
@@ -120,129 +137,277 @@ export default function StaffPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Container maxWidth="xl" sx={{ py: 4 }}>
           <LoadingSpinner />
-        </div>
-      </div>
+        </Container>
+      </Box>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex items-center">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
-              <p className="text-red-800">Lỗi khi tải danh sách nhân viên: {error}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Alert severity="error" sx={{ mt: 2 }}>
+            Lỗi khi tải danh sách nhân viên: {error}
+          </Alert>
+        </Container>
+      </Box>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Navigation */}
       <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <UserIcon className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Nhân Viên</h1>
-                <p className="text-gray-600">Quản lý thành viên nhóm của bạn</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2"
-            >
-              <PlusIcon className="h-5 w-5" />
-              Thêm Nhân Viên
-            </button>
-          </div>
-        </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <ChartBarIcon className="h-8 w-8 text-gray-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Tổng Nhân Viên</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-green-600 rounded-full"></div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Đang Hoạt Động</p>
-                <p className="text-2xl font-semibold text-green-600">{stats.active}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="h-4 w-4 bg-gray-600 rounded-full"></div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Không Hoạt Động</p>
-                <p className="text-2xl font-semibold text-gray-600">{stats.inactive}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Header */}
+      <Paper elevation={0} sx={{ 
+        bgcolor: 'background.paper', 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.05)'
+      }}>
+        <Container maxWidth="xl">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            py: 4 
+          }}>
+            <Box>
+              <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
+                mb: 1, 
+                color: 'text.primary',
+                background: getThemeTextGradient(themeSettings, darkMode),
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                <UserIcon sx={{ fontSize: 36, mr: 2 }} /> Quản Lý Nhân Viên
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Quản lý thành viên nhóm của bạn một cách chuyên nghiệp
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowForm(true)}
+              size="large"
+              sx={{ 
+                px: 4,
+                py: 1.5,
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                borderRadius: 3,
+                textTransform: 'none',
+                background: getThemeTextGradient(themeSettings, darkMode),
+                boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
+                '&:hover': {
+                  boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              Thêm Nhân Viên
+            </Button>
+          </Box>
+        </Container>
+      </Paper>
+
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Statistics Cards */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
+          gap: 3, 
+          mb: 4 
+        }}>
+          <Card sx={{ 
+            background: 'linear-gradient(135deg, rgba(52, 71, 103, 0.1) 0%, rgba(56, 103, 214, 0.1) 100%)',
+            border: '1px solid rgba(52, 71, 103, 0.1)',
+            borderRadius: 3,
+            boxShadow: '0px 2px 8px rgba(52, 71, 103, 0.08)',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0px 4px 16px rgba(52, 71, 103, 0.15)'
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  background: getThemeTextGradient(themeSettings, darkMode),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <GroupIcon sx={{ fontSize: 28, color: 'white' }} />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight="700" sx={{ color: '#344767', mb: 0.5 }}>
+                    {stats.total}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    Tổng Nhân Viên
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ 
+            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)',
+            border: '1px solid rgba(76, 175, 80, 0.2)',
+            borderRadius: 3,
+            boxShadow: '0px 2px 8px rgba(76, 175, 80, 0.08)',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0px 4px 16px rgba(76, 175, 80, 0.15)'
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <CheckCircleIcon sx={{ fontSize: 28, color: 'white' }} />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight="700" sx={{ color: '#4caf50', mb: 0.5 }}>
+                    {stats.active}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    Đang Hoạt Động
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ 
+            background: 'linear-gradient(135deg, rgba(158, 158, 158, 0.1) 0%, rgba(189, 189, 189, 0.1) 100%)',
+            border: '1px solid rgba(158, 158, 158, 0.2)',
+            borderRadius: 3,
+            boxShadow: '0px 2px 8px rgba(158, 158, 158, 0.08)',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0px 4px 16px rgba(158, 158, 158, 0.15)'
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  background: 'linear-gradient(135deg, #9e9e9e 0%, #bdbdbd 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <CancelIcon sx={{ fontSize: 28, color: 'white' }} />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight="700" sx={{ color: '#9e9e9e', mb: 0.5 }}>
+                    {stats.inactive}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    Không Hoạt Động
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
 
         {/* Filters */}
-        <StaffFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          availableDepartments={availableDepartments}
-          availablePositions={availablePositions}
-          totalCount={staff.length}
-          filteredCount={filteredStaff.length}
-        />
+        <Paper elevation={0} sx={{ 
+          p: 3, 
+          mb: 3, 
+          borderRadius: 2, 
+          border: 1, 
+          borderColor: 'divider',
+          bgcolor: 'background.paper'
+        }}>
+          <StaffFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableDepartments={availableDepartments}
+            availablePositions={availablePositions}
+            totalCount={staff.length}
+            filteredCount={filteredStaff.length}
+          />
+        </Paper>
 
         {/* Staff Grid */}
         {filteredStaff.length === 0 ? (
-          <div className="text-center py-12">
-            <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
+          <Paper elevation={0} sx={{ 
+            textAlign: 'center', 
+            py: 8, 
+            borderRadius: 3, 
+            border: 1, 
+            borderColor: 'divider',
+            bgcolor: 'background.paper'
+          }}>
+            <UserIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+            <Typography variant="h5" fontWeight="600" color="text.primary" sx={{ mb: 1 }}>
               {staff.length === 0 ? 'Chưa có nhân viên nào' : 'Không có nhân viên nào phù hợp với bộ lọc'}
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
               {staff.length === 0 
                 ? 'Hãy bắt đầu bằng cách thêm nhân viên đầu tiên.' 
                 : 'Hãy thử điều chỉnh tiêu chí tìm kiếm.'}
-            </p>
+            </Typography>
             {staff.length === 0 && (
-              <div className="mt-6">
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 mx-auto"
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  Thêm Nhân Viên Đầu Tiên
-                </button>
-              </div>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowForm(true)}
+                size="large"
+                sx={{ 
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  background: getThemeTextGradient(themeSettings, darkMode),
+                  boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
+                  '&:hover': {
+                    boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
+              >
+                Thêm Nhân Viên Đầu Tiên
+              </Button>
             )}
-          </div>
+          </Paper>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              md: 'repeat(2, 1fr)', 
+              lg: 'repeat(3, 1fr)' 
+            }, 
+            gap: 3
+          }}>
             {filteredStaff.map((member) => (
               <StaffCard
                 key={member.staff_id}
@@ -252,7 +417,7 @@ export default function StaffPage() {
                 onStatusChange={handleStatusChange}
               />
             ))}
-          </div>
+          </Box>
         )}
 
         {/* Staff Form Modal */}
@@ -263,7 +428,7 @@ export default function StaffPage() {
           isLoading={loading}
           open={showForm}
         />
-      </div>
-    </div>
+      </Container>
+    </Box>
   )
 }

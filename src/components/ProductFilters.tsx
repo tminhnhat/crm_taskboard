@@ -101,18 +101,7 @@ export default function ProductFilters({
             }}
           />
 
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Trạng thái</InputLabel>
-            <Select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              label="Trạng thái"
-            >
-              <MenuItem value="">Tất cả trạng thái</MenuItem>
-              <MenuItem value="active">Hoạt động</MenuItem>
-              <MenuItem value="inactive">Tạm ngưng</MenuItem>
-            </Select>
-          </FormControl>
+          {/* Đã gỡ bỏ Product Status input field */}
 
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel>Loại sản phẩm</InputLabel>

@@ -22,10 +22,13 @@ import {
   AttachMoney as MoneyIcon,
   Assessment as AssessmentIcon,
   Security as SecurityIcon,
+  CategoryOutlined as CategoryOutlinedIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material'
 import { useProducts } from '@/hooks/useProducts'
 import { Product } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from "@/theme/ThemeProvider"
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from "@/lib/themeUtils"
 import Navigation from '@/components/Navigation'
 import ProductCard from '@/components/ProductCard'
 import ProductForm from '@/components/ProductForm'
@@ -33,6 +36,7 @@ import ProductFilters from '@/components/ProductFilters'
 import { ProductCardSkeleton } from '@/components/LoadingSpinner'
 
 export default function ProductsPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
   const [showForm, setShowForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -219,12 +223,12 @@ export default function ProductsPage() {
               <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
                 mb: 1, 
                 color: 'text.primary',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemeTextGradient(themeSettings, darkMode),
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                📦 Quản Lý Sản Phẩm
+                <CategoryOutlinedIcon sx={{ fontSize: 36 }} /> Quản Lý Sản Phẩm
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Quản lý và theo dõi danh mục sản phẩm một cách chuyên nghiệp
@@ -242,7 +246,7 @@ export default function ProductsPage() {
                 fontWeight: 700,
                 borderRadius: 3,
                 textTransform: 'none',
-                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                background: getThemePrimaryGradient(themeSettings, darkMode),
                 boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
                 '&:hover': {
                   boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
@@ -297,55 +301,7 @@ export default function ProductsPage() {
                 </Typography>
               </CardContent>
             </Card>
-            
-            {/* Active Products */}
-            <Card elevation={0} sx={{ 
-              bgcolor: 'background.paper',
-              border: 1,
-              borderColor: 'divider',
-              '&:hover': { 
-                transform: 'translateY(-2px)', 
-                boxShadow: '0px 4px 12px rgba(130, 214, 22, 0.1)' 
-              },
-              transition: 'all 0.2s ease-in-out'
-            }}>
-              <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                  Hoạt Động
-                </Typography>
-                <Typography variant="h6" fontWeight="700" sx={{ color: 'success.main' }}>
-                  {stats.active}
-                </Typography>
-              </CardContent>
-            </Card>
-            
-            {/* Inactive Products */}
-            <Card elevation={0} sx={{ 
-              bgcolor: 'background.paper',
-              border: 1,
-              borderColor: 'divider',
-              '&:hover': { 
-                transform: 'translateY(-2px)', 
-                boxShadow: '0px 4px 12px rgba(123, 128, 154, 0.1)' 
-              },
-              transition: 'all 0.2s ease-in-out'
-            }}>
-              <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <WarningIcon sx={{ color: 'warning.main', fontSize: 20 }} />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                  Tạm Dừng
-                </Typography>
-                <Typography variant="h6" fontWeight="700" sx={{ color: 'warning.main' }}>
-                  {stats.inactive}
-                </Typography>
-              </CardContent>
-            </Card>
-            
+
             {/* Loan Products */}
             <Card elevation={0} sx={{ 
               bgcolor: 'background.paper',
