@@ -1,11 +1,33 @@
+import React from 'react';
 import { Staff } from '@/lib/supabase'
+import {
+  CardContent,
+  Typography,
+  Box,
+  Stack,
+  Select,
+  MenuItem,
+  FormControl,
+  Chip,
+  Link
+} from '@mui/material'
 import { 
-  UserIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  BriefcaseIcon,
-  BuildingOfficeIcon
-} from '@heroicons/react/24/outline'
+  Person,
+  Email,
+  Phone,
+  Work,
+  Business,
+  Edit,
+  DeleteOutline
+} from '@mui/icons-material'
+import {
+  StyledCard,
+  ActionButton,
+  InfoBox,
+  CardHeader,
+  CardActions,
+  StyledSelect
+} from './StyledComponents'
 
 interface StaffCardProps {
   staff: Staff
@@ -14,105 +36,133 @@ interface StaffCardProps {
   onStatusChange: (staffId: number, status: string) => void
 }
 
-const statusColors = {
-  active: 'bg-green-100 text-green-800',
-  inactive: 'bg-gray-100 text-gray-800'
-}
-
 export default function StaffCard({ staff, onEdit, onDelete, onStatusChange }: StaffCardProps) {
+  const getStatusColor = (status: string) => {
+    return status === 'active' ? 'success' : 'default'
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-4">
-            <UserIcon className="h-6 w-6 text-gray-600" />
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">{staff.full_name}</h3>
-              {staff.position && (
-                <p className="text-sm text-gray-600">{staff.position}</p>
+    <StyledCard>
+      <CardContent>
+        <CardHeader>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+              <Person color="action" sx={{ mt: 0.5 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  {staff.full_name}
+                </Typography>
+                {staff.position && (
+                  <Typography variant="body2" color="text.secondary">
+                    {staff.position}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+            
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+              <Chip 
+                label={staff.status.charAt(0).toUpperCase() + staff.status.slice(1)}
+                color={getStatusColor(staff.status) as any}
+                size="small"
+              />
+              {staff.department && (
+                <Chip 
+                  icon={<Business />}
+                  label={staff.department}
+                  color="primary"
+                  size="small"
+                />
               )}
-            </div>
-          </div>
+            </Stack>
+            
+            <Stack spacing={1}>
+              {staff.email && (
+                <InfoBox>
+                  <Email fontSize="small" color="primary" />
+                  <Link 
+                    href={`mailto:${staff.email}`}
+                    color="primary"
+                    sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  >
+                    <Typography variant="body2">
+                      {staff.email}
+                    </Typography>
+                  </Link>
+                </InfoBox>
+              )}
+              
+              {staff.phone && (
+                <InfoBox>
+                  <Phone fontSize="small" color="secondary" />
+                  <Link 
+                    href={`tel:${staff.phone}`}
+                    color="secondary"
+                    sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  >
+                    <Typography variant="body2">
+                      {staff.phone}
+                    </Typography>
+                  </Link>
+                </InfoBox>
+              )}
+              
+              {staff.position && (
+                <InfoBox>
+                  <Work fontSize="small" color="action" />
+                  <Typography variant="body2">
+                    {staff.position}
+                  </Typography>
+                </InfoBox>
+              )}
+              
+              {staff.department && (
+                <InfoBox>
+                  <Business fontSize="small" color="action" />
+                  <Typography variant="body2">
+                    {staff.department}
+                  </Typography>
+                </InfoBox>
+              )}
+            </Stack>
+          </Box>
           
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[staff.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
-              {staff.status.charAt(0).toUpperCase() + staff.status.slice(1)}
-            </span>
-            {staff.department && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                <BuildingOfficeIcon className="h-3 w-3 mr-1" />
-                {staff.department}
-              </span>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            {staff.email && (
-              <div className="flex items-center text-sm text-gray-600">
-                <EnvelopeIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-                <a 
-                  href={`mailto:${staff.email}`}
-                  className="hover:text-blue-600 transition-colors"
-                >
-                  {staff.email}
-                </a>
-              </div>
-            )}
-            
-            {staff.phone && (
-              <div className="flex items-center text-sm text-gray-600">
-                <PhoneIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-                <a 
-                  href={`tel:${staff.phone}`}
-                  className="hover:text-blue-600 transition-colors"
-                >
-                  {staff.phone}
-                </a>
-              </div>
-            )}
-            
-            {staff.position && (
-              <div className="flex items-center text-sm text-gray-600">
-                <BriefcaseIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-                <span>{staff.position}</span>
-              </div>
-            )}
-            
-            {staff.department && (
-              <div className="flex items-center text-sm text-gray-600">
-                <BuildingOfficeIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-                <span>{staff.department}</span>
-              </div>
-            )}
-          </div>
-        </div>
+          {/* Đã gỡ bỏ staff status input field */}
+        </CardHeader>
         
-        <div className="flex flex-col gap-2 ml-4">
-          <select
-            value={staff.status}
-            onChange={(e) => onStatusChange(staff.staff_id, e.target.value)}
-            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="active">Đang Hoạt Động</option>
-            <option value="inactive">Không Hoạt Động</option>
-          </select>
-          
-          <div className="flex gap-1">
-            <button
+        <CardActions>
+          <Box sx={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <ActionButton
+              startIcon={<Edit />}
               onClick={() => onEdit(staff)}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
             >
               Sửa
-            </button>
-            <button
+            </ActionButton>
+            <Box sx={{ flex: 1 }} />
+            <ActionButton
+              startIcon={<DeleteOutline />}
               onClick={() => onDelete(staff.staff_id)}
-              className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
+              color="error"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
             >
               Xóa
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+            </ActionButton>
+          </Box>
+        </CardActions>
+      </CardContent>
+    </StyledCard>
   )
 }

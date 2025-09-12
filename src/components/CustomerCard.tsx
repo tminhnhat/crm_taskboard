@@ -1,19 +1,42 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Customer } from '@/lib/supabase'
 import { toVNDate } from '@/lib/date'
+import {
+  CardContent,
+  Typography,
+  Box,
+  Stack,
+  Chip,
+  Collapse,
+  IconButton,
+  Tooltip
+} from '@mui/material'
 import { 
-  UserIcon, 
-  BuildingOfficeIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  MapPinIcon,
-  IdentificationIcon,
-  CalendarDaysIcon,
-  ChevronDownIcon,
-  ChevronRightIcon
-} from '@heroicons/react/24/outline'
+  Person,
+  Business,
+  Phone,
+  Email,
+  LocationOn,
+  Badge,
+  CalendarToday,
+  ExpandMore,
+  ExpandLess,
+  Edit,
+  DeleteOutline,
+  Calculate,
+  QrCode,
+  Psychology,
+  Star
+} from '@mui/icons-material'
+import {
+  StyledCard,
+  ActionButton,
+  InfoBox,
+  CardHeader,
+  CardActions
+} from './StyledComponents'
 
 // Interface for numerology data structure
 interface NumerologyData {
@@ -105,22 +128,84 @@ interface CustomerCardProps {
   onGenerateQR?: (customer: Customer) => void
 }
 
-const customerTypeColors = {
-  individual: 'bg-blue-100 text-blue-800',
-  business_individual: 'bg-green-100 text-green-800',
-  corporate: 'bg-purple-100 text-purple-800'
-}
-
-const statusColors = {
-  active: 'bg-green-100 text-green-800',
-  inactive: 'bg-gray-100 text-gray-800'
-}
-
 const customerTypeIcons = {
-  individual: UserIcon,
-  business_individual: UserIcon,
-  corporate: BuildingOfficeIcon
+  individual: Person,
+  business_individual: Person,
+  corporate: Business
 }
+
+const NumerologyCard = ({ title, value, explanation, meaning, color, icon }: {
+  title: string
+  value: string | number
+  explanation: string
+  meaning: string
+  color: string
+  icon: string
+}) => (
+  <Box
+    sx={{
+      p: { xs: 1.5, sm: 2 },
+      bgcolor: 'background.paper',
+      borderRadius: 2,
+      border: `1px solid ${color}`,
+      boxShadow: 1,
+    }}
+  >
+    <Box sx={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      mb: 1,
+      flexDirection: { xs: 'column', sm: 'row' },
+      textAlign: { xs: 'center', sm: 'left' }
+    }}>
+      <Typography variant="subtitle2" sx={{ 
+        fontWeight: 600, 
+        color: 'text.primary',
+        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+        mb: { xs: 0.5, sm: 0 }
+      }}>
+        {icon} {title}
+      </Typography>
+      <Typography 
+        variant="h4" 
+        sx={{ 
+          fontWeight: 'bold', 
+          color,
+          textAlign: 'center',
+          fontSize: { xs: '1.5rem', sm: '2.125rem' }
+        }}
+      >
+        {value}
+      </Typography>
+    </Box>
+    <Typography variant="caption" sx={{ 
+      color: 'text.secondary', 
+      fontStyle: 'italic', 
+      mb: 1, 
+      display: 'block',
+      fontSize: { xs: '0.7rem', sm: '0.75rem' }
+    }}>
+      {explanation}
+    </Typography>
+    <Box 
+      sx={{ 
+        p: 1, 
+        bgcolor: `${color}15`, 
+        borderRadius: 1, 
+        border: `1px solid ${color}30` 
+      }}
+    >
+      <Typography variant="caption" sx={{ 
+        color, 
+        fontWeight: 500,
+        fontSize: { xs: '0.7rem', sm: '0.75rem' }
+      }}>
+        <strong>Ý nghĩa:</strong> {meaning}
+      </Typography>
+    </Box>
+  </Box>
+)
 
 export default function CustomerCard({ customer, onEdit, onDelete, onStatusChange, onRecalculateNumerology, onGenerateQR }: CustomerCardProps) {
   const TypeIcon = customerTypeIcons[customer.customer_type]
@@ -131,362 +216,454 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
     return toVNDate(dateString)
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'success'
+      case 'inactive': return 'default'
+      default: return 'default'
+    }
+  }
+
+  const getCustomerTypeColor = (type: string) => {
+    switch (type) {
+      case 'individual': return 'primary'
+      case 'business_individual': return 'secondary'
+      case 'corporate': return 'secondary'
+      default: return 'default'
+    }
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
-            <TypeIcon className="h-6 w-6 text-gray-600" />
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {customer.customer_type === 'corporate' ? customer.company_name : customer.full_name}
-              </h3>
-              {customer.customer_type === 'corporate' && (
-                <p className="text-sm text-gray-600">Người đại diện: {customer.legal_representative || 'Chưa cập nhật'}</p>
+    <StyledCard>
+      <CardContent>
+        <CardHeader>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+              <TypeIcon color="action" sx={{ mt: 0.5, display: { xs: 'none', sm: 'block' } }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" component="h3" sx={{ 
+                  fontWeight: 600, 
+                  mb: 0.5,
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                }}>
+                  {customer.customer_type === 'corporate' ? customer.company_name : customer.full_name}
+                </Typography>
+                {customer.customer_type === 'corporate' && (
+                  <Typography variant="body2" color="text.secondary" sx={{ 
+                    mb: 0.5,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                  }}>
+                    Người đại diện: {customer.legal_representative || 'Chưa cập nhật'}
+                  </Typography>
+                )}
+                <Typography variant="body2" color="text.secondary" sx={{ 
+                  mb: 0.5,
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                }}>
+                  Tài khoản: {customer.account_number}
+                </Typography>
+                {customer.cif_number && (
+                  <Typography variant="body2" color="text.secondary" sx={{ 
+                    mb: 0.5,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                  }}>
+                    CIF: {customer.cif_number}
+                  </Typography>
+                )}
+                {customer.customer_type === 'corporate' && customer.legal_representative_cif_number && (
+                  <Typography variant="body2" color="text.secondary" sx={{
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                  }}>
+                    CIF người đại diện: {customer.legal_representative_cif_number}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+            
+            <Stack 
+              direction="row" 
+              spacing={1} 
+              sx={{ 
+                mb: 2, 
+                flexWrap: 'wrap',
+                gap: { xs: 0.5, sm: 1 }
+              }}
+            >
+              <Chip 
+                label={customer.customer_type === 'individual' ? 'Cá Nhân' : 'Doanh Nghiệp'}
+                color={getCustomerTypeColor(customer.customer_type) as any}
+                size="small"
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+              />
+              <Chip 
+                label={customer.status === 'active' ? 'Đang Hoạt Động' : 
+                       customer.status === 'inactive' ? 'Không Hoạt Động' : 
+                       customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
+                color={getStatusColor(customer.status) as any}
+                size="small"
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+              />
+            </Stack>
+            
+            <Stack spacing={1}>
+              {customer.phone && (
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+                  <Phone fontSize="small" />
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                    {customer.phone}
+                  </Typography>
+                </InfoBox>
               )}
-              <p className="text-sm text-gray-600">Tài khoản: {customer.account_number}</p>
-              {customer.cif_number && (
-                <p className="text-sm text-gray-600">CIF: {customer.cif_number}</p>
+              {customer.email && (
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+                  <Email fontSize="small" />
+                  <Typography variant="body2" sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    wordBreak: 'break-word'
+                  }}>
+                    {customer.email}
+                  </Typography>
+                </InfoBox>
               )}
-              {customer.customer_type === 'corporate' && customer.legal_representative_cif_number && (
-                <p className="text-sm text-gray-600">CIF người đại diện: {customer.legal_representative_cif_number}</p>
+              {customer.address && (
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+                  <LocationOn fontSize="small" />
+                  <Typography variant="body2" sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    wordBreak: 'break-word'
+                  }}>
+                    {customer.address}
+                  </Typography>
+                </InfoBox>
               )}
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customerTypeColors[customer.customer_type]}`}>
-              {customer.customer_type === 'individual' ? 'Cá Nhân' : 'Doanh Nghiệp'}
-            </span>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[customer.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
-              {customer.status === 'active' ? 'Đang Hoạt Động' : 
-               customer.status === 'inactive' ? 'Không Hoạt Động' : 
-               customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
-            </span>
-          </div>
-          
-          <div className="space-y-2 text-sm text-gray-600">
-            {customer.phone && (
-              <div className="flex items-center">
-                <PhoneIcon className="h-4 w-4 mr-2" />
-                {customer.phone}
-              </div>
-            )}
-            {customer.email && (
-              <div className="flex items-center">
-                <EnvelopeIcon className="h-4 w-4 mr-2" />
-                {customer.email}
-              </div>
-            )}
-            {customer.address && (
-              <div className="flex items-center">
-                <MapPinIcon className="h-4 w-4 mr-2" />
-                {customer.address}
-              </div>
-            )}
-            {customer.hobby && (
-              <div className="flex items-center">
-                <UserIcon className="h-4 w-4 mr-2" />
-                Sở thích: {customer.hobby}
-              </div>
-            )}
-            <div className="flex items-center">
-                <IdentificationIcon className="h-4 w-4 mr-2" />
-                <div>
+              {customer.hobby && (
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+                  <Star fontSize="small" />
+                  <Typography variant="body2" sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    wordBreak: 'break-word'
+                  }}>
+                    Sở thích: {customer.hobby}
+                  </Typography>
+                </InfoBox>
+              )}
+              <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+                <Badge fontSize="small" />
+                <Box>
                   {customer.customer_type === 'corporate' ? (
-                    <>
-                      <span>
+                    <Box>
+                      <Typography variant="body2" sx={{ 
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        wordBreak: 'break-word'
+                      }}>
                         Mã số doanh nghiệp: {customer.business_registration_number || 'Chưa cập nhật'}
-                      </span>
+                      </Typography>
                       {customer.registration_date && (
-                        <span className="text-gray-500 ml-2">
+                        <Typography variant="caption" color="text.secondary" sx={{
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                        }}>
                           (Ngày đăng ký: {formatDateDisplay(customer.registration_date)})
-                        </span>
+                        </Typography>
                       )}
-                    </>
+                    </Box>
                   ) : (
-                    <>
-                      <span>
+                    <Box>
+                      <Typography variant="body2" sx={{ 
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        wordBreak: 'break-word'
+                      }}>
                         CCCD: {customer.id_number || 'Chưa cập nhật'}
-                      </span>
+                      </Typography>
                       {customer.id_issue_date && (
-                        <span className="text-gray-500 ml-2">
+                        <Typography variant="caption" color="text.secondary" sx={{
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                        }}>
                           (Cấp ngày: {formatDateDisplay(customer.id_issue_date)})
-                        </span>
+                        </Typography>
                       )}
                       {customer.id_issue_authority && (
-                        <div className="text-gray-500 text-xs ml-4">
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          wordBreak: 'break-word'
+                        }}>
                           Nơi cấp: {customer.id_issue_authority}
-                        </div>
+                        </Typography>
                       )}
-                    </>
+                    </Box>
                   )}
-                </div>
-              </div>
-            {customer.date_of_birth && (
-              <div className="flex items-center">
-                <CalendarDaysIcon className="h-4 w-4 mr-2" />
-                Ngày sinh: {formatDateDisplay(customer.date_of_birth)}
-              </div>
-            )}
-          </div>
-
-          {customer.numerology_data && (
-            <div className="mt-3">
-              <button
-                onClick={() => setShowNumerology(!showNumerology)}
-                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-1 -ml-1"
-              >
-                {showNumerology ? (
-                  <ChevronDownIcon className="h-4 w-4" />
-                ) : (
-                  <ChevronRightIcon className="h-4 w-4" />
-                )}
-                Dữ Liệu Thần Số Học
-                <span className="text-xs text-gray-500 ml-1">
-                  ({showNumerology ? 'Ẩn' : 'Hiện'})
-                </span>
-              </button>
-              
-              {showNumerology && (
-                <div className="mt-2 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border border-gray-200">
-                  <div className="space-y-4 text-sm">
-                    {(() => {
-                      const numerology = customer.numerology_data as NumerologyData;
-                      
-                      return (
-                        <>
-                          <div className="text-center mb-3">
-                            <h4 className="font-semibold text-gray-800 text-base">🔮 Bản Đồ Thần Số Học</h4>
-                            <p className="text-xs text-gray-600 mt-1">Khám phá bản thân qua con số của bạn</p>
-                          </div>
-                          
-                          {/* Path of Life */}
-                          {numerology?.walksOfLife && (
-                            <div className="p-3 bg-white rounded-lg border border-blue-200 shadow-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-semibold text-gray-700">🛤️ Số Đường Đời:</span>
-                                <span className="font-bold text-2xl text-blue-600">{numerology.walksOfLife}</span>
-                              </div>
-                              <p className="text-xs text-gray-600 italic">
-                                {getNumerologyExplanation('walksOfLife', numerology.walksOfLife)}
-                              </p>
-                              <div className="mt-2 text-xs text-blue-700 bg-blue-50 p-2 rounded">
-                                <strong>Ý nghĩa:</strong> Con đường đúng bạn cần lựa chọn để tận dụng nguồn lực vũ trụ hậu thuẫn
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Mission */}
-                          {numerology?.mission && (
-                            <div className="p-3 bg-white rounded-lg border border-green-200 shadow-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-semibold text-gray-700">🎯 Số Sứ Mệnh:</span>
-                                <span className="font-bold text-2xl text-green-600">{numerology.mission}</span>
-                              </div>
-                              <p className="text-xs text-gray-600 italic">
-                                {getNumerologyExplanation('mission', numerology.mission)}
-                              </p>
-                              <div className="mt-2 text-xs text-green-700 bg-green-50 p-2 rounded">
-                                <strong>Ý nghĩa:</strong> Mục đích cả đời và nhiệm vụ cần hoàn thành khi đến với cuộc đời này
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Soul */}
-                          {numerology?.soul && (
-                            <div className="p-3 bg-white rounded-lg border border-purple-200 shadow-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-semibold text-gray-700">💜 Số Nội Tâm:</span>
-                                <span className="font-bold text-2xl text-purple-600">{numerology.soul}</span>
-                              </div>
-                              <p className="text-xs text-gray-600 italic">
-                                {getNumerologyExplanation('soul', numerology.soul)}
-                              </p>
-                              <div className="mt-2 text-xs text-purple-700 bg-purple-50 p-2 rounded">
-                                <strong>Ý nghĩa:</strong> Khát vọng tiềm ẩn bên trong, kim chỉ nam cho quyết định cuộc sống
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Other numerology data */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {/* Personality */}
-                            {numerology?.personality && (
-                              <div className="p-3 bg-white rounded-lg border border-orange-200 shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="font-semibold text-gray-700">🎭 Số Tính Cách:</span>
-                                  <span className="font-bold text-2xl text-orange-600">{numerology.personality}</span>
-                                </div>
-                                <p className="text-xs text-gray-600 italic">
-                                  {getNumerologyExplanation('personality', numerology.personality)}
-                                </p>
-                                <div className="mt-2 text-xs text-orange-700 bg-orange-50 p-2 rounded">
-                                  <strong>Ý nghĩa:</strong> Cách thể hiện ra thế giới bên ngoài và ấn tượng với người khác
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Passion */}
-                            {numerology?.passion && (
-                              <div className="p-3 bg-white rounded-lg border border-red-200 shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="font-semibold text-gray-700">🔥 Số Đam Mê:</span>
-                                  <span className="font-bold text-2xl text-red-600">{numerology.passion}</span>
-                                </div>
-                                <p className="text-xs text-gray-600 italic">
-                                  {getNumerologyExplanation('passion', numerology.passion)}
-                                </p>
-                                <div className="mt-2 text-xs text-red-700 bg-red-50 p-2 rounded">
-                                  <strong>Ý nghĩa:</strong> Tài năng đặc biệt tiềm ẩn cần rèn luyện và phát triển
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Connection */}
-                            {numerology?.connect && (
-                              <div className="p-3 bg-white rounded-lg border border-teal-200 shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="font-semibold text-gray-700">🔗 Số Cầu Nối:</span>
-                                  <span className="font-bold text-2xl text-teal-600">{numerology.connect}</span>
-                                </div>
-                                <p className="text-xs text-gray-600 italic">
-                                  Kết nối các số lõi để tạo sự nhất quán
-                                </p>
-                                <div className="mt-2 text-xs text-teal-700 bg-teal-50 p-2 rounded">
-                                  <strong>Ý nghĩa:</strong> Thu hẹp khoảng cách giữa số Đường đời và Sứ mệnh
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Missing Numbers */}
-                            {numerology?.missingNumbers && (
-                              <div className="p-3 bg-white rounded-lg border border-gray-300 shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="font-semibold text-gray-700">❌ Số Thiếu:</span>
-                                  <span className="font-bold text-gray-600">
-                                    {Array.isArray(numerology.missingNumbers) 
-                                      ? numerology.missingNumbers.join(', ') 
-                                      : numerology.missingNumbers}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-gray-600 italic">
-                                  Những khía cạnh cần phát triển thêm
-                                </p>
-                                <div className="mt-2 text-xs text-gray-700 bg-gray-50 p-2 rounded">
-                                  <strong>Ý nghĩa:</strong> Lĩnh vực cần nỗ lực học tập để hoàn thiện bản thân
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Birth Date Number */}
-                            {numerology?.birthDate && (
-                              <div className="p-3 bg-white rounded-lg border border-yellow-200 shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="font-semibold text-gray-700">🎂 Số Ngày Sinh:</span>
-                                  <span className="font-bold text-2xl text-yellow-600">{numerology.birthDate}</span>
-                                </div>
-                                <p className="text-xs text-gray-600 italic">
-                                  Tài năng tự nhiên từ khi sinh ra
-                                </p>
-                                <div className="mt-2 text-xs text-yellow-700 bg-yellow-50 p-2 rounded">
-                                  <strong>Ý nghĩa:</strong> Tiết lộ tài năng rõ ràng và cụ thể nhất của bạn
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Attitude Number */}
-                            {numerology?.attitude && (
-                              <div className="p-3 bg-white rounded-lg border border-pink-200 shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="font-semibold text-gray-700">🎯 Số Thái Độ:</span>
-                                  <span className="font-bold text-2xl text-pink-600">{numerology.attitude}</span>
-                                </div>
-                                <p className="text-xs text-gray-600 italic">
-                                  Ấn tượng đầu tiên với người khác
-                                </p>
-                                <div className="mt-2 text-xs text-pink-700 bg-pink-50 p-2 rounded">
-                                  <strong>Ý nghĩa:</strong> Thái độ trong công việc và phản ứng với tình huống
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                            <p className="text-xs text-blue-800 text-center">
-                              <strong>💡 Lưu ý:</strong> Thần số học chỉ là công cụ tham khảo để hiểu bản thân. 
-                              Hãy sử dụng một cách khôn ngoan và phát triển bản thân tích cực.
-                            </p>
-                          </div>
-                          
-                          {/* Additional info if no specific fields are available */}
-                          {!numerology?.walksOfLife && 
-                           !numerology?.mission && 
-                           !numerology?.soul && 
-                           !numerology?.connect && 
-                           !numerology?.personality && 
-                           !numerology?.passion && 
-                           !numerology?.missingNumbers && (
-                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                              <p className="text-yellow-800 text-xs text-center">
-                                📊 Dữ liệu thần số học có thể cần được tính toán lại. Nhấn nút 🔢 để cập nhật.
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
+                </Box>
+              </InfoBox>
+              {customer.date_of_birth && (
+                <InfoBox sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+                  <CalendarToday fontSize="small" />
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                    Ngày sinh: {formatDateDisplay(customer.date_of_birth)}
+                  </Typography>
+                </InfoBox>
               )}
-            </div>
-          )}
-        </div>
+            </Stack>
+
+            {customer.numerology_data && (
+              <Box sx={{ mt: 2 }}>
+                <ActionButton
+                  startIcon={showNumerology ? <ExpandLess /> : <ExpandMore />}
+                  onClick={() => setShowNumerology(!showNumerology)}
+                  variant="text"
+                  color="primary"
+                  size="small"
+                  sx={{ mb: 1 }}
+                >
+                  <Psychology sx={{ mr: 1 }} />
+                  Dữ Liệu Thần Số Học
+                  <Typography variant="caption" sx={{ ml: 1, opacity: 0.7 }}>
+                    ({showNumerology ? 'Ẩn' : 'Hiện'})
+                  </Typography>
+                </ActionButton>
+                
+                <Collapse in={showNumerology}>
+                  <Box sx={{ 
+                    mt: 2, 
+                    p: { xs: 2, sm: 3 },
+                    background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                    borderRadius: 2,
+                    border: 1,
+                    borderColor: 'divider'
+                  }}>
+                    <Box sx={{ textAlign: 'center', mb: { xs: 2, sm: 3 } }}>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 600, 
+                        mb: 1,
+                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                      }}>
+                        🔮 Bản Đồ Thần Số Học
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                      }}>
+                        Khám phá bản thân qua con số của bạn
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: { 
+                        xs: '1fr', 
+                        sm: 'repeat(auto-fit, minmax(280px, 1fr))' 
+                      }, 
+                      gap: 2 
+                    }}>
+                      {(() => {
+                        const numerology = customer.numerology_data as NumerologyData;
+                        const cards = [];
+                        
+                        if (numerology?.walksOfLife) {
+                          cards.push(
+                            <NumerologyCard
+                              key="walkOfLife"
+                              title="Số Đường Đời"
+                              value={numerology.walksOfLife}
+                              explanation={getNumerologyExplanation('walksOfLife', numerology.walksOfLife)}
+                              meaning="Con đường đúng bạn cần lựa chọn để tận dụng nguồn lực vũ trụ hậu thuẫn"
+                              color="#1976d2"
+                              icon="🛤️"
+                            />
+                          );
+                        }
+                        
+                        if (numerology?.mission) {
+                          cards.push(
+                            <NumerologyCard
+                              key="mission"
+                              title="Số Sứ Mệnh"
+                              value={numerology.mission}
+                              explanation={getNumerologyExplanation('mission', numerology.mission)}
+                              meaning="Mục đích cả đời và nhiệm vụ cần hoàn thành khi đến với cuộc đời này"
+                              color="#388e3c"
+                              icon="🎯"
+                            />
+                          );
+                        }
+                        
+                        if (numerology?.soul) {
+                          cards.push(
+                            <NumerologyCard
+                              key="soul"
+                              title="Số Nội Tâm"
+                              value={numerology.soul}
+                              explanation={getNumerologyExplanation('soul', numerology.soul)}
+                              meaning="Khát vọng tiềm ẩn bên trong, kim chỉ nam cho quyết định cuộc sống"
+                              color="#7b1fa2"
+                              icon="💜"
+                            />
+                          );
+                        }
+                        
+                        const otherFields = [
+                          { key: 'personality', title: 'Số Tính Cách', color: '#f57c00', icon: '🎭', meaning: 'Cách thể hiện ra thế giới bên ngoài và ấn tượng với người khác' },
+                          { key: 'passion', title: 'Số Đam Mê', color: '#d32f2f', icon: '🔥', meaning: 'Tài năng đặc biệt tiềm ẩn cần rèn luyện và phát triển' },
+                          { key: 'connect', title: 'Số Cầu Nối', color: '#00796b', icon: '🔗', meaning: 'Thu hẹp khoảng cách giữa số Đường đời và Sứ mệnh' },
+                          { key: 'birthDate', title: 'Số Ngày Sinh', color: '#fbc02d', icon: '🎂', meaning: 'Tiết lộ tài năng rõ ràng và cụ thể nhất của bạn' },
+                          { key: 'attitude', title: 'Số Thái Độ', color: '#e91e63', icon: '🎯', meaning: 'Thái độ trong công việc và phản ứng với tình huống' }
+                        ];
+                        
+                        otherFields.forEach(field => {
+                          if (numerology?.[field.key]) {
+                            cards.push(
+                              <NumerologyCard
+                                key={field.key}
+                                title={field.title}
+                                value={numerology[field.key] as string | number}
+                                explanation={getNumerologyExplanation(field.key, numerology[field.key] as string | number)}
+                                meaning={field.meaning}
+                                color={field.color}
+                                icon={field.icon}
+                              />
+                            );
+                          }
+                        });
+                        
+                        if (numerology?.missingNumbers) {
+                          cards.push(
+                            <Box
+                              key="missingNumbers"
+                              sx={{
+                                p: { xs: 1.5, sm: 2 },
+                                bgcolor: 'background.paper',
+                                borderRadius: 2,
+                                border: '1px solid #616161',
+                                boxShadow: 1,
+                              }}
+                            >
+                              <Box sx={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center', 
+                                mb: 1,
+                                flexDirection: { xs: 'column', sm: 'row' },
+                                textAlign: { xs: 'center', sm: 'left' }
+                              }}>
+                                <Typography variant="subtitle2" sx={{ 
+                                  fontWeight: 600,
+                                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                                  mb: { xs: 0.5, sm: 0 }
+                                }}>
+                                  ❌ Số Thiếu
+                                </Typography>
+                                <Typography variant="h6" sx={{ 
+                                  color: '#616161',
+                                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                                }}>
+                                  {Array.isArray(numerology.missingNumbers) 
+                                    ? numerology.missingNumbers.join(', ') 
+                                    : numerology.missingNumbers}
+                                </Typography>
+                              </Box>
+                              <Typography variant="caption" sx={{ 
+                                color: 'text.secondary', 
+                                fontStyle: 'italic', 
+                                mb: 1, 
+                                display: 'block',
+                                fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                              }}>
+                                Những khía cạnh cần phát triển thêm
+                              </Typography>
+                              <Box sx={{ p: 1, bgcolor: '#61616115', borderRadius: 1 }}>
+                                <Typography variant="caption" sx={{ 
+                                  color: '#616161', 
+                                  fontWeight: 500,
+                                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                                }}>
+                                  <strong>Ý nghĩa:</strong> Lĩnh vực cần nỗ lực học tập để hoàn thiện bản thân
+                                </Typography>
+                              </Box>
+                            </Box>
+                          );
+                        }
+                        
+                        return cards;
+                      })()}
+                    </Box>
+                    
+                    <Box sx={{ 
+                      mt: { xs: 2, sm: 3 }, 
+                      p: { xs: 1.5, sm: 2 }, 
+                      background: 'linear-gradient(45deg, #e3f2fd 30%, #e8eaf6 90%)',
+                      borderRadius: 2,
+                      border: '1px solid #1976d2'
+                    }}>
+                      <Typography variant="caption" sx={{ 
+                        color: '#1976d2', 
+                        textAlign: 'center', 
+                        display: 'block',
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                      }}>
+                        <strong>💡 Lưu ý:</strong> Thần số học chỉ là công cụ tham khảo để hiểu bản thân. 
+                        Hãy sử dụng một cách khôn ngoan và phát triển bản thân tích cực.
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Collapse>
+              </Box>
+            )}
+          </Box>
+        </CardHeader>
         
-        <div className="flex flex-col gap-2 ml-4">
-          <select
-            value={customer.status}
-            onChange={(e) => onStatusChange(customer.customer_id, e.target.value)}
-            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="active">Đang Hoạt Động</option>
-            <option value="inactive">Không Hoạt Động</option>
-          </select>
-          
-          <div className="flex gap-1">
-            <button
+        <CardActions sx={{
+          p: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: { xs: 1, sm: 2 },
+          justifyContent: { xs: 'flex-start', sm: 'flex-start' }
+        }}>
+          <Stack direction="row" spacing={1} sx={{ width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: { xs: 'flex-start', sm: 'flex-start' } }}>
+            <ActionButton
+              startIcon={<Edit />}
               onClick={() => onEdit(customer)}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, minWidth: 64 }}
             >
               Sửa
-            </button>
+            </ActionButton>
             {onRecalculateNumerology && customer.full_name && customer.date_of_birth && (
-              <button
-                onClick={() => onRecalculateNumerology(customer.customer_id)}
-                className="text-purple-600 hover:text-purple-800 text-sm font-medium ml-2"
-                title="Tính lại thần số học"
-              >
-                🔢
-              </button>
+              <Tooltip title="Tính lại thần số học">
+                <IconButton
+                  onClick={() => onRecalculateNumerology(customer.customer_id)}
+                  color="secondary"
+                  size="small"
+                  sx={{ alignSelf: 'center' }}
+                >
+                  <Calculate />
+                </IconButton>
+              </Tooltip>
             )}
             {onGenerateQR && (
-              <button
-                onClick={() => onGenerateQR(customer)}
-                className="text-green-600 hover:text-green-800 text-sm font-medium ml-2"
-                title="Tạo mã QR thanh toán"
-              >
-                📱
-              </button>
+              <Tooltip title="Tạo mã QR thanh toán">
+                <IconButton
+                  onClick={() => onGenerateQR(customer)}
+                  color="success"
+                  size="small"
+                  sx={{ alignSelf: 'center' }}
+                >
+                  <QrCode />
+                </IconButton>
+              </Tooltip>
             )}
-            <button
+            <ActionButton
+              startIcon={<DeleteOutline />}
               onClick={() => onDelete(customer.customer_id)}
-              className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
+              color="error"
+              variant="outlined"
+              size="small"
+              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, minWidth: 64 }}
             >
               Xóa
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+            </ActionButton>
+          </Stack>
+        </CardActions>
+      </CardContent>
+    </StyledCard>
   )
 }

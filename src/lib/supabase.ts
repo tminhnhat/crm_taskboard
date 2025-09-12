@@ -17,7 +17,10 @@ export const supabase = new Proxy({} as NonNullable<typeof supabaseClient>, {
   get(target, prop) {
     if (!supabaseClient) {
       if (typeof window !== 'undefined') {
-        throw new Error('Database connection not available. Please check your environment configuration.');
+        const errorMsg = !supabaseUrl || !supabaseKey 
+          ? 'Database connection not available. Please check your environment configuration.'
+          : 'Database configuration incomplete. Missing Supabase credentials.';
+        throw new Error(errorMsg);
       }
       // During build time, return a mock to prevent errors
       return () => Promise.reject(new Error('Database not available during build'));
@@ -63,9 +66,11 @@ export interface Document {
 }
 
 // TypeScript types for our database schema based on your SQL
-export type TaskStatusEnum = 'needsAction' | 'inProgress' | 'onHold' | 'completed' | 'cancelled' | 'deleted'
+export type TaskStatusEnum = 'needsAction' | 'inProgress' | 'completed' | 'deleted'
 
 export type TaskPriority = 'Do first' | 'Schedule' | 'Delegate' | 'Eliminate'
+
+export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly'
 
 export interface Task {
   task_id: number
@@ -87,6 +92,13 @@ export interface Task {
   timezone_offset: number
   timezone: string
   google_task_id: string | null
+  // Recurring task fields
+  recurrence_type: RecurrenceType
+  recurrence_interval: number
+  recurrence_end_date: string | null
+  recurrence_duration_months: number | null
+  is_recurring: boolean
+  parent_task_id: number | null
 }
 
 // Customer types
@@ -497,6 +509,7 @@ export interface Collateral {
   description: string | null
   value: number | null // NUMERIC(18,0)
   valuation_date: string | null // DATE
+  re_evaluation_date: string | null // DATE - Ngày đánh giá lại tài sản
   legal_status: string | null // legal status
   location: string | null
   owner_info: string | null

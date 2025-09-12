@@ -2,7 +2,25 @@
 
 A comprehensive management application built with Next.js, TypeScript, Tailwind CSS, and Supabase.
 
-## F## Project Structure
+## Setup and Configuration
+
+### Environment Variables
+
+Before running the application, you need to configure Supabase connection. The application requires a `.env.local` file with the following variables:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_anon_key
+```
+
+**To set up:**
+1. Copy `.env.local.example` to `.env.local`
+2. Replace the placeholder values with your actual Supabase project credentials
+3. Restart the development server
+
+**Important:** Without proper environment configuration, the application will show database connection errors on all pages, making it appear as if navigation is not working.
+
+## Project Structure
 
 ```
 src/

@@ -1,22 +1,39 @@
 'use client'
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  Paper,
+  useTheme,
+  Pagination
+} from '@mui/material'
+import { 
+  Add as AddIcon,
+  Assessment as AssessmentIcon,
+  TrendingUp as ChartBarIcon,
+  Schedule as ScheduleIcon,
+  AccountBalance as BankIcon,
+  AttachMoney as BanknotesIcon
+} from '@mui/icons-material'
 import { useCollaterals } from '@/hooks/useCollaterals'
 import { Collateral } from '@/lib/supabase'
+import { useTheme as useCustomTheme } from "@/theme/ThemeProvider"
+import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from "@/lib/themeUtils"
 import { formatCurrency } from '@/lib/currency'
 import Navigation from '@/components/Navigation'
 import CollateralCard from '@/components/CollateralCard'
 import CollateralForm from '@/components/CollateralForm'
 import CollateralFilters from '@/components/CollateralFilters'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { 
-  PlusIcon, 
-  HomeIcon,
-  ChartBarIcon,
-  CubeIcon
-} from '@heroicons/react/24/outline'
 
 export default function CollateralsPage() {
+  const { darkMode, themeSettings } = useCustomTheme()
   const { 
     collaterals, 
     loading, 
@@ -36,8 +53,11 @@ export default function CollateralsPage() {
     status: 'active',
     customerId: '',
     valueRange: '',
-    dateRange: ''
+    dateRange: '',
+    reEvaluationDateRange: ''
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const collateralsPerPage = 6 // Show 6 items per page in grid layout
 
   const stats = getCollateralStats()
 
@@ -124,9 +144,55 @@ export default function CollateralsPage() {
         }
       }
 
-      return matchesSearch && matchesType && matchesStatus && matchesCustomer && matchesValueRange && matchesDateRange
+      let matchesReEvaluationDateRange = true
+      if (filters.reEvaluationDateRange && collateral.re_evaluation_date) {
+        const reEvaluationDate = new Date(collateral.re_evaluation_date)
+        const today = new Date()
+        
+        switch (filters.reEvaluationDateRange) {
+          case 'overdue':
+            matchesReEvaluationDateRange = reEvaluationDate < today
+            break
+          case 'month':
+            const monthFromNow = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate())
+            matchesReEvaluationDateRange = reEvaluationDate >= today && reEvaluationDate <= monthFromNow
+            break
+          case 'quarter':
+            const quarterFromNow = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate())
+            matchesReEvaluationDateRange = reEvaluationDate >= today && reEvaluationDate <= quarterFromNow
+            break
+          case 'year':
+            const yearFromNow = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate())
+            matchesReEvaluationDateRange = reEvaluationDate >= today && reEvaluationDate <= yearFromNow
+            break
+          case 'future':
+            matchesReEvaluationDateRange = reEvaluationDate > today
+            break
+        }
+      } else if (filters.reEvaluationDateRange) {
+        matchesReEvaluationDateRange = false
+      }
+
+      return matchesSearch && matchesType && matchesStatus && matchesCustomer && matchesValueRange && matchesDateRange && matchesReEvaluationDateRange
     })
   }, [collaterals, filters])
+
+  // Calculate total pages
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredCollaterals.length / collateralsPerPage)), [filteredCollaterals.length, collateralsPerPage])
+
+  // Reset current page when filters change or if current page is beyond total pages
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1)
+    }
+  }, [totalPages, currentPage])
+
+  // Get paginated collaterals
+  const paginatedCollaterals = useMemo(() => {
+    const startIndex = (currentPage - 1) * collateralsPerPage
+    const endIndex = startIndex + collateralsPerPage
+    return filteredCollaterals.slice(startIndex, endIndex)
+  }, [filteredCollaterals, currentPage, collateralsPerPage])
 
 
 
@@ -176,122 +242,307 @@ export default function CollateralsPage() {
 
   const handleFiltersChange = useCallback((newFilters: any) => {
     setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
   }, [])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Container maxWidth="xl" sx={{ py: 4 }}>
           <LoadingSpinner />
-        </div>
-      </div>
+        </Container>
+      </Box>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-red-600">Lỗi: {error}</p>
-          </div>
-        </div>
-      </div>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Alert severity="error" sx={{ mt: 2 }}>
+            Lỗi: {error}
+          </Alert>
+        </Container>
+      </Box>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Navigation */}
       <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Tài Sản Đảm Bảo</h1>
-            <p className="text-gray-600 mt-1">Quản lý tài sản đảm bảo và định giá của khách hàng</p>
-          </div>
-          <button
-            onClick={handleNewCollateral}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Thêm Tài Sản
-          </button>
-        </div>
 
+      {/* Header */}
+      <Paper elevation={0} sx={{ 
+        bgcolor: 'background.paper', 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.05)'
+      }}>
+        <Container maxWidth="xl">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            py: 4 
+          }}>
+            <Box>
+              <Typography variant="h3" component="h1" fontWeight="700" sx={{ 
+                mb: 1, 
+                color: 'text.primary',
+                background: getThemeTextGradient(themeSettings, darkMode),
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                <AssessmentIcon sx={{ fontSize: 36, mr: 2 }} /> Tài Sản Đảm Bảo
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Quản lý tài sản đảm bảo và định giá của khách hàng một cách chuyên nghiệp
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleNewCollateral}
+              size="large"
+              sx={{ 
+                px: 4,
+                py: 1.5,
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                borderRadius: 3,
+                textTransform: 'none',
+                background: getThemeTextGradient(themeSettings, darkMode),
+                boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
+                '&:hover': {
+                  boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              Tài Sản Mới
+            </Button>
+          </Box>
+        </Container>
+      </Paper>
+
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <CubeIcon className="h-8 w-8 text-blue-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Tổng Tài Sản</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-              </div>
-            </div>
-          </div>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
+          gap: 3, 
+          mb: 4 
+        }}>
+          <Card sx={{ 
+            background: 'linear-gradient(135deg, rgba(52, 71, 103, 0.1) 0%, rgba(56, 103, 214, 0.1) 100%)',
+            border: '1px solid rgba(52, 71, 103, 0.1)',
+            borderRadius: 3,
+            boxShadow: '0px 2px 8px rgba(52, 71, 103, 0.08)',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0px 4px 16px rgba(52, 71, 103, 0.15)'
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  background: getThemeTextGradient(themeSettings, darkMode),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <AssessmentIcon sx={{ fontSize: 28, color: 'white' }} />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight="700" sx={{ color: '#344767', mb: 0.5 }}>
+                    {stats.total}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    Tổng Tài Sản
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <HomeIcon className="h-8 w-8 text-indigo-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Loại Phổ Biến</p>
-                <p className="text-sm font-bold text-indigo-600">
-                  {stats.mostCommonType || 'Không có'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+          <Card sx={{ 
+            background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
+            border: '1px solid rgba(255, 152, 0, 0.2)',
+            borderRadius: 3,
+            boxShadow: '0px 2px 8px rgba(255, 152, 0, 0.08)',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0px 4px 16px rgba(255, 152, 0, 0.15)'
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  background: 'linear-gradient(135deg, #ff9800 0%, #ffc107 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <ScheduleIcon sx={{ fontSize: 28, color: 'white' }} />
+                </Box>
+                <Box>
+                  <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Sắp Đến Hạn Đánh Giá Lại
+                  </Typography>
+                  <Typography variant="h6" fontWeight="700" sx={{ color: '#ff9800' }}>
+                    {(() => {
+                      const today = new Date();
+                      const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+                      const dueForReEvaluation = filteredCollaterals.filter(c => {
+                        if (!c.re_evaluation_date) return false;
+                        const reEvalDate = new Date(c.re_evaluation_date);
+                        return reEvalDate >= today && reEvalDate <= thirtyDaysFromNow;
+                      }).length;
+                      return dueForReEvaluation;
+                    })()}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ 
+            background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
+            border: '1px solid rgba(255, 152, 0, 0.2)',
+            borderRadius: 3,
+            boxShadow: '0px 2px 8px rgba(255, 152, 0, 0.08)',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0px 4px 16px rgba(255, 152, 0, 0.15)'
+            }
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  background: 'linear-gradient(135deg, #ff9800 0%, #ffc107 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <BanknotesIcon sx={{ fontSize: 28, color: 'white' }} />
+                </Box>
+                <Box>
+                  <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Tổng Giá Trị
+                  </Typography>
+                  <Typography variant="h6" fontWeight="700" sx={{ color: '#ff9800' }}>
+                    {formatCurrency(filteredCollaterals.reduce((sum, c) => sum + (c.value || 0), 0))}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
 
         {/* Filters */}
-        <CollateralFilters
-          onFiltersChange={handleFiltersChange}
-          availableCustomers={availableCustomers}
-        />
+        <Box sx={{ mb: 4 }}>
+          <CollateralFilters
+            onFiltersChange={handleFiltersChange}
+            availableCustomers={availableCustomers}
+          />
+        </Box>
 
         {/* Results Summary */}
-        <div className="flex justify-between items-center mb-6">
-          <p className="text-gray-600">
-            Hiển thị {filteredCollaterals.length} trong tổng số {collaterals.length} tài sản đảm bảo
-          </p>
-          <div className="flex items-center space-x-4">
-            <ChartBarIcon className="h-5 w-5 text-gray-400" />
-            <span className="text-sm text-gray-600">
-              {filteredCollaterals.length > 0 
-                ? `Tổng giá trị đã lọc: ${formatCurrency(filteredCollaterals.reduce((sum, c) => sum + (c.value || 0), 0))}`
-                : 'Không có dữ liệu'
-              }
-            </span>
-          </div>
-        </div>
+        <Paper elevation={0} sx={{ 
+          p: 3, 
+          mb: 3, 
+          borderRadius: 2, 
+          border: 1, 
+          borderColor: 'divider',
+          bgcolor: 'background.paper'
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600 }}>
+              Hiển thị {((currentPage - 1) * collateralsPerPage) + 1}-{Math.min(currentPage * collateralsPerPage, filteredCollaterals.length)} trong tổng số {filteredCollaterals.length} tài sản đảm bảo
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ChartBarIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                {filteredCollaterals.length > 0 
+                  ? `Tổng giá trị: ${formatCurrency(filteredCollaterals.reduce((sum, c) => sum + (c.value || 0), 0))}`
+                  : 'Không có dữ liệu'
+                }
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
 
         {/* Collaterals Grid */}
         {filteredCollaterals.length === 0 ? (
-          <div className="text-center py-12">
-            <HomeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy tài sản đảm bảo nào</h3>
-            <p className="text-gray-500 mb-6">
-              {filters.search || filters.type || filters.status || filters.customerId || filters.valueRange || filters.dateRange
+          <Paper elevation={0} sx={{ 
+            textAlign: 'center', 
+            py: 8, 
+            borderRadius: 3, 
+            border: 1, 
+            borderColor: 'divider',
+            bgcolor: 'background.paper'
+          }}>
+            <AssessmentIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+            <Typography variant="h5" fontWeight="600" color="text.primary" sx={{ mb: 1 }}>
+              Không tìm thấy tài sản đảm bảo nào
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
+              {filters.search || filters.type || filters.status || filters.customerId || filters.valueRange || filters.dateRange || filters.reEvaluationDateRange
                 ? 'Hãy thử điều chỉnh bộ lọc để xem thêm kết quả.'
                 : 'Bắt đầu bằng cách thêm tài sản đảm bảo đầu tiên của bạn.'
               }
-            </p>
-            <button
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
               onClick={handleNewCollateral}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              size="large"
+              sx={{ 
+                px: 4,
+                py: 1.5,
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                borderRadius: 3,
+                textTransform: 'none',
+                background: getThemeTextGradient(themeSettings, darkMode),
+                boxShadow: '0px 4px 8px rgba(52, 71, 103, 0.2)',
+                '&:hover': {
+                  boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Thêm Tài Sản
-            </button>
-          </div>
+              Thêm Tài Sản Mới
+            </Button>
+          </Paper>
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredCollaterals.map((collateral: Collateral) => (
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { 
+                xs: '1fr', 
+                lg: 'repeat(2, 1fr)', 
+                xl: 'repeat(3, 1fr)' 
+              }, 
+              gap: 3,
+              mb: 4
+            }}>
+              {paginatedCollaterals.map((collateral: Collateral) => (
                 <CollateralCard
                   key={collateral.collateral_id}
                   collateral={collateral}
@@ -299,7 +550,22 @@ export default function CollateralsPage() {
                   onDelete={handleDeleteCollateral}
                 />
               ))}
-            </div>
+            </Box>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(event, value) => setCurrentPage(value)}
+                  color="primary"
+                  size="large"
+                  showFirstButton
+                  showLastButton
+                />
+              </Box>
+            )}
           </>
         )}
 
@@ -312,7 +578,7 @@ export default function CollateralsPage() {
           isLoading={loading}
           fetchCustomers={fetchCustomers}
         />
-      </div>
-    </div>
+      </Container>
+    </Box>
   )
 }

@@ -1,4 +1,35 @@
 "use client";
+
+import { useState } from 'react'
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  Button,
+  Chip,
+  useTheme
+} from '@mui/material'
+import {
+  Home,
+  LocalShipping,
+  AccountBalance,
+  Description,
+  Security,
+  Assessment,
+  Chat,
+  LocationOn,
+} from '@mui/icons-material'
+import { formatMoneyToWords, formatAreaToWords } from '@/lib/currency'
+
 // Hàm tự động chuyển key sang tiếng Việt (giống CollateralCard)
 const formatFieldLabel = (key: string): string => {
   const vietnameseLabels: Record<string, string> = {
@@ -56,22 +87,7 @@ const formatFieldLabel = (key: string): string => {
   return vietnameseLabels[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-
-import { useState } from 'react'
-import {
-  HomeIcon,
-  TruckIcon,
-  BanknotesIcon,
-  DocumentTextIcon,
-  ShieldCheckIcon,
-  DocumentChartBarIcon,
-  ChatBubbleLeftRightIcon,
-  MapPinIcon,
-} from '@heroicons/react/24/outline'
-import { formatMoneyToWords, formatAreaToWords } from '@/lib/currency'
-import { ForwardRefExoticComponent, SVGProps, RefAttributes } from 'react'
-
-type IconType = ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref"> & { title?: string | undefined; titleId?: string | undefined; } & RefAttributes<SVGSVGElement>>
+type IconType = typeof Home
 
 interface MetadataField {
   key: string
@@ -101,7 +117,7 @@ type MetadataTemplates = {
 const METADATA_TEMPLATES: MetadataTemplates = {
   property_certificate: {
     title: '1. Thông tin giấy chứng nhận',
-    icon: DocumentTextIcon,
+    icon: Description,
     fields: [
       { 
         key: 'loai_gcn', 
@@ -123,7 +139,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   
   property_land: {
     title: '2. Thông tin thửa đất',
-    icon: MapPinIcon,
+    icon: LocationOn,
     fields: [
       // Thông tin cơ bản thửa đất
       { key: 'so_thua', label: 'Số thửa', type: 'text' },
@@ -146,7 +162,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
 
   property_building: {
     title: '3. Thông tin nhà ở/tài sản gắn liền với đất',
-    icon: HomeIcon,
+    icon: Home,
     fields: [
       { key: 'loai_ts_tren_dat', label: 'Loại tài sản', type: 'text' },
       { key: 'dia_chi_nha', label: 'Địa chỉ', type: 'text' },
@@ -163,7 +179,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
 
   property_value: {
     title: '4. Thông tin giá trị tài sản',
-    icon: BanknotesIcon,
+    icon: AccountBalance,
     fields: [
       { key: 'tong_gia_tri_tsbd', label: 'Tổng giá trị TSBĐ (VNĐ)', type: 'number' },
       { key: 'tong_gia_tri_tsbd_bang_chu', label: 'Tổng giá trị bằng chữ', type: 'text', readOnly: true },
@@ -179,7 +195,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
 
   property_assessment: {
     title: '5. Thông tin thẩm định',
-    icon: ShieldCheckIcon,
+    icon: Security,
     fields: [
       { key: 'so_cif_chu_ts', label: 'Số CIF chủ tài sản', type: 'text' },
       { key: 'muc_cho_vay_toi_da', label: 'Mức cho vay tối đa (VNĐ)', type: 'number' },
@@ -191,7 +207,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
   vehicle: {
     title: 'Thông tin phương tiện',
-    icon: TruckIcon,
+    icon: LocalShipping,
     fields: [
       { key: 'vehicle_type', label: 'Loại phương tiện', type: 'select', options: ['Ô tô', 'Xe máy', 'Xe tải', 'Khác'] },
       { key: 'brand', label: 'Thương hiệu', type: 'text' },
@@ -202,7 +218,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
   financial: {
     title: 'Thông tin tài chính',
-    icon: BanknotesIcon,
+    icon: AccountBalance,
     fields: [
       { key: 'account_type', label: 'Loại tài khoản', type: 'select', options: ['Tiết kiệm', 'Vãng lai', 'Khác'] },
       { key: 'bank_name', label: 'Tên ngân hàng', type: 'text' },
@@ -213,7 +229,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
   documents: {
     title: 'Tài liệu pháp lý',
-    icon: DocumentTextIcon,
+    icon: Description,
     fields: [
       { key: 'document_type', label: 'Loại giấy tờ', type: 'select', options: ['CMND/CCCD', 'Hộ chiếu', 'Sổ hộ khẩu', 'Khác'] },
       { key: 'document_number', label: 'Số giấy tờ', type: 'text' },
@@ -224,7 +240,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
   legal: {
     title: 'Thông tin pháp lý',
-    icon: ShieldCheckIcon,
+    icon: Security,
     fields: [
       { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'select', options: ['Đã thanh toán', 'Đang trả góp', 'Thuê'] },
       { key: 'legal_restrictions', label: 'Hạn chế pháp lý', type: 'text' },
@@ -234,7 +250,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
   assessment: {
     title: 'Thông tin định giá',
-    icon: DocumentChartBarIcon,
+    icon: Assessment,
     fields: [
       { key: 'appraised_value', label: 'Giá trị định giá', type: 'number' },
       { key: 'appraisal_date', label: 'Ngày định giá', type: 'date' },
@@ -245,7 +261,7 @@ const METADATA_TEMPLATES: MetadataTemplates = {
   },
   communication: {
     title: 'Ghi chú & Liên hệ',
-    icon: ChatBubbleLeftRightIcon,
+    icon: Chat,
     fields: [
       { key: 'contact_person', label: 'Người liên hệ', type: 'text' },
       { key: 'phone', label: 'Số điện thoại', type: 'tel' },
@@ -263,6 +279,7 @@ export default function MetadataForm({
 }: MetadataFormProps) {
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<Record<string, Record<string, unknown>>>(initialData)
+  const theme = useTheme()
 
   // Use custom templates if provided, otherwise use default templates
   const templates = customTemplates || METADATA_TEMPLATES
@@ -300,9 +317,9 @@ export default function MetadataForm({
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ spacing: 3 }}>
       {/* Template Selection */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <Grid container spacing={2} sx={{ mb: 3 }}>
         {Object.entries(templates)
           .filter(([key]) => !suggestedTemplates || suggestedTemplates.includes(key))
           .map(([key, template]) => {
@@ -311,107 +328,168 @@ export default function MetadataForm({
           const hasData = !!metadata[key]
 
           return (
-            <button
-              type="button"
-              key={key}
-              onClick={() => setActiveTemplate(isActive ? null : key)}
-              className={`p-4 rounded-lg border ${
-                isActive
-                  ? 'border-blue-500 bg-blue-50'
-                  : hasData
-                  ? 'border-green-200 bg-green-50'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              } transition-colors flex flex-col items-center space-y-2`}
-            >
-              <Icon className={`h-6 w-6 ${isActive ? 'text-blue-500' : hasData ? 'text-green-500' : 'text-gray-400'}`} />
-              <span className={`text-sm font-medium ${isActive ? 'text-blue-700' : hasData ? 'text-green-700' : 'text-gray-600'}`}>
-                {template.title}
-              </span>
-              {hasData && (
-                <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">
-                  Đã nhập
-                </span>
-              )}
-            </button>
+            <Grid key={key} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              <Card
+                sx={{
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  border: 2,
+                  borderColor: isActive 
+                    ? 'primary.main' 
+                    : hasData 
+                    ? 'success.light' 
+                    : 'grey.300',
+                  backgroundColor: isActive 
+                    ? 'primary.50' 
+                    : hasData 
+                    ? 'success.50' 
+                    : 'background.paper',
+                  '&:hover': {
+                    borderColor: isActive ? 'primary.main' : 'grey.400',
+                    backgroundColor: isActive 
+                      ? 'primary.50' 
+                      : hasData 
+                      ? 'success.50' 
+                      : 'grey.50',
+                  }
+                }}
+                onClick={() => setActiveTemplate(isActive ? null : key)}
+              >
+                <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                  <Icon 
+                    sx={{ 
+                      fontSize: 32, 
+                      mb: 1,
+                      color: isActive 
+                        ? 'primary.main' 
+                        : hasData 
+                        ? 'success.main' 
+                        : 'grey.400'
+                    }} 
+                  />
+                  <Typography 
+                    variant="body2" 
+                    fontWeight={500}
+                    color={isActive 
+                      ? 'primary.main' 
+                      : hasData 
+                      ? 'success.main' 
+                      : 'text.secondary'}
+                    gutterBottom
+                  >
+                    {template.title}
+                  </Typography>
+                  {hasData && (
+                    <Chip 
+                      label="Đã nhập" 
+                      size="small" 
+                      color="success" 
+                      variant="filled"
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
           )
         })}
-      </div>
+      </Grid>
 
       {/* Form Fields */}
       {activeTemplate && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <Card sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
             {templates[activeTemplate].title}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          </Typography>
+          <Grid container spacing={3}>
             {templates[activeTemplate].fields.map((field) => (
               field.type === 'section' ? (
-                <div key={field.key} className="col-span-full">
-                  <h4 className="text-md font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200">
+                <Grid key={field.key} size={{ xs: 12 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mt: 3, 
+                      mb: 2, 
+                      pb: 1, 
+                      borderBottom: 1, 
+                      borderColor: 'divider' 
+                    }}
+                  >
                     {field.label && field.label.trim() !== '' ? field.label : formatFieldLabel(field.key)}
-                  </h4>
-                </div>
+                  </Typography>
+                </Grid>
               ) : (
-                <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {field.label && field.label.trim() !== '' ? field.label : formatFieldLabel(field.key)}
-                  </label>
+                <Grid key={field.key} size={{ xs: 12, sm: 6 }}>
                   {field.type === 'select' ? (
-                    <select
-                      value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
-                      onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.value)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    >
-                      <option value="">Chọn {field.label}</option>
-                      {field.options?.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    <FormControl fullWidth>
+                      <InputLabel>
+                        {field.label && field.label.trim() !== '' ? field.label : formatFieldLabel(field.key)}
+                      </InputLabel>
+                      <Select
+                        value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
+                        onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.value)}
+                        label={field.label && field.label.trim() !== '' ? field.label : formatFieldLabel(field.key)}
+                      >
+                        <MenuItem value="">
+                          Chọn {field.label && field.label.trim() !== '' ? field.label : formatFieldLabel(field.key)}
+                        </MenuItem>
+                        {field.options?.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                   ) : field.type === 'textarea' ? (
-                    <textarea
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label={field.label && field.label.trim() !== '' ? field.label : formatFieldLabel(field.key)}
                       value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
                       onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.value)}
-                      rows={3}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     />
                   ) : field.type === 'boolean' ? (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(metadata[activeTemplate]?.[field.key])}
-                        onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    <Box>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={Boolean(metadata[activeTemplate]?.[field.key])}
+                            onChange={(e) => handleFieldChange(activeTemplate, field.key, e.target.checked)}
+                            color="primary"
+                          />
+                        }
+                        label={field.label && field.label.trim() !== '' ? field.label : formatFieldLabel(field.key)}
                       />
-                      <span className="ml-2 text-sm text-gray-600">
-                        {Boolean(metadata[activeTemplate]?.[field.key]) ? 'Có' : 'Không'}
-                      </span>
-                    </div>
+                    </Box>
                   ) : (
-                    <input
+                    <TextField
+                      fullWidth
                       type={field.type}
+                      label={field.label && field.label.trim() !== '' ? field.label : formatFieldLabel(field.key)}
                       value={metadata[activeTemplate]?.[field.key]?.toString() || ''}
                       onChange={(e) => {
                         const value = field.type === 'number' 
-                          ? parseFloat(e.target.value) 
+                          ? parseFloat(e.target.value) || 0
                           : e.target.value
                         handleFieldChange(activeTemplate, field.key, value)
                       }}
-                      readOnly={field.readOnly}
-                      className={`block w-full rounded-md border-gray-300 shadow-sm ${
-                        field.readOnly 
-                          ? 'bg-gray-50 text-gray-500'
-                          : 'focus:border-blue-500 focus:ring-blue-500'
-                      }`}
+                      InputProps={{
+                        readOnly: field.readOnly,
+                      }}
+                      sx={field.readOnly ? {
+                        '& .MuiInputBase-input': {
+                          backgroundColor: 'grey.50',
+                          color: 'text.secondary'
+                        }
+                      } : {}}
                     />
                   )}
-                </div>
+                </Grid>
               )
             ))}
-          </div>
-        </div>
+          </Grid>
+        </Card>
       )}
-    </div>
+    </Box>
   )
 }

@@ -1,6 +1,22 @@
 'use client'
 
-import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import React from 'react'
+import {
+  Box,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Stack,
+  Chip,
+  Divider,
+  InputAdornment
+} from '@mui/material'
+import { FilterList, Search, Clear } from '@mui/icons-material'
+import { StyledCard } from './StyledComponents'
 
 interface StaffFiltersProps {
   filters: {
@@ -48,136 +64,152 @@ export default function StaffFilters({
   const hasActiveFilters = filters.search || filters.status || filters.department || filters.position
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-      <div className="flex items-center gap-2 mb-4">
-        <FunnelIcon className="h-5 w-5 text-gray-600" />
-        <h3 className="text-lg font-medium text-gray-900">Bộ Lọc</h3>
-        {hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className="text-sm text-blue-600 hover:text-blue-800 ml-auto"
-          >
-            Xóa Tất Cả
-          </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        {/* Search Filter */}
-        <div>
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-            Tìm Kiếm Nhân Viên
-          </label>
-          <div className="relative">
-            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <input
-              type="text"
-              id="search"
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              placeholder="Tìm kiếm theo tên hoặc email..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        {/* Status Filter */}
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-            Trạng Thái
-          </label>
-          <select
-            id="status"
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tất Cả Trạng Thái</option>
-            <option value="active">Đang Hoạt Động</option>
-            <option value="inactive">Không Hoạt Động</option>
-          </select>
-        </div>
-
-        {/* Department Filter */}
-        <div>
-          <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
-            Phòng Ban
-          </label>
-          <select
-            id="department"
-            value={filters.department}
-            onChange={(e) => handleFilterChange('department', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tất Cả Phòng Ban</option>
-            {availableDepartments.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Position Filter */}
-        <div>
-          <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
-            Vị Trí
-          </label>
-          <select
-            id="position"
-            value={filters.position}
-            onChange={(e) => handleFilterChange('position', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tất Cả Vị Trí</option>
-            {availablePositions.map((pos) => (
-              <option key={pos} value={pos}>
-                {pos}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Results Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-600 pt-3 border-t border-gray-200">
-        <span>
-          Hiển thị {filteredCount} trong tổng số {totalCount} nhân viên
+    <StyledCard sx={{ mb: 3 }}>
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <FilterList sx={{ color: 'text.secondary', fontSize: 20 }} />
+            <Typography variant="subtitle1" fontWeight="medium" color="text.primary">
+              Bộ lọc nhân viên
+            </Typography>
+          </Box>
           {hasActiveFilters && (
-            <span className="text-blue-600 ml-1">
-              (đã lọc)
-            </span>
+            <Button
+              size="small"
+              startIcon={<Clear />}
+              onClick={clearFilters}
+              sx={{ color: 'text.secondary' }}
+            >
+              Xóa tất cả
+            </Button>
           )}
-        </span>
-        
-        {hasActiveFilters && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">Bộ lọc đang hoạt động:</span>
-            <div className="flex gap-1 flex-wrap">
+        </Box>
+
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          sx={{ mb: 2, flexWrap: 'wrap', alignItems: 'center' }}
+        >
+          <TextField
+            size="small"
+            label="Tìm kiếm nhân viên"
+            value={filters.search}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            placeholder="Tìm kiếm theo tên hoặc email..."
+            sx={{ flex: 1 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search sx={{ color: 'text.secondary', fontSize: 18 }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <FormControl size="small" sx={{ minWidth: 130 }}>
+            <InputLabel>Trạng thái</InputLabel>
+            <Select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              label="Trạng thái"
+            >
+              <MenuItem value="">Tất cả trạng thái</MenuItem>
+              <MenuItem value="active">Đang hoạt động</MenuItem>
+              <MenuItem value="inactive">Không hoạt động</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel>Phòng ban</InputLabel>
+            <Select
+              value={filters.department}
+              onChange={(e) => handleFilterChange('department', e.target.value)}
+              label="Phòng ban"
+            >
+              <MenuItem value="">Tất cả phòng ban</MenuItem>
+              {availableDepartments.map((dept) => (
+                <MenuItem key={dept} value={dept}>
+                  {dept}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Chức vụ</InputLabel>
+            <Select
+              value={filters.position}
+              onChange={(e) => handleFilterChange('position', e.target.value)}
+              label="Chức vụ"
+            >
+              <MenuItem value="">Tất cả chức vụ</MenuItem>
+              {availablePositions.map((pos) => (
+                <MenuItem key={pos} value={pos}>
+                  {pos}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+
+        <Divider sx={{ my: 1 }} />
+
+        {/* Results Summary */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+          <Typography variant="body2" color="text.secondary">
+            Hiển thị {filteredCount} trong tổng số {totalCount} nhân viên
+            {hasActiveFilters && (
+              <Typography component="span" color="primary.main" sx={{ ml: 0.5 }}>
+                (đã lọc)
+              </Typography>
+            )}
+          </Typography>
+          
+          {hasActiveFilters && (
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              <Typography variant="caption" color="text.secondary">
+                Bộ lọc:
+              </Typography>
               {filters.search && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  Tìm kiếm: {filters.search}
-                </span>
+                <Chip
+                  size="small"
+                  label={`Tìm kiếm: ${filters.search}`}
+                  variant="outlined"
+                  color="primary"
+                  onDelete={() => handleFilterChange('search', '')}
+                />
               )}
               {filters.status && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Trạng thái: {filters.status}
-                </span>
+                <Chip
+                  size="small"
+                  label={`Trạng thái: ${filters.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}`}
+                  variant="outlined"
+                  color="success"
+                  onDelete={() => handleFilterChange('status', '')}
+                />
               )}
               {filters.department && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  Phòng ban: {filters.department}
-                </span>
+                <Chip
+                  size="small"
+                  label={`Phòng ban: ${filters.department}`}
+                  variant="outlined"
+                  color="secondary"
+                  onDelete={() => handleFilterChange('department', '')}
+                />
               )}
               {filters.position && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                  Vị trí: {filters.position}
-                </span>
+                <Chip
+                  size="small"
+                  label={`Chức vụ: ${filters.position}`}
+                  variant="outlined"
+                  color="info"
+                  onDelete={() => handleFilterChange('position', '')}
+                />
               )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+            </Stack>
+          )}
+        </Box>
+      </Box>
+    </StyledCard>
   )
 }

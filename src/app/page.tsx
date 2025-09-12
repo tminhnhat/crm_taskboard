@@ -1,162 +1,46 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { useMemo } from 'react'
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Alert,
+  Paper,
+  Button,
+  useTheme
+} from '@mui/material'
+import { 
+  Assessment as AssessmentIcon,
+  Assignment as AssignmentIcon,
+  People as PeopleIcon,
+  Description as DescriptionIcon,
+  TrendingUp as TrendingUpIcon,
+  Schedule as ScheduleIcon,
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
+  Error as ErrorIcon,
+  PersonAdd as PersonAddIcon,
+  Business as BusinessIcon,
+  ArrowForward as ArrowForwardIcon,
+  CakeOutlined as CakeIcon
+} from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
-import TaskCard from '@/components/TaskCard'
-import TaskForm from '@/components/TaskForm'
-import TaskFilters from '@/components/TaskFilters'
-import { TaskCardSkeleton } from '@/components/LoadingSpinner'
+import BirthdayCustomers from '@/components/BirthdayCustomers'
 import { useTasks } from '@/hooks/useTasks'
-import { Task, TaskStatusEnum } from '@/lib/supabase'
+import { useCustomers } from '@/hooks/useCustomers'
+import { useContracts } from '@/hooks/useContracts'
 
-export default function TaskDashboard() {
-  const { tasks, loading, error, createTask, updateTask, deleteTask, updateTaskStatus } = useTasks()
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<Task | null>(null)
-  const [filters, setFilters] = useState({
-    status: 'needsAction',
-    priority: '',
-    search: '',
-    sortBy: 'task_date_start',
-    taskType: ''
-  })
-  const [currentPage, setCurrentPage] = useState(1)
-  const tasksPerPage = 10
-
-  // Filter and sort tasks based on current filters
-  const filteredTasks = useMemo(() => {
-    const filtered = tasks.filter(task => {
-      const matchesStatus = !filters.status || task.task_status === filters.status
-      const matchesPriority = !filters.priority || task.task_priority === filters.priority
-      const matchesTaskType = !filters.taskType || task.task_type === filters.taskType
-      const matchesSearch = !filters.search || 
-        task.task_name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        task.task_note?.toLowerCase().includes(filters.search.toLowerCase())
-      
-      return matchesStatus && matchesPriority && matchesTaskType && matchesSearch
-    })
-
-    // Sort the filtered results
-    return filtered.sort((a, b) => {
-      const sortBy = filters.sortBy as keyof Task
-      
-      // Handle sorting by start date first (prioritize tasks with start dates)
-      if (sortBy === 'task_date_start') {
-        // Tasks with start dates come first, sorted by start date
-        // Tasks without start dates come last, sorted by created date
-        if (a.task_date_start && !b.task_date_start) return -1
-        if (!a.task_date_start && b.task_date_start) return 1
-        if (a.task_date_start && b.task_date_start) {
-          return new Date(a.task_date_start).getTime() - new Date(b.task_date_start).getTime()
-        }
-        // Both don't have start dates, sort by created date
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      }
-      
-      // Handle other date fields
-      if (sortBy === 'task_due_date' || sortBy === 'created_at' || sortBy === 'updated_at') {
-        const aValue = a[sortBy]
-        const bValue = b[sortBy]
-        if (!aValue && !bValue) return 0
-        if (!aValue) return 1
-        if (!bValue) return -1
-        return new Date(aValue).getTime() - new Date(bValue).getTime()
-      }
-      
-      // Handle priority sorting (custom order)
-      if (sortBy === 'task_priority') {
-        const priorityOrder = { 'Do first': 1, 'Schedule': 2, 'Delegate': 3, 'Eliminate': 4 }
-        const aPriority = a.task_priority ? priorityOrder[a.task_priority] || 5 : 5
-        const bPriority = b.task_priority ? priorityOrder[b.task_priority] || 5 : 5
-        return aPriority - bPriority
-      }
-      
-      // Handle status sorting (custom order)
-      if (sortBy === 'task_status') {
-        const statusOrder = { 
-          'needsAction': 1, 
-          'inProgress': 2, 
-          'onHold': 3, 
-          'completed': 4, 
-          'cancelled': 5, 
-          'deleted': 6 
-        }
-        return statusOrder[a.task_status] - statusOrder[b.task_status]
-      }
-      
-      // Handle string fields
-      const aValue = String(a[sortBy] || '')
-      const bValue = String(b[sortBy] || '')
-      return aValue.localeCompare(bValue)
-    })
-  }, [tasks, filters])
-
-  const handleCreateTask = async (taskData: Partial<Task>) => {
-    try {
-      await createTask(taskData as Omit<Task, 'task_id' | 'created_at' | 'updated_at'>)
-      setIsFormOpen(false)
-    } catch (err) {
-      console.error('Failed to create task:', err)
-      // You could show a toast notification here
-    }
-  }
-
-  const handleUpdateTask = async (taskData: Partial<Task>) => {
-    if (!editingTask) return
-    
-    try {
-      await updateTask(editingTask.task_id, taskData)
-      setEditingTask(null)
-      setIsFormOpen(false)
-    } catch (err) {
-      console.error('Failed to update task:', err)
-      // You could show a toast notification here
-    }
-  }
-
-  const handleDeleteTask = async (taskId: number) => {
-    if (confirm('Bạn có chắc chắn muốn xóa công việc này không?')) {
-      try {
-        await deleteTask(taskId)
-      } catch (err) {
-        console.error('Failed to delete task:', err)
-        // You could show a toast notification here
-      }
-    }
-  }
-
-  const handleEditTask = (task: Task) => {
-    setEditingTask(task)
-    setIsFormOpen(true)
-  }
-
-  const handleStatusChange = async (taskId: number, status: TaskStatusEnum) => {
-    try {
-      await updateTaskStatus(taskId, status)
-    } catch (err) {
-      console.error('Failed to update task status:', err)
-      // You could show a toast notification here
-    }
-  }
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false)
-    setEditingTask(null)
-  }
-
-  // Calculate total pages
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredTasks.length / tasksPerPage)), [filteredTasks.length, tasksPerPage])
-
-  // Reset current page when filters change or if current page is beyond total pages
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(1)
-    }
-  }, [totalPages, currentPage])
+export default function HomePage() {
+  const theme = useTheme()
+  const { tasks, loading: tasksLoading, error: tasksError } = useTasks()
+  const { customers, loading: customersLoading, error: customersError } = useCustomers()
+  const { contracts, loading: contractsLoading, error: contractsError } = useContracts()
 
   // Task statistics
-  const stats = useMemo(() => {
+  const taskStats = useMemo(() => {
     const total = tasks.length
     const completed = tasks.filter(t => t.task_status === 'completed').length
     const inProgress = tasks.filter(t => t.task_status === 'inProgress').length
@@ -170,127 +54,794 @@ export default function TaskDashboard() {
     return { total, completed, inProgress, pending, overdue }
   }, [tasks])
 
+  // Customer statistics
+  const customerStats = useMemo(() => {
+    const total = customers.length
+    const individual = customers.filter(c => c.customer_type === 'individual').length
+    const corporate = customers.filter(c => c.customer_type === 'corporate').length
+    
+    // Recent customers (last 30 days)
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const recent = customers.filter(c => new Date(c.created_at) > thirtyDaysAgo).length
+
+    return { total, individual, corporate, recent }
+  }, [customers])
+
+  // Contract statistics  
+  const contractStats = useMemo(() => {
+    const total = contracts.length
+    const active = contracts.filter(c => c.status === 'active').length
+    const pending = contracts.filter(c => c.status === 'pending').length
+    const completed = contracts.filter(c => c.status === 'completed').length
+    const cancelled = contracts.filter(c => c.status === 'cancelled').length
+
+    return { total, active, pending, completed, cancelled }
+  }, [contracts])
+
+  const loading = tasksLoading || customersLoading || contractsLoading
+  const error = tasksError || customersError || contractsError
+
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Lỗi khi tải danh sách công việc: {error}</p>
-          <p className="text-gray-600">Vui lòng kiểm tra cấu hình Supabase trong file .env.local</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Navigation />
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            Lỗi khi tải dữ liệu: {error}
+          </Alert>
+          <Typography color="text.secondary">
+            Vui lòng kiểm tra cấu hình Supabase trong file .env.local
+          </Typography>
+        </Container>
+      </Box>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Navigation */}
       <Navigation />
 
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h2 className="text-2xl font-bold text-gray-900">Quản Lý Công Việc</h2>
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Công Việc Mới
-            </button>
-          </div>
-        </div>
-      </header>
+      <Paper elevation={0} sx={{ 
+        bgcolor: 'background.paper', 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.05)'
+      }}>
+        <Container maxWidth="xl">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            py: 6 
+          }}>
+            <Box>
+              <Typography variant="h2" component="h1" fontWeight="800" sx={{ 
+                mb: 2, 
+                color: 'text.primary',
+                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                <BusinessIcon sx={{ fontSize: 36 }} /> Trang Chủ CRM
+              </Typography>
+              <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Tổng quan thống kê và quản lý hệ thống
+              </Typography>
+            </Box>
+          </Box>
+        </Container>
+      </Paper>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-            <div className="text-sm text-gray-600">Tổng Công Việc</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.pending}</div>
-            <div className="text-sm text-gray-600">Chờ Xử Lý</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-yellow-600">{stats.inProgress}</div>
-            <div className="text-sm text-gray-600">Đang Thực Hiện</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-            <div className="text-sm text-gray-600">Hoàn Thành</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-            <div className="text-sm text-gray-600">Quá Hạn</div>
-          </div>
-        </div>
+      <Container maxWidth="xl" sx={{ py: 6 }}>
+        {/* Task Statistics Section */}
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Typography variant="h4" fontWeight="700" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <AssignmentIcon color="primary" fontSize="large" />
+              Thống Kê Công Việc
+            </Typography>
+            <Button
+              variant="outlined"
+              endIcon={<ArrowForwardIcon />}
+              href="/tasks"
+              sx={{ borderRadius: 3 }}
+            >
+              Xem Chi Tiết
+            </Button>
+          </Box>
+          
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(5, 1fr)' 
+            }, 
+            gap: 3
+          }}>
+            {/* Total Tasks */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(52, 71, 103, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                    color: 'white'
+                  }}>
+                    <TrendingUpIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {taskStats.total}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Tổng Công Việc
+                </Typography>
+              </CardContent>
+            </Card>
 
-        {/* Filters */}
-        <TaskFilters filters={filters} onFiltersChange={setFilters} />
+            {/* Pending Tasks */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(251, 133, 0, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #fb8500 0%, #ffb347 100%)',
+                    color: 'white'
+                  }}>
+                    <ScheduleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {taskStats.pending}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Chờ Xử Lý
+                </Typography>
+              </CardContent>
+            </Card>
 
-        {/* Tasks List */}
-        {loading ? (
-          <div className="grid gap-4">
-            {[...Array(3)].map((_, i) => (
-              <TaskCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : filteredTasks.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              {tasks.length === 0 ? 'Chưa có công việc nào. Tạo công việc đầu tiên của bạn!' : 'Không có công việc nào phù hợp với bộ lọc.'}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="grid gap-4">
-              {filteredTasks
-                .slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage)
-                .map((task) => (
-                  <TaskCard
-                    key={task.task_id}
-                    task={task}
-                    onEdit={handleEditTask}
-                    onDelete={handleDeleteTask}
-                    onStatusChange={handleStatusChange}
-                  />
-                ))}
-            </div>
+            {/* In Progress Tasks */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(73, 163, 241, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #49a3f1 0%, #5dade2 100%)',
+                    color: 'white'
+                  }}>
+                    <WarningIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {taskStats.inProgress}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Đang Thực Hiện
+                </Typography>
+              </CardContent>
+            </Card>
 
-            {/* Pagination Controls */}
-            <div className="mt-6 flex justify-center items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border rounded-md disabled:opacity-50"
-              >
-                Trang Trước
-              </button>
-              <span className="text-sm text-gray-600">
-                Trang {currentPage} / {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border rounded-md disabled:opacity-50"
-              >
-                Trang Sau
-              </button>
-            </div>
-          </>
-        )}
-      </main>
+            {/* Completed Tasks */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(130, 214, 22, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #82d616 0%, #a8e6cf 100%)',
+                    color: 'white'
+                  }}>
+                    <CheckCircleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {taskStats.completed}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Hoàn Thành
+                </Typography>
+              </CardContent>
+            </Card>
 
-      {/* Task Form Modal */}
-      <TaskForm
-        isOpen={isFormOpen}
-        onClose={handleCloseForm}
-        onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
-        task={editingTask}
-      />
-    </div>
+            {/* Overdue Tasks */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(234, 6, 6, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #ea0606 0%, #ff6b6b 100%)',
+                    color: 'white'
+                  }}>
+                    <ErrorIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {taskStats.overdue}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Quá Hạn
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+
+        {/* Customer Statistics Section */}
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Typography variant="h4" fontWeight="700" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <PeopleIcon color="primary" fontSize="large" />
+              Thống Kê Khách Hàng
+            </Typography>
+            <Button
+              variant="outlined"
+              endIcon={<ArrowForwardIcon />}
+              href="/customers"
+              sx={{ borderRadius: 3 }}
+            >
+              Xem Chi Tiết
+            </Button>
+          </Box>
+          
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(4, 1fr)' 
+            }, 
+            gap: 3
+          }}>
+            {/* Total Customers */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(52, 71, 103, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white'
+                  }}>
+                    <PeopleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {customerStats.total}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Tổng Khách Hàng
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Individual Customers */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(102, 126, 234, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #5ee7df 0%, #66a6ff 100%)',
+                    color: 'white'
+                  }}>
+                    <PersonAddIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {customerStats.individual}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Cá Nhân
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Corporate Customers */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(118, 75, 162, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                    color: 'white'
+                  }}>
+                    <BusinessIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {customerStats.corporate}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Doanh Nghiệp
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Recent Customers */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(94, 231, 223, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    color: 'white'
+                  }}>
+                    <TrendingUpIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {customerStats.recent}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Mới (30 Ngày)
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+
+        {/* Contract Statistics Section */}
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Typography variant="h4" fontWeight="700" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <DescriptionIcon color="primary" fontSize="large" />
+              Thống Kê Hợp Đồng
+            </Typography>
+            <Button
+              variant="outlined"
+              endIcon={<ArrowForwardIcon />}
+              href="/contracts"
+              sx={{ borderRadius: 3 }}
+            >
+              Xem Chi Tiết
+            </Button>
+          </Box>
+          
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(4, 1fr)' 
+            }, 
+            gap: 3
+          }}>
+            {/* Total Contracts */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(52, 71, 103, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #3867d6 0%, #8854d0 100%)',
+                    color: 'white'
+                  }}>
+                    <DescriptionIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {contractStats.total}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Tổng Hợp Đồng
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Active Contracts */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(130, 214, 22, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #82d616 0%, #a8e6cf 100%)',
+                    color: 'white'
+                  }}>
+                    <CheckCircleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {contractStats.active}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Đang Hoạt Động
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Pending Contracts */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(251, 133, 0, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #fb8500 0%, #ffb347 100%)',
+                    color: 'white'
+                  }}>
+                    <ScheduleIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {contractStats.pending}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Chờ Duyệt
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Completed Contracts */}
+            <Card elevation={2} sx={{ 
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 8px 24px rgba(73, 163, 241, 0.15)' 
+              },
+              transition: 'all 0.3s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #49a3f1 0%, #5dade2 100%)',
+                    color: 'white'
+                  }}>
+                    <AssessmentIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h3" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary' }}>
+                  {contractStats.completed}
+                </Typography>
+                <Typography variant="body2" fontWeight="600" sx={{ color: 'text.secondary' }}>
+                  Hoàn Thành
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+
+        {/* Birthday Customers Section */}
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Typography variant="h4" fontWeight="700" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: '50%', 
+                background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <CakeIcon fontSize="medium" />
+              </Box>
+              Sinh Nhật Tháng Này
+            </Typography>
+            <Button
+              variant="outlined"
+              endIcon={<ArrowForwardIcon />}
+              href="/customers"
+              sx={{ borderRadius: 3 }}
+            >
+              Xem Tất Cả Khách Hàng
+            </Button>
+          </Box>
+          
+          <BirthdayCustomers 
+            customers={customers} 
+            loading={customersLoading} 
+          />
+        </Box>
+
+        {/* Quick Actions */}
+        <Box>
+          <Box sx={{
+            mb: 4,
+            p: 3,
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Typography variant="h4" fontWeight="700" sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 2,
+              color: 'primary.main'
+            }}>
+              <AssessmentIcon color="primary" fontSize="large" />
+              Truy Cập Nhanh
+            </Typography>
+          </Box>
+          
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(4, 1fr)' 
+            }, 
+            gap: 3
+          }}>
+            <Button
+              variant="contained"
+              size="large"
+              href="/tasks"
+              sx={{ 
+                p: 3,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #344767 0%, #3867d6 100%)',
+                color: '#fff',
+                '& .MuiTypography-root': { color: '#fff' },
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0px 6px 16px rgba(52, 71, 103, 0.3)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              <Box sx={{ textAlign: 'center' }}>
+                <AssignmentIcon sx={{ fontSize: 40, mb: 1 }} />
+                <Typography variant="h6" fontWeight="600">
+                  Quản Lý Công Việc
+                </Typography>
+              </Box>
+            </Button>
+
+            <Button
+              variant="contained"
+              size="large"
+              href="/customers"
+              sx={{ 
+                p: 3,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: '#fff',
+                '& .MuiTypography-root': { color: '#fff' },
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0px 6px 16px rgba(102, 126, 234, 0.3)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              <Box sx={{ textAlign: 'center' }}>
+                <PeopleIcon sx={{ fontSize: 40, mb: 1 }} />
+                <Typography variant="h6" fontWeight="600">
+                  Quản Lý Khách Hàng
+                </Typography>
+              </Box>
+            </Button>
+
+            <Button
+              variant="contained"
+              size="large"
+              href="/contracts"
+              sx={{ 
+                p: 3,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                color: '#fff',
+                '& .MuiTypography-root': { color: '#fff' },
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0px 6px 16px rgba(240, 147, 251, 0.3)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              <Box sx={{ textAlign: 'center' }}>
+                <DescriptionIcon sx={{ fontSize: 40, mb: 1 }} />
+                <Typography variant="h6" fontWeight="600">
+                  Quản Lý Hợp Đồng
+                </Typography>
+              </Box>
+            </Button>
+
+            <Button
+              variant="contained"
+              size="large"
+              href="/products"
+              sx={{ 
+                p: 3,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #5ee7df 0%, #66a6ff 100%)',
+                color: '#fff',
+                '& .MuiTypography-root': { color: '#fff' },
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0px 6px 16px rgba(94, 231, 223, 0.3)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              <Box sx={{ textAlign: 'center' }}>
+                <TrendingUpIcon sx={{ fontSize: 40, mb: 1 }} />
+                <Typography variant="h6" fontWeight="600">
+                  Quản Lý Sản Phẩm
+                </Typography>
+              </Box>
+            </Button>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   )
 }

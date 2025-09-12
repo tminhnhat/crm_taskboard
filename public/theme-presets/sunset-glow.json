@@ -1,0 +1,38 @@
+{
+  "lightColors": {
+    "primary": "#f97316",
+    "primaryLight": "#fb923c",
+    "primaryDark": "#ea580c",
+    "secondary": "#f59e0b",
+    "secondaryLight": "#fbbf24",
+    "secondaryDark": "#d97706",
+    "background": "#fffbeb",
+    "paper": "#ffffff",
+    "surface": "#fef3c7",
+    "success": "#10b981",
+    "warning": "#f59e0b",
+    "error": "#dc2626",
+    "info": "#3b82f6",
+    "textPrimary": "#9a3412",
+    "textSecondary": "#c2410c",
+    "divider": "#fed7aa"
+  },
+  "darkColors": {
+    "primary": "#fb923c",
+    "primaryLight": "#fdba74",
+    "primaryDark": "#f97316",
+    "secondary": "#fbbf24",
+    "secondaryLight": "#fcd34d",
+    "secondaryDark": "#f59e0b",
+    "background": "#1c1917",
+    "paper": "#292524",
+    "surface": "#44403c",
+    "success": "#34d399",
+    "warning": "#fbbf24",
+    "error": "#f87171",
+    "info": "#60a5fa",
+    "textPrimary": "#fafaf9",
+    "textSecondary": "#e7e5e4",
+    "divider": "rgba(251, 146, 60, 0.2)"
+  }
+}

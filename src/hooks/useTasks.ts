@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { supabase, Task, TaskStatusEnum } from '@/lib/supabase'
+import { supabase, Task, TaskStatusEnum, RecurrenceType } from '@/lib/supabase'
+import { generateRecurringTasks, validateRecurrenceConfig, RecurringTaskData } from '@/lib/recurringTasks'
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -24,18 +25,60 @@ export function useTasks() {
     }
   }
 
-  // Create a new task
+  // Create a new task (with recurring support)
   const createTask = async (taskData: Omit<Task, 'task_id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { data, error } = await supabase
+      // Validate recurrence configuration if it's a recurring task
+      if (taskData.recurrence_type && taskData.recurrence_type !== 'none') {
+        const validation = validateRecurrenceConfig(
+          taskData.recurrence_type,
+          taskData.recurrence_interval,
+          taskData.recurrence_end_date,
+          taskData.recurrence_duration_months,
+          taskData.task_date_start
+        )
+        
+        if (!validation.isValid) {
+          throw new Error(validation.error)
+        }
+      }
+
+      // Create the master task
+      const masterTaskData = {
+        ...taskData,
+        is_recurring: taskData.recurrence_type !== 'none'
+      }
+
+      const { data: masterTask, error: masterError } = await supabase
         .from('tasks')
-        .insert([taskData])
+        .insert([masterTaskData])
         .select()
         .single()
 
-      if (error) throw error
-      setTasks(prev => [data, ...prev])
-      return data
+      if (masterError) throw masterError
+
+      // Generate recurring tasks if applicable
+      if (taskData.recurrence_type && taskData.recurrence_type !== 'none') {
+        const recurringTaskInstances = generateRecurringTasks(
+          taskData as RecurringTaskData,
+          masterTask.task_id
+        )
+
+        if (recurringTaskInstances.length > 0) {
+          const { error: batchError } = await supabase
+            .from('tasks')
+            .insert(recurringTaskInstances)
+
+          if (batchError) {
+            console.error('Error creating recurring task instances:', batchError)
+            // Don't throw here - master task was created successfully
+          }
+        }
+      }
+
+      // Refresh the task list to show all new tasks
+      await fetchTasks()
+      return masterTask
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to create task')
     }
@@ -59,16 +102,47 @@ export function useTasks() {
     }
   }
 
-  // Delete a task
-  const deleteTask = async (id: number) => {
+  // Delete a task (with recurring support)
+  const deleteTask = async (id: number, deleteRecurring: boolean = false) => {
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('task_id', id)
+      if (deleteRecurring) {
+        // Find the master task (either this task or its parent)
+        const task = tasks.find(t => t.task_id === id)
+        if (!task) throw new Error('Task not found')
 
-      if (error) throw error
-      setTasks(prev => prev.filter(task => task.task_id !== id))
+        const masterTaskId = task.parent_task_id || (task.is_recurring ? id : null)
+        
+        if (masterTaskId) {
+          // Delete all related tasks (master + all children)
+          const { error } = await supabase
+            .from('tasks')
+            .delete()
+            .or(`task_id.eq.${masterTaskId},parent_task_id.eq.${masterTaskId}`)
+
+          if (error) throw error
+          setTasks(prev => prev.filter(task => 
+            task.task_id !== masterTaskId && task.parent_task_id !== masterTaskId
+          ))
+        } else {
+          // Single task deletion
+          const { error } = await supabase
+            .from('tasks')
+            .delete()
+            .eq('task_id', id)
+
+          if (error) throw error
+          setTasks(prev => prev.filter(task => task.task_id !== id))
+        }
+      } else {
+        // Delete only this specific task instance
+        const { error } = await supabase
+          .from('tasks')
+          .delete()
+          .eq('task_id', id)
+
+        if (error) throw error
+        setTasks(prev => prev.filter(task => task.task_id !== id))
+      }
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to delete task')
     }

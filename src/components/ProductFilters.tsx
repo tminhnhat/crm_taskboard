@@ -1,6 +1,22 @@
 'use client'
 
-import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import React from 'react'
+import {
+  Box,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Stack,
+  Chip,
+  Divider,
+  InputAdornment
+} from '@mui/material'
+import { FilterList, Search, Clear } from '@mui/icons-material'
+import { StyledCard } from './StyledComponents'
 
 interface ProductFiltersProps {
   filters: {
@@ -43,112 +59,117 @@ export default function ProductFilters({
   const hasActiveFilters = filters.search || filters.status || filters.productType
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-      <div className="flex items-center gap-2 mb-4">
-        <FunnelIcon className="h-5 w-5 text-gray-600" />
-        <h3 className="text-lg font-medium text-gray-900">Bộ Lọc</h3>
-        {hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className="text-sm text-blue-600 hover:text-blue-800 ml-auto"
-          >
-            Xóa tất cả
-          </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        {/* Search Filter */}
-        <div>
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-            Tìm Kiếm Sản Phẩm
-          </label>
-          <div className="relative">
-            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <input
-              type="text"
-              id="search"
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              placeholder="Tìm theo tên hoặc mô tả..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        {/* Status Filter */}
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-            Trạng Thái
-          </label>
-          <select
-            id="status"
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tất Cả Trạng Thái</option>
-            <option value="active">Hoạt Động</option>
-            <option value="inactive">Tạm Ngưng</option>
-          </select>
-        </div>
-
-        {/* Product Type Filter */}
-        <div>
-          <label htmlFor="productType" className="block text-sm font-medium text-gray-700 mb-1">
-            Loại Sản Phẩm
-          </label>
-          <select
-            id="productType"
-            value={filters.productType}
-            onChange={(e) => handleFilterChange('productType', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tất Cả Loại</option>
-            {availableProductTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Results Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-600 pt-3 border-t border-gray-200">
-        <span>
-          Hiển thị {filteredCount} trong tổng số {totalCount} sản phẩm
+    <StyledCard sx={{ mb: 3 }}>
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <FilterList sx={{ color: 'text.secondary', fontSize: 20 }} />
+            <Typography variant="subtitle1" fontWeight="medium" color="text.primary">
+              Bộ lọc sản phẩm
+            </Typography>
+          </Box>
           {hasActiveFilters && (
-            <span className="text-blue-600 ml-1">
-              (đã lọc)
-            </span>
+            <Button
+              size="small"
+              startIcon={<Clear />}
+              onClick={clearFilters}
+              sx={{ color: 'text.secondary' }}
+            >
+              Xóa tất cả
+            </Button>
           )}
-        </span>
-        
-        {hasActiveFilters && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">Bộ lọc đang hoạt động:</span>
-            <div className="flex gap-1">
+        </Box>
+
+        <Stack 
+          direction={{ xs: 'column', md: 'row' }} 
+          spacing={2} 
+          sx={{ mb: 2 }}
+        >
+          <TextField
+            size="small"
+            label="Tìm kiếm sản phẩm"
+            value={filters.search}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            placeholder="Tìm theo tên hoặc mô tả..."
+            sx={{ flex: 1 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search sx={{ color: 'text.secondary', fontSize: 18 }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* Đã gỡ bỏ Product Status input field */}
+
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Loại sản phẩm</InputLabel>
+            <Select
+              value={filters.productType}
+              onChange={(e) => handleFilterChange('productType', e.target.value)}
+              label="Loại sản phẩm"
+            >
+              <MenuItem value="">Tất cả loại</MenuItem>
+              {availableProductTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+
+        <Divider sx={{ my: 1 }} />
+
+        {/* Results Summary */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+          <Typography variant="body2" color="text.secondary">
+            Hiển thị {filteredCount} trong tổng số {totalCount} sản phẩm
+            {hasActiveFilters && (
+              <Typography component="span" color="primary.main" sx={{ ml: 0.5 }}>
+                (đã lọc)
+              </Typography>
+            )}
+          </Typography>
+          
+          {hasActiveFilters && (
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              <Typography variant="caption" color="text.secondary">
+                Bộ lọc:
+              </Typography>
               {filters.search && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  Tìm kiếm: {filters.search}
-                </span>
+                <Chip
+                  size="small"
+                  label={`Tìm kiếm: ${filters.search}`}
+                  variant="outlined"
+                  color="primary"
+                  onDelete={() => handleFilterChange('search', '')}
+                />
               )}
               {filters.status && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Trạng thái: {filters.status === 'active' ? 'Hoạt Động' :
-                              filters.status === 'inactive' ? 'Tạm Ngưng' : filters.status}
-                </span>
+                <Chip
+                  size="small"
+                  label={`Trạng thái: ${filters.status === 'active' ? 'Hoạt động' : 
+                                      filters.status === 'inactive' ? 'Tạm ngưng' : filters.status}`}
+                  variant="outlined"
+                  color="success"
+                  onDelete={() => handleFilterChange('status', '')}
+                />
               )}
               {filters.productType && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  Loại: {filters.productType}
-                </span>
+                <Chip
+                  size="small"
+                  label={`Loại: ${filters.productType}`}
+                  variant="outlined"
+                  color="secondary"
+                  onDelete={() => handleFilterChange('productType', '')}
+                />
               )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+            </Stack>
+          )}
+        </Box>
+      </Box>
+    </StyledCard>
   )
 }

@@ -1,97 +1,171 @@
 'use client'
 
+import React from 'react'
 import { formatCurrency } from '@/lib/currency'
 import { toVNDate } from '@/lib/date'
-import { EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import {
+  CardContent,
+  Typography,
+  Box,
+  Stack,
+  Chip
+} from '@mui/material'
+import { 
+  Visibility,
+  Edit,
+  Delete,
+  Assessment,
+  Person,
+  Business,
+  AttachMoney
+} from '@mui/icons-material'
+import { StyledCard, ActionButton } from './StyledComponents'
 
 interface CreditAssessmentCardProps {
   assessment: any
-  onView: (assessment: any) => void
+  // onView: (assessment: any) => void
   onEdit: (assessment: any) => void
   onDelete: (assessment: any) => void
 }
 
+const getStatusConfig = (status: string) => {
+  switch (status) {
+    case 'approved':
+      return { label: 'Đã duyệt', color: 'success' as const }
+    case 'rejected':
+      return { label: 'Từ chối', color: 'error' as const }
+    case 'draft':
+      return { label: 'Bản nháp', color: 'default' as const }
+    case 'in_review':
+      return { label: 'Đang xem xét', color: 'warning' as const }
+    default:
+      return { label: status, color: 'default' as const }
+  }
+}
+
 export default function CreditAssessmentCard({
   assessment,
-  onView,
+  // onView,
   onEdit,
   onDelete,
 }: CreditAssessmentCardProps) {
+  const statusConfig = getStatusConfig(assessment.status)
+  
   return (
-    <div className="bg-white shadow rounded-lg p-6 space-y-4">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-medium">
-            Thẩm định cho {assessment.customer?.full_name}
-          </h3>
-          <p className="text-sm text-gray-500">
-            {toVNDate(assessment.created_at)}
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => onView(assessment)}
-            className="p-2 text-gray-400 hover:text-gray-500"
-          >
-            <EyeIcon className="h-5 w-5" />
-          </button>
-          <button
+    <StyledCard>
+      <CardContent>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+              <Assessment color="primary" sx={{ mt: 0.5 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  Thẩm định cho {assessment.customer?.full_name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  {toVNDate(assessment.created_at)}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+
+        <Stack spacing={1}>
+          {/* Staff Information */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Person fontSize="small" />
+            <Typography variant="body2">
+              Nhân viên: {assessment.staff?.full_name || 'Chưa phân công'}
+            </Typography>
+          </Box>
+
+          {/* Product Information */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Business fontSize="small" />
+            <Typography variant="body2">
+              Sản phẩm: {assessment.product?.product_name || 'Chưa chọn sản phẩm'}
+            </Typography>
+          </Box>
+
+          {/* Department */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Business fontSize="small" />
+            <Typography variant="body2">
+              Phòng ban: {assessment.department || 'Chưa xác định'}
+            </Typography>
+          </Box>
+
+          {/* Fee Amount */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <AttachMoney fontSize="small" />
+            <Typography variant="body2">
+              Phí thẩm định: {formatCurrency(assessment.fee_amount)}
+            </Typography>
+          </Box>
+
+          {/* Status */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+              Trạng thái:
+            </Typography>
+            <Chip 
+              label={statusConfig.label}
+              color={statusConfig.color}
+              size="small"
+              variant="outlined"
+              sx={{ fontWeight: 600, borderWidth: 1.5 }}
+            />
+          </Box>
+        </Stack>
+
+        {/* Action Buttons */}
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 1, 
+          mt: 3, 
+          pt: 2, 
+          borderTop: '1px solid',
+          borderColor: 'divider',
+          flexDirection: { xs: 'row', sm: 'row' },
+          justifyContent: { xs: 'center', sm: 'flex-end' }
+        }}>
+          {/* View button removed */}
+          <ActionButton
+            size="small"
+            startIcon={<Edit />}
             onClick={() => onEdit(assessment)}
-            className="p-2 text-gray-400 hover:text-gray-500"
+            variant="outlined"
+            sx={{
+              borderColor: '#344767',
+              color: '#344767',
+              '&:hover': {
+                borderColor: '#344767',
+                bgcolor: 'rgba(52, 71, 103, 0.04)'
+              }
+            }}
           >
-            <PencilIcon className="h-5 w-5" />
-          </button>
-          <button
+            Sửa
+          </ActionButton>
+          <Box sx={{ flex: 1, display: { xs: 'row', sm: 'row' } }} />
+          <ActionButton
+            size="small"
+            startIcon={<Delete />}
             onClick={() => onDelete(assessment)}
-            className="p-2 text-gray-400 hover:text-gray-500"
+            variant="outlined"
+            sx={{
+              borderColor: 'error.main',
+              color: 'error.main',
+              '&:hover': {
+                borderColor: 'error.main',
+                bgcolor: 'rgba(211, 47, 47, 0.04)'
+              }
+            }}
           >
-            <TrashIcon className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm text-gray-500">Nhân viên thẩm định</p>
-          <p className="font-medium">{assessment.staff?.full_name}</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Sản phẩm</p>
-          <p className="font-medium">{assessment.product?.product_name}</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Phòng ban</p>
-          <p className="font-medium">{assessment.department}</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Phí thẩm định</p>
-          <p className="font-medium">{formatCurrency(assessment.fee_amount)}</p>
-        </div>
-      </div>
-
-      <div className="pt-4 border-t">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm text-gray-500">Trạng thái:</p>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-              ${assessment.status === 'approved' && 'bg-green-100 text-green-800'}
-              ${assessment.status === 'rejected' && 'bg-red-100 text-red-800'}
-              ${assessment.status === 'draft' && 'bg-gray-100 text-gray-800'}
-              ${assessment.status === 'in_review' && 'bg-yellow-100 text-yellow-800'}
-            `}>
-              {assessment.status === 'approved' && 'Đã duyệt'}
-              {assessment.status === 'rejected' && 'Từ chối'}
-              {assessment.status === 'draft' && 'Bản nháp'} 
-              {assessment.status === 'in_review' && 'Đang xem xét'}
-            </span>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">
-              Cập nhật: {toVNDate(assessment.updated_at)}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+            Xóa
+          </ActionButton>
+        </Box>
+      </CardContent>
+    </StyledCard>
   )
 }

@@ -1,4 +1,22 @@
 import React, { useRef, useState } from 'react';
+import {
+  Box,
+  Button,
+  Alert,
+  Paper,
+  Typography,
+  CircularProgress,
+  Stack,
+  Card,
+  CardContent,
+  useTheme
+} from '@mui/material';
+import {
+  CameraAlt as CameraIcon,
+  PhotoCamera as PhotoIcon,
+  QrCodeScanner as QrCodeScannerIcon,
+  Error as ErrorIcon
+} from '@mui/icons-material';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import NotFoundException from '@zxing/library';
 import jsQR from 'jsqr';
@@ -18,8 +36,10 @@ interface QRScannerProps {
 }
 
 export default function QRScanner({ onResult }: QRScannerProps) {
+  const theme = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [processingFile, setProcessingFile] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,81 +94,178 @@ export default function QRScanner({ onResult }: QRScannerProps) {
   // Scan from uploaded image
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
+    setProcessingFile(true);
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setProcessingFile(false);
+      return;
+    }
+    
     const img = new window.Image();
     img.src = URL.createObjectURL(file);
     img.onload = async () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return setError('Không thể đọc ảnh');
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      let imageData = ctx.getImageData(0, 0, img.width, img.height);
-
-      // Enhance image: grayscale and increase contrast
-      const data = imageData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        // Grayscale
-        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-        // Increase contrast
-        const contrast = 1.5;
-        const contrasted = (avg - 128) * contrast + 128;
-        data[i] = data[i + 1] = data[i + 2] = Math.max(0, Math.min(255, contrasted));
-      }
-      ctx.putImageData(imageData, 0, 0);
-      imageData = ctx.getImageData(0, 0, img.width, img.height);
-
-      // Try jsQR first
-      let code = jsQR(imageData.data, img.width, img.height);
-      if (code && code.data) {
-        const parsed = parseVNIDQR(code.data);
-        if (parsed) {
-          onResult(parsed);
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          setError('Không thể đọc ảnh');
+          setProcessingFile(false);
           return;
         }
-      }
+        
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        let imageData = ctx.getImageData(0, 0, img.width, img.height);
 
-      // Fallback: try ZXing decodeFromCanvas
-      try {
-        const codeReader = new BrowserMultiFormatReader();
-        const result = await codeReader.decodeFromCanvas(canvas);
-        if (result && result.getText()) {
-          const parsed = parseVNIDQR(result.getText());
+        // Enhance image: grayscale and increase contrast
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          // Grayscale
+          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+          // Increase contrast
+          const contrast = 1.5;
+          const contrasted = (avg - 128) * contrast + 128;
+          data[i] = data[i + 1] = data[i + 2] = Math.max(0, Math.min(255, contrasted));
+        }
+        ctx.putImageData(imageData, 0, 0);
+        imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+        // Try jsQR first
+        let code = jsQR(imageData.data, img.width, img.height);
+        if (code && code.data) {
+          const parsed = parseVNIDQR(code.data);
           if (parsed) {
             onResult(parsed);
+            setProcessingFile(false);
             return;
           }
         }
-      } catch (err) {
-        // ignore, will show error below
-      }
 
-      setError('Không tìm thấy mã QR trong ảnh hoặc ảnh không rõ nét. Hãy thử lại với ảnh rõ hơn.');
+        // Fallback: try ZXing decodeFromCanvas
+        try {
+          const codeReader = new BrowserMultiFormatReader();
+          const result = await codeReader.decodeFromCanvas(canvas);
+          if (result && result.getText()) {
+            const parsed = parseVNIDQR(result.getText());
+            if (parsed) {
+              onResult(parsed);
+              setProcessingFile(false);
+              return;
+            }
+          }
+        } catch (err) {
+          // ignore, will show error below
+        }
+
+        setError('Không tìm thấy mã QR trong ảnh hoặc ảnh không rõ nét. Hãy thử lại với ảnh rõ hơn.');
+      } finally {
+        setProcessingFile(false);
+        URL.revokeObjectURL(img.src);
+      }
     };
-    img.onerror = () => setError('Không thể tải ảnh');
+    img.onerror = () => {
+      setError('Không thể tải ảnh');
+      setProcessingFile(false);
+      URL.revokeObjectURL(img.src);
+    };
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
-    <div className="space-y-2">
-      <button
-        type="button"
-        onClick={startCameraScan}
-        disabled={scanning}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {scanning ? 'Đang quét...' : 'Quét QR bằng Camera'}
-      </button>
-      <input
-        type="file"
-        accept="image/*"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        className="block mt-2"
-      />
-      <video ref={videoRef} style={{ width: 320, height: 240, display: scanning ? 'block' : 'none' }} />
-      {error && <div className="text-red-600 text-sm">{error}</div>}
-    </div>
+    <Card sx={{ mt: 2 }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <QrCodeScannerIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="h6" fontWeight="600">
+            Quét QR Code CCCD
+          </Typography>
+        </Box>
+
+        <Stack spacing={2}>
+          {/* Camera Scan Button */}
+          <Button
+            variant="contained"
+            startIcon={scanning ? <CircularProgress size={20} color="inherit" /> : <CameraIcon />}
+            onClick={startCameraScan}
+            disabled={scanning || processingFile}
+            size="large"
+            fullWidth
+          >
+            {scanning ? 'Đang quét...' : 'Quét QR bằng Camera'}
+          </Button>
+
+          {/* File Upload Button */}
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
+          <Button
+            variant="outlined"
+            startIcon={processingFile ? <CircularProgress size={20} /> : <PhotoIcon />}
+            onClick={handleUploadClick}
+            disabled={scanning || processingFile}
+            size="large"
+            fullWidth
+          >
+            {processingFile ? 'Đang xử lý...' : 'Tải ảnh từ thiết bị'}
+          </Button>
+
+          {/* Video Preview */}
+          {scanning && (
+            <Paper 
+              sx={{ 
+                p: 2, 
+                textAlign: 'center',
+                bgcolor: 'grey.900',
+                borderRadius: 2
+              }}
+            >
+              <video 
+                ref={videoRef} 
+                style={{ 
+                  width: '100%',
+                  maxWidth: '320px',
+                  height: 'auto',
+                  borderRadius: theme.shape.borderRadius
+                }} 
+              />
+              <Typography variant="body2" color="white" sx={{ mt: 1 }}>
+                Đưa QR code CCCD vào khung hình
+              </Typography>
+            </Paper>
+          )}
+
+          {/* Error Alert */}
+          {error && (
+            <Alert 
+              severity="error" 
+              icon={<ErrorIcon />}
+              sx={{ mt: 2 }}
+            >
+              {error}
+            </Alert>
+          )}
+
+          {/* Instructions */}
+          <Alert severity="info" sx={{ mt: 2 }}>
+            <Typography variant="body2">
+              <strong>Hướng dẫn:</strong>
+            </Typography>
+            <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+              <li>Đảm bảo QR code rõ nét và đầy đủ</li>
+              <li>Tránh bóng đổ và phản chiếu ánh sáng</li>
+              <li>Chỉ hỗ trợ QR code trên CCCD Việt Nam</li>
+            </ul>
+          </Alert>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }

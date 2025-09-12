@@ -1,25 +1,40 @@
+import React from 'react';
 import { Contract } from '@/lib/supabase'
+import {
+  CardContent,
+  Typography,
+  Box,
+  Stack,
+  Select,
+  MenuItem,
+  FormControl,
+  Chip
+} from '@mui/material'
 import { 
-  DocumentTextIcon,
-  UserIcon,
-  CubeIcon,
-  CurrencyDollarIcon,
-  CalendarDaysIcon,
-  IdentificationIcon,
-  ClockIcon
-} from '@heroicons/react/24/outline'
+  Description,
+  Person,
+  Inventory,
+  MonetizationOn,
+  CalendarToday,
+  Badge,
+  Schedule,
+  Edit,
+  DeleteOutline
+} from '@mui/icons-material'
+import {
+  StyledCard,
+  ActionButton,
+  InfoBox,
+  CardHeader,
+  CardActions,
+  StyledSelect
+} from './StyledComponents'
 
 interface ContractCardProps {
   contract: Contract
   onEdit: (contract: Contract) => void
   onDelete: (contractId: number) => void
   onStatusChange: (contractId: number, status: string) => void
-}
-
-const statusColors = {
-  draft: 'bg-gray-100 text-gray-800',
-  active: 'bg-green-100 text-green-800',
-  expired: 'bg-red-100 text-red-800'
 }
 
 export default function ContractCard({ contract, onEdit, onDelete, onStatusChange }: ContractCardProps) {
@@ -83,126 +98,134 @@ export default function ContractCard({ contract, onEdit, onDelete, onStatusChang
     return diffDays
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'success'
+      case 'expired': return 'error'
+      case 'draft': return 'default'
+      default: return 'default'
+    }
+  }
+
   const daysRemaining = getDaysRemaining()
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-4">
-            <DocumentTextIcon className="h-6 w-6 text-gray-600" />
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {contract.contract_number}
-              </h3>
-              <p className="text-2xl font-bold text-green-600">
-                {formatCurrency(contract.contract_credit_limit)}
-              </p>
-            </div>
-          </div>
+    <StyledCard>
+      <CardContent>
+        <CardHeader>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+              <Description color="primary" sx={{ mt: 0.5 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  {contract.contract_number}
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: 'success.main' }}>
+                  {formatCurrency(contract.contract_credit_limit)}
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+              <Chip 
+                label={contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
+                color={getStatusColor(contract.status) as any}
+                size="small"
+              />
+              
+              {isExpired() && contract.status === 'active' && (
+                <Chip 
+                  label="Hết Hạn"
+                  color="error"
+                  size="small"
+                />
+              )}
+              
+              {daysRemaining !== null && daysRemaining <= 30 && daysRemaining > 0 && contract.status === 'active' && (
+                <Chip 
+                  icon={<Schedule />}
+                  label={`Còn ${daysRemaining} ngày`}
+                  color="warning"
+                  size="small"
+                />
+              )}
+            </Stack>
+            
+            <Stack spacing={1}>
+              {contract.customer && (
+                <InfoBox>
+                  <Person fontSize="small" />
+                  <Typography variant="body2">
+                    Khách hàng: {contract.customer.full_name}
+                  </Typography>
+                </InfoBox>
+              )}
+              
+              {contract.product && (
+                <InfoBox>
+                  <Inventory fontSize="small" />
+                  <Typography variant="body2">
+                    Sản phẩm: {contract.product.product_name}
+                  </Typography>
+                </InfoBox>
+              )}
+              
+              <InfoBox>
+                <MonetizationOn fontSize="small" color="success" />
+                <Typography variant="body2">
+                  Hạn mức: {formatCurrency(contract.contract_credit_limit)}
+                </Typography>
+              </InfoBox>
+              
+              <InfoBox>
+                <CalendarToday fontSize="small" />
+                <Typography variant="body2">
+                  Từ: {formatDate(contract.start_date)} - Đến: {formatDate(contract.end_date)}
+                </Typography>
+              </InfoBox>
+              
+              {/* Đã gỡ bỏ hiển thị contract id */}
+            </Stack>
+          </Box>
           
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[contract.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
-              {contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
-            </span>
-            
-            {isExpired() && contract.status === 'active' && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                Hết Hạn
-              </span>
-            )}
-            
-            {daysRemaining !== null && daysRemaining <= 30 && daysRemaining > 0 && contract.status === 'active' && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                <ClockIcon className="h-3 w-3 mr-1" />
-                Còn {daysRemaining} ngày
-              </span>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            {contract.customer && (
-              <div className="flex items-center text-sm text-gray-600">
-                <UserIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-                <span>Khách hàng: {contract.customer.full_name}</span>
-              </div>
-            )}
-            
-            {contract.product && (
-              <div className="flex items-center text-sm text-gray-600">
-                <CubeIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-                <span>Sản phẩm: {contract.product.product_name}</span>
-                {contract.product.product_type && (
-                  <span className="ml-1 text-gray-400">({contract.product.product_type})</span>
-                )}
-              </div>
-            )}
-            
-            {contract.signed_by_staff && (
-              <div className="flex items-center text-sm text-gray-600">
-                <IdentificationIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-                <span>Người ký: {contract.signed_by_staff.full_name}</span>
-                {contract.signed_by_staff.position && (
-                  <span className="ml-1 text-gray-400">({contract.signed_by_staff.position})</span>
-                )}
-              </div>
-            )}
-            
-            <div className="flex items-center text-sm text-gray-600">
-              <CurrencyDollarIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-              <span>Hạn mức tín dụng: {formatCurrency(contract.contract_credit_limit)}</span>
-            </div>
-            
-            <div className="flex items-center text-sm text-gray-600">
-              <CalendarDaysIcon className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
-              <span>Thời hạn: {formatDate(contract.start_date)} - {formatDate(contract.end_date)}</span>
-            </div>
-          </div>
-
-          {contract.metadata && Object.keys(contract.metadata).length > 0 && (
-            <div className="mt-3 p-3 bg-gray-50 rounded-md">
-              <p className="text-xs font-medium text-gray-700 mb-2">Contract Details:</p>
-              <div className="space-y-1">
-                {Object.entries(contract.metadata).map(([key, value]) => (
-                  <div key={key} className="flex justify-between text-xs">
-                    <span className="text-gray-600 font-medium">{key}:</span>
-                    <span className="text-gray-800">
-                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          {/* Đã gỡ bỏ contract status input field */}
+        </CardHeader>
         
-        <div className="flex flex-col gap-2 ml-4">
-          <select
-            value={contract.status}
-            onChange={(e) => onStatusChange(contract.contract_id, e.target.value)}
-            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="expired">Expired</option>
-          </select>
-          
-          <div className="flex gap-1">
-            <button
+        <CardActions>
+          <Box sx={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: { xs: 'row', sm: 'row' },
+            justifyContent: { xs: 'space-between', sm: 'flex-start' },
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <ActionButton
+              startIcon={<Edit />}
               onClick={() => onEdit(contract)}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
             >
-              Edit
-            </button>
-            <button
+              Sửa
+            </ActionButton>
+            <Box sx={{ flex: 1, display: { xs: 'row', sm: 'row' } }} />
+            <ActionButton
+              startIcon={<DeleteOutline />}
               onClick={() => onDelete(contract.contract_id)}
-              className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
+              color="error"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 90 }}
             >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+              Xóa
+            </ActionButton>
+          </Box>
+        </CardActions>
+      </CardContent>
+    </StyledCard>
   )
 }
+
+

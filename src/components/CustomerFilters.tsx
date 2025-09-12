@@ -1,4 +1,17 @@
-import { FunnelIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
+import React from 'react'
+import {
+  Box,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Stack
+} from '@mui/material'
+import { FilterList, Sort, Clear } from '@mui/icons-material'
+import { StyledCard } from './StyledComponents'
 
 interface CustomerFiltersProps {
   filters: {
@@ -16,79 +29,89 @@ export default function CustomerFilters({ filters, onFiltersChange }: CustomerFi
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <FunnelIcon className="h-5 w-5 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Bộ lọc:</span>
-        </div>
+    <StyledCard sx={{ mb: 3 }}>
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <FilterList sx={{ color: 'text.secondary', fontSize: 20 }} />
+          <Typography variant="subtitle1" fontWeight="medium" color="text.primary">
+            Bộ lọc khách hàng
+          </Typography>
+        </Box>
         
-        <div className="flex items-center gap-2">
-          <label htmlFor="search" className="text-sm text-gray-600">Tìm kiếm:</label>
-          <input
-            type="text"
-            id="search"
+        <Stack 
+          direction={{ xs: 'column', md: 'row' }} 
+          spacing={2} 
+          alignItems={{ xs: 'stretch', md: 'center' }}
+          flexWrap="wrap"
+        >
+          <TextField
+            size="small"
+            label="Tìm kiếm"
             value={filters.search}
             onChange={(e) => updateFilter('search', e.target.value)}
             placeholder="Tìm kiếm khách hàng..."
-            className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            sx={{ minWidth: 200 }}
           />
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <label htmlFor="customer-type-filter" className="text-sm text-gray-600">Loại:</label>
-                            <select
-                    id="customer-type"
-                    value={filters.customerType}
-                    onChange={(e) => updateFilter('customerType', e.target.value)}
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Tất Cả Loại</option>
-                    <option value="individual">Cá Nhân</option>
-                    <option value="corporate">Doanh Nghiệp</option>
-                  </select>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <label htmlFor="status-filter" className="text-sm text-gray-600">Trạng thái:</label>
-          <select
-            id="status-filter"
-            value={filters.status || 'active'}
-            onChange={(e) => updateFilter('status', e.target.value)}
-            className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Loại khách hàng</InputLabel>
+            <Select
+              value={filters.customerType}
+              onChange={(e) => updateFilter('customerType', e.target.value)}
+              label="Loại khách hàng"
+            >
+              <MenuItem value="">Tất cả loại</MenuItem>
+              <MenuItem value="individual">Cá nhân</MenuItem>
+              <MenuItem value="corporate">Doanh nghiệp</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Trạng thái</InputLabel>
+            <Select
+              value={filters.status || 'active'}
+              onChange={(e) => updateFilter('status', e.target.value)}
+              label="Trạng thái"
+            >
+              <MenuItem value="">Tất cả trạng thái</MenuItem>
+              <MenuItem value="active">Đang hoạt động</MenuItem>
+              <MenuItem value="inactive">Không hoạt động</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Sort sx={{ fontSize: 16 }} />
+                Sắp xếp
+              </Box>
+            </InputLabel>
+            <Select
+              value={filters.sortBy}
+              onChange={(e) => updateFilter('sortBy', e.target.value)}
+              label="Sắp xếp"
+            >
+              <MenuItem value="created_at">Ngày tạo</MenuItem>
+              <MenuItem value="full_name">Tên</MenuItem>
+              <MenuItem value="account_number">Mã tài khoản</MenuItem>
+              <MenuItem value="cif_number">Số CIF</MenuItem>
+              <MenuItem value="customer_type">Loại khách hàng</MenuItem>
+              <MenuItem value="status">Trạng thái</MenuItem>
+              <MenuItem value="date_of_birth">Ngày sinh</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <Button
+            variant="text"
+            size="small"
+            startIcon={<Clear />}
+            onClick={() => onFiltersChange({ customerType: '', status: '', search: '', sortBy: 'created_at' })}
+            sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
           >
-            <option value="">Tất Cả Trạng Thái</option>
-            <option value="active">Đang Hoạt Động</option>
-            <option value="inactive">Không Hoạt Động</option>
-          </select>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />
-          <label htmlFor="sort-filter" className="text-sm text-gray-600">Sắp xếp theo:</label>
-          <select
-            id="sort-filter"
-            value={filters.sortBy}
-            onChange={(e) => updateFilter('sortBy', e.target.value)}
-            className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="created_at">Ngày Tạo</option>
-            <option value="full_name">Tên</option>
-            <option value="account_number">Mã Tài Khoản</option>
-            <option value="cif_number">Số CIF</option>
-            <option value="customer_type">Loại Khách Hàng</option>
-            <option value="status">Trạng Thái</option>
-            <option value="date_of_birth">Ngày Sinh</option>
-          </select>
-        </div>
-        
-        <button
-          onClick={() => onFiltersChange({ customerType: '', status: '', search: '', sortBy: 'created_at' })}
-          className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 underline"
-        >
-          Xóa tất cả
-        </button>
-      </div>
-    </div>
+            Xóa bộ lọc
+          </Button>
+        </Stack>
+      </Box>
+    </StyledCard>
   )
 }
