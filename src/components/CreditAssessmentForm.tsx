@@ -304,7 +304,11 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
   const [metadata, setMetadata] = useState<Record<string, any>>(initialData)
   const [expanded, setExpanded] = useState<boolean>(true)
 
-  useEffect(() => { setMetadata(initialData) }, [initialData])
+  // Use effect to update metadata when initialData changes
+  useEffect(() => { 
+    console.log('MetadataSection initialData changed:', initialData) // Debug log
+    setMetadata(initialData) 
+  }, [initialData])
 
   const handleFieldChange = (field: string, value: any) => {
     const newMetadata = { ...metadata, [field]: value }
@@ -583,6 +587,7 @@ export default function CreditAssessmentForm({
   }
 
   const handleSectionDataChange = (section: string, data: Record<string, any>) => {
+    console.log(`Updating section ${section} with data:`, data) // Debug log
     let newData = { ...data };
     // Tính tổng chi phí sinh hoạt
     if (section === 'monthly_expenses') {
@@ -873,8 +878,11 @@ export default function CreditAssessmentForm({
                   c.collateral_id?.toString() === formState.assessment_details.collateral_info?.collateral_id?.toString()
                 ) || null}
                 onChange={(event, newValue) => {
+                  console.log('Collateral selected:', newValue) // Debug log
                   if (newValue) {
                     const metadata = newValue.metadata || {}
+                    console.log('Metadata extracted:', metadata) // Debug log
+                    
                     const mapped = {
                       // Thông tin cơ bản từ table chính
                       collateral_id: newValue.collateral_id,
@@ -933,6 +941,7 @@ export default function CreditAssessmentForm({
                       email: metadata.email,
                       notes: metadata.notes
                     }
+                    console.log('Mapped data:', mapped) // Debug log
                     handleSectionDataChange('collateral_info', mapped)
                   } else {
                     handleSectionDataChange('collateral_info', {})
@@ -986,9 +995,11 @@ export default function CreditAssessmentForm({
               };
             }
             
+            console.log(`Rendering ${sectionKey} with initialData:`, initialData) // Debug log
+            
             return (
               <MetadataSection
-                key={`${sectionKey}-${JSON.stringify(initialData)}`}
+                key={sectionKey}
                 title={section.title}
                 icon={section.icon}
                 initialData={initialData}
