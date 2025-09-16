@@ -874,63 +874,64 @@ export default function CreditAssessmentForm({
                 ) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
+                    const metadata = newValue.metadata || {}
                     const mapped = {
-                      // Thông tin cơ bản
+                      // Thông tin cơ bản từ table chính
                       collateral_id: newValue.collateral_id,
                       collateral_type: newValue.collateral_type,
-                      collateral_value: newValue.value || newValue.collateral_value,
-                      collateral_description: newValue.description || newValue.collateral_description,
+                      collateral_value: newValue.value,
+                      collateral_description: newValue.description,
                       location: newValue.location,
                       
-                      // Thông tin giấy chứng nhận
-                      so_gcn: newValue.so_gcn,
-                      ngay_cap_gcn: newValue.ngay_cap_gcn,
-                      noi_cap_gcn: newValue.noi_cap_gcn,
+                      // Thông tin từ metadata JSONB
+                      so_gcn: metadata.so_gcn,
+                      ngay_cap_gcn: metadata.ngay_cap_gcn,
+                      noi_cap_gcn: metadata.noi_cap_gcn,
                       
                       // Thông tin đất đai
-                      so_thua: newValue.so_thua,
-                      to_ban_do: newValue.to_ban_do,
-                      dien_tich: newValue.dien_tich,
-                      muc_dich_su_dung_dat: newValue.muc_dich_su_dung_dat,
+                      so_thua: metadata.so_thua,
+                      to_ban_do: metadata.to_ban_do,
+                      dien_tich: metadata.dien_tich,
+                      muc_dich_su_dung_dat: metadata.muc_dich_su_dung_dat,
                       
                       // Thông tin nhà ở/công trình
-                      dien_tich_xay_dung: newValue.dien_tich_xay_dung,
-                      ket_cau: newValue.ket_cau,
-                      so_tang: newValue.so_tang,
-                      nam_hoan_thanh_xd: newValue.nam_hoan_thanh_xd,
+                      dien_tich_xay_dung: metadata.dien_tich_xay_dung,
+                      ket_cau: metadata.ket_cau,
+                      so_tang: metadata.so_tang,
+                      nam_hoan_thanh_xd: metadata.nam_hoan_thanh_xd,
                       
                       // Thông tin phương tiện
-                      vehicle_type: newValue.vehicle_type,
-                      brand: newValue.brand,
-                      model: newValue.model,
-                      year: newValue.year,
-                      license_plate: newValue.license_plate,
+                      vehicle_type: metadata.vehicle_type,
+                      brand: metadata.brand,
+                      model: metadata.model,
+                      year: metadata.year,
+                      license_plate: metadata.license_plate,
                       
                       // Thông tin tài chính
-                      account_type: newValue.account_type,
-                      bank_name: newValue.bank_name,
-                      account_number: newValue.account_number,
-                      balance: newValue.balance,
-                      currency: newValue.currency,
+                      account_type: metadata.account_type,
+                      bank_name: metadata.bank_name,
+                      account_number: metadata.account_number,
+                      balance: metadata.balance,
+                      currency: metadata.currency,
                       
                       // Thông tin pháp lý
-                      ownership_status: newValue.ownership_status,
-                      legal_restrictions: newValue.legal_restrictions,
-                      registration_date: newValue.registration_date,
-                      contract_number: newValue.contract_number,
+                      ownership_status: metadata.ownership_status || newValue.legal_status,
+                      legal_restrictions: metadata.legal_restrictions,
+                      registration_date: metadata.registration_date,
+                      contract_number: metadata.contract_number,
                       
                       // Thông tin định giá
-                      appraised_value: newValue.appraised_value,
-                      appraisal_date: newValue.appraisal_date,
-                      appraiser: newValue.appraiser,
-                      appraisal_method: newValue.appraisal_method,
-                      next_appraisal_date: newValue.next_appraisal_date,
+                      appraised_value: metadata.appraised_value || newValue.value,
+                      appraisal_date: metadata.appraisal_date || newValue.valuation_date,
+                      appraiser: metadata.appraiser,
+                      appraisal_method: metadata.appraisal_method,
+                      next_appraisal_date: metadata.next_appraisal_date || newValue.re_evaluation_date,
                       
                       // Thông tin liên hệ
-                      contact_person: newValue.contact_person,
-                      phone: newValue.phone,
-                      email: newValue.email,
-                      notes: newValue.notes
+                      contact_person: metadata.contact_person,
+                      phone: metadata.phone,
+                      email: metadata.email,
+                      notes: metadata.notes
                     }
                     handleSectionDataChange('collateral_info', mapped)
                   } else {
@@ -971,6 +972,17 @@ export default function CreditAssessmentForm({
                 ...initialData,
                 date_of_birth: initialData.date_of_birth ? toVNDate(initialData.date_of_birth) : '',
                 id_issue_date: initialData.id_issue_date ? toVNDate(initialData.id_issue_date) : ''
+              };
+            }
+            
+            // Format date fields for collateral_info
+            if (sectionKey === 'collateral_info') {
+              initialData = {
+                ...initialData,
+                ngay_cap_gcn: initialData.ngay_cap_gcn ? toVNDate(initialData.ngay_cap_gcn) : '',
+                registration_date: initialData.registration_date ? toVNDate(initialData.registration_date) : '',
+                appraisal_date: initialData.appraisal_date ? toVNDate(initialData.appraisal_date) : '',
+                next_appraisal_date: initialData.next_appraisal_date ? toVNDate(initialData.next_appraisal_date) : ''
               };
             }
             
