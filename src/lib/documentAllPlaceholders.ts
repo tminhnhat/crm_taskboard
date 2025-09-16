@@ -31,7 +31,7 @@ export const DOCUMENT_ALL_PLACEHOLDERS = {
   '{{spouse_workplace}}': 'Nơi làm việc vợ/chồng',
   '{{income}}': 'Thu nhập',
   '{{income_source}}': 'Nguồn thu nhập',
-  '{{cif}}': 'Số CIF',
+  '{{cif_number}}': 'Số CIF',
 
   // Collateral
   '{{collateral_id}}': 'ID tài sản thế chấp',
