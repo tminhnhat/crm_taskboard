@@ -102,7 +102,7 @@ const COLLATERAL_TEMPLATE: TemplateConfig = {
     
     // Thông tin giấy chứng nhận (cho BĐS)
     { key: 'so_gcn', label: 'Số giấy chứng nhận', type: 'text' },
-    { key: 'ngay_cap_gcn', label: 'Ngày cấp GCN', type: 'date' },
+    { key: 'ngay_cap_gcn', label: 'Ngày cấp GCN', type: 'text' },
     { key: 'noi_cap_gcn', label: 'Nơi cấp GCN', type: 'text' },
     
     // Thông tin đất đai (cho BĐS)
@@ -134,16 +134,16 @@ const COLLATERAL_TEMPLATE: TemplateConfig = {
     // Thông tin pháp lý
     { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'select', options: ['Sở hữu hoàn toàn', 'Sở hữu chung', 'Đang thế chấp', 'Đang tranh chấp', 'Khác'] },
     { key: 'legal_restrictions', label: 'Hạn chế pháp lý', type: 'textarea' },
-    { key: 'registration_date', label: 'Ngày đăng ký', type: 'date' },
+    { key: 'registration_date', label: 'Ngày đăng ký', type: 'text' },
     { key: 'contract_number', label: 'Số hợp đồng', type: 'text' },
     
     // Thông tin định giá
     { key: 'appraised_value', label: 'Giá trị định giá (VNĐ)', type: 'number' },
-    { key: 'appraisal_date', label: 'Ngày định giá', type: 'date' },
+    { key: 'appraisal_date', label: 'Ngày định giá', type: 'text' },
     { key: 'appraiser', label: 'Đơn vị định giá', type: 'text' },
     { key: 'appraisal_method', label: 'Phương pháp định giá', type: 'select', options: ['So sánh', 'Thu nhập', 'Chi phí', 'Khác'] },
-    { key: 'next_appraisal_date', label: 'Ngày định giá tiếp theo', type: 'date' },
-    
+    { key: 'next_appraisal_date', label: 'Ngày định giá tiếp theo', type: 'text' },
+
     // Thông tin liên hệ
     { key: 'contact_person', label: 'Người liên hệ', type: 'text' },
     { key: 'phone', label: 'Số điện thoại', type: 'tel' },
