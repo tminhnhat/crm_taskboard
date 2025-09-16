@@ -213,7 +213,10 @@ const TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
     fields: [
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
       { key: 'amount.requested', label: 'Hạn mức thẻ', type: 'number' },
-      { key: 'term.requested_months', label: 'Thời hạn thẻ (tháng)', type: 'number' }
+      { key: 'term.requested_months', label: 'Thời hạn thẻ (tháng)', type: 'number' },
+      { key: 'card_expried', label:' Thẻ hết hạn (tháng/năm)', type: 'text' },
+      { key: 'card_type', label: 'Loại thẻ', type: 'select', options: ['Visa', 'MasterCard', 'JCB', 'American Express', 'Khác'] },
+      { key: 'min_payment_percent', label: 'Tỷ lệ thanh toán tối thiểu (%)', type: 'number' }
     ]
   },
   repayment_sources: TEMPLATES_TIEU_DUNG.repayment_sources,
