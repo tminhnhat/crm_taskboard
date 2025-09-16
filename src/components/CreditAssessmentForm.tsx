@@ -659,7 +659,15 @@ export default function CreditAssessmentForm({
                     getOptionLabel={(option) => option.full_name}
                     value={customers.find(c => c.customer_id.toString() === formState.customer_id) || null}
                     onChange={(event, newValue) => {
-                      setFormState(prev => ({ ...prev, customer_id: newValue?.customer_id.toString() || '' }))
+                      setFormState(prev => ({ 
+                        ...prev, 
+                        customer_id: newValue?.customer_id.toString() || '',
+                        // Clear collateral selection when customer changes
+                        assessment_details: {
+                          ...prev.assessment_details,
+                          collateral_info: {}
+                        }
+                      }))
                     }}
                     renderInput={(params) => (
                       <TextField {...params} label="Khách hàng" variant="outlined" required />
@@ -806,9 +814,13 @@ export default function CreditAssessmentForm({
                 Chọn tài sản thế chấp
               </Typography>
               <Autocomplete
-                options={collaterals}
+                options={collaterals.filter(c => 
+                  !formState.customer_id || c.customer_id.toString() === formState.customer_id
+                )}
                 getOptionLabel={(option) => `${option.collateral_type} - ${option.description || 'Không có mô tả'}`}
-                value={collaterals.find(c => c.collateral_id.toString() === (formState.assessment_details.collateral_info?.collateral_id?.toString() || '')) || null}
+                value={collaterals.filter(c => 
+                  !formState.customer_id || c.customer_id.toString() === formState.customer_id
+                ).find(c => c.collateral_id.toString() === (formState.assessment_details.collateral_info?.collateral_id?.toString() || '')) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
                     const mapped = {
@@ -828,8 +840,20 @@ export default function CreditAssessmentForm({
                   }
                 }}
                 renderInput={(params) => (
-                  <TextField {...params} label="Chọn tài sản thế chấp" variant="outlined" />
+                  <TextField 
+                    {...params} 
+                    label="Chọn tài sản thế chấp" 
+                    variant="outlined" 
+                    helperText={
+                      !formState.customer_id 
+                        ? "Vui lòng chọn khách hàng trước"
+                        : collaterals.filter(c => c.customer_id.toString() === formState.customer_id).length === 0
+                        ? "Không có tài sản thế chấp nào cho khách hàng này"
+                        : `${collaterals.filter(c => c.customer_id.toString() === formState.customer_id).length} tài sản có sẵn`
+                    }
+                  />
                 )}
+                disabled={!formState.customer_id}
               />
             </CardContent>
           </Card>
