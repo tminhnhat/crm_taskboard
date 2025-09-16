@@ -837,6 +837,7 @@ export default function CreditAssessmentForm({
           {/* Dynamic Metadata Sections */}
           {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
             let initialData = formState.assessment_details[sectionKey] || {};
+            
             // Format date fields for spouse_info
             if (sectionKey === 'spouse_info') {
               initialData = {
@@ -845,9 +846,10 @@ export default function CreditAssessmentForm({
                 id_issue_date: initialData.id_issue_date ? toVNDate(initialData.id_issue_date) : ''
               };
             }
+            
             return (
               <MetadataSection
-                key={sectionKey}
+                key={`${sectionKey}-${JSON.stringify(initialData)}`}
                 title={section.title}
                 icon={section.icon}
                 initialData={initialData}
