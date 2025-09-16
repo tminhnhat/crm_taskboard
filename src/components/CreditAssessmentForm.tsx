@@ -40,6 +40,50 @@ import {
 } from '@mui/icons-material'
 import { toVNDate } from '@/lib/date'
 
+// Helper function to flatten nested metadata structure
+// Helper function to extract metadata from collateral using the same logic as CollateralCard
+const extractCollateralMetadata = (collateral: any): Record<string, any> => {
+  if (!collateral) return {}
+  
+  console.log('Extracting metadata from collateral:', collateral)
+  
+  // Use the metadata from the collaterals table if available
+  if (collateral.metadata && typeof collateral.metadata === 'object') {
+    const flattened: Record<string, any> = {}
+    
+    // Flatten the nested metadata structure like in CollateralCard
+    Object.entries(collateral.metadata as Record<string, Record<string, unknown>>).forEach(([categoryKey, categoryData]) => {
+      if (categoryData && typeof categoryData === 'object' && !Array.isArray(categoryData)) {
+        // This is a nested category object, flatten its contents
+        Object.entries(categoryData as Record<string, unknown>).forEach(([fieldKey, fieldValue]) => {
+          flattened[fieldKey] = fieldValue
+        })
+      } else {
+        // This is a direct property at the root level
+        flattened[categoryKey] = categoryData
+      }
+    })
+    
+    console.log('Flattened metadata:', flattened)
+    return flattened
+  }
+  
+  // Fallback to direct field mapping if no metadata
+  const fallbackData = {
+    collateral_id: collateral.collateral_id || '',
+    collateral_type: collateral.collateral_type || '',
+    appraisal_date: collateral.valuation_date || '',
+    appraised_value: collateral.value || '',
+    ownership_status: collateral.legal_status || '',
+    location: collateral.location || '',
+    notes: collateral.description || '',
+    contact_person: collateral.owner_info || ''
+  }
+  
+  console.log('Using fallback data:', fallbackData)
+  return fallbackData
+}
+
 // --- Types ---
 interface MetadataField {
   key: string
@@ -877,7 +921,12 @@ export default function CreditAssessmentForm({
                 ) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
-                    const metadata = newValue.metadata || {}
+                    console.log('🔍 Selected collateral object:', newValue)
+                    console.log('🔍 Raw metadata field:', newValue.metadata)
+                    
+                    // Extract and flatten metadata structure to handle multiple formats
+                    const metadata = extractCollateralMetadata(newValue)
+                    console.log('🔍 Extracted metadata:', metadata)
                     
                     const mapped = {
                       // Thông tin cơ bản từ table chính
