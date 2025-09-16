@@ -88,6 +88,22 @@ const SPOUSE_TEMPLATE: TemplateConfig = {
   ]
 }
 
+const COLLATERAL_TEMPLATE: TemplateConfig = {
+  title: 'Thông tin tài sản bảo đảm',
+  icon: Description,
+  fields: [
+    { key: 'collateral_id', label: 'ID tài sản thế chấp', type: 'text' },
+    { key: 'collateral_type', label: 'Loại tài sản thế chấp', type: 'text' },
+    { key: 'collateral_value', label: 'Giá trị tài sản', type: 'number' },
+    { key: 'collateral_description', label: 'Mô tả tài sản', type: 'textarea' },
+    { key: 'appraised_value', label: 'Giá trị định giá', type: 'number' },
+    { key: 'market_value', label: 'Giá trị thị trường', type: 'number' },
+    { key: 'location', label: 'Vị trí tài sản', type: 'text' },
+    { key: 'condition', label: 'Tình trạng tài sản', type: 'text' },
+    { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'text' }
+  ]
+}
+
 const TEMPLATES_KINH_DOANH: MetadataTemplates = {
   spouse_info: SPOUSE_TEMPLATE,
   loan_info: {
@@ -98,11 +114,13 @@ const TEMPLATES_KINH_DOANH: MetadataTemplates = {
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
       { key: 'amount.requested', label: 'Số tiền vay', type: 'number' },
       { key: 'term.requested_months', label: 'Thời hạn vay (tháng)', type: 'number' },
-      { key: 'term.grace_period_months', label: 'Thời gian ân hạn (tháng)', type: 'number' }
+      { key: 'term.grace_period_months', label: 'Thời gian ân hạn (tháng)', type: 'number' },
+      { key: 'guarantee_type', label: 'Loại bảo đảm', type: 'select', options: ['Không bảo đảm', 'Bảo đảm một phần tài sản', 'Bảo đảm đầy đủ tài sản'] }
     ]
   },
+  collateral_info: COLLATERAL_TEMPLATE,
   business_plan: {
-    title: '2. Phương án kinh doanh',
+    title: '3. Phương án kinh doanh',
     icon: AssessmentIcon,
     fields: [
       { key: 'pakd_doanhthu', label: 'Doanh thu', type: 'number' },
@@ -121,7 +139,7 @@ const TEMPLATES_KINH_DOANH: MetadataTemplates = {
     ]
   },
   financial_reports: {
-    title: '3. Báo cáo tài chính',
+    title: '4. Báo cáo tài chính',
     icon: Description,
     fields: [
       { key: 'bc_doanhthu', label: 'Doanh thu', type: 'number' },
@@ -131,7 +149,7 @@ const TEMPLATES_KINH_DOANH: MetadataTemplates = {
     ]
   },
   assessment_details: {
-    title: '4. Đánh giá thẩm định',
+    title: '5. Đánh giá thẩm định',
     icon: CheckCircle,
     fields: [
       { key: 'danhgia_khachhang', label: 'Đánh giá khách hàng', type: 'textarea' },
@@ -151,11 +169,13 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
       { key: 'purpose.description', label: 'Mô tả chi tiết', type: 'textarea' },
       { key: 'amount.requested', label: 'Số tiền vay', type: 'number' },
       { key: 'term.requested_months', label: 'Thời hạn vay (tháng)', type: 'number' },
-      { key: 'term.grace_period_months', label: 'Thời gian ân hạn (tháng)', type: 'number' }
+      { key: 'term.grace_period_months', label: 'Thời gian ân hạn (tháng)', type: 'number' },
+      { key: 'guarantee_type', label: 'Loại bảo đảm', type: 'select', options: ['Không bảo đảm', 'Bảo đảm một phần tài sản', 'Bảo đảm đầy đủ tài sản'] }
     ]
   },
+  collateral_info: COLLATERAL_TEMPLATE,
   repayment_sources: {
-    title: '2. Nguồn trả nợ',
+    title: '3. Nguồn trả nợ',
     icon: CheckCircle,
     fields: [
       { key: 'from_customer_salary', label: 'Từ lương của khách hàng', type: 'number' },
@@ -172,7 +192,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
     ]
   },
   liabilities: {
-    title: '3. Thông tin nợ phải trả',
+    title: '4. Thông tin nợ phải trả',
     icon: Description,
     fields: [
       { key: 'expected_loan_liability', label: 'Nợ phải trả cho khoản vay dự kiến', type: 'number' },
@@ -187,7 +207,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
     ]
   },
   monthly_expenses: {
-    title: '4. Chi phí sinh hoạt hàng tháng',
+    title: '5. Chi phí sinh hoạt hàng tháng',
     icon: AssessmentIcon,
     fields: [
       { key: 'food_expense', label: 'Chi phí ăn uống', type: 'number' },
@@ -197,7 +217,7 @@ const TEMPLATES_TIEU_DUNG: MetadataTemplates = {
     ]
   },
   residual_income: {
-    title: '5. Thu nhập còn lại',
+    title: '6. Thu nhập còn lại',
     icon: AssessmentIcon,
     fields: [
       { key: 'total_residual_income', label: 'Thu nhập còn lại', type: 'number', readOnly: true }
@@ -216,9 +236,11 @@ const TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
       { key: 'term.requested_months', label: 'Thời hạn thẻ (tháng)', type: 'number' },
       { key: 'card_expried', label:' Thẻ hết hạn (tháng/năm)', type: 'text' },
       { key: 'card_type', label: 'Loại thẻ', type: 'select', options: ['Visa', 'MasterCard', 'JCB', 'American Express', 'Khác'] },
-      { key: 'min_payment_percent', label: 'Tỷ lệ thanh toán tối thiểu (%)', type: 'number' }
+      { key: 'min_payment_percent', label: 'Tỷ lệ thanh toán tối thiểu (%)', type: 'number' },
+      { key: 'guarantee_type', label: 'Loại bảo đảm', type: 'select', options: ['Không bảo đảm', 'Bảo đảm một phần tài sản', 'Bảo đảm đầy đủ tài sản'] }
     ]
   },
+  collateral_info: COLLATERAL_TEMPLATE,
   repayment_sources: TEMPLATES_TIEU_DUNG.repayment_sources,
   liabilities: TEMPLATES_TIEU_DUNG.liabilities
 }
@@ -402,6 +424,7 @@ export default function CreditAssessmentForm({
           ...details,
           spouse_info: details.spouse_info || {},
           loan_info: details.loan_info || {},
+          collateral_info: details.collateral_info || {},
           business_plan: details.business_plan || {},
           financial_reports: details.financial_reports || {},
           assessment_details: details.assessment_details || {},
@@ -434,6 +457,7 @@ export default function CreditAssessmentForm({
           ...details,
           spouse_info: details.spouse_info || {},
           loan_info: details.loan_info || {},
+          collateral_info: details.collateral_info || {},
           business_plan: details.business_plan || {},
           financial_reports: details.financial_reports || {},
           assessment_details: details.assessment_details || {},
@@ -454,6 +478,7 @@ export default function CreditAssessmentForm({
         assessment_details: {
           spouse_info: {},
           loan_info: {},
+          collateral_info: {},
           business_plan: {},
           financial_reports: {},
           assessment_details: {},
