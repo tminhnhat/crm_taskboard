@@ -435,6 +435,12 @@ export default function CreditAssessmentForm({
       }
   })
 
+  // Filter collaterals by customer_id
+  const availableCollaterals = React.useMemo(() => {
+    if (!formState.customer_id || !collaterals.length) return []
+    return collaterals.filter(c => c.customer_id?.toString() === formState.customer_id)
+  }, [collaterals, formState.customer_id])
+
   // --- Template selection ---
   let selectedTemplates: MetadataTemplates = TEMPLATES_KINH_DOANH
   if (formState.loan_type === 'Tiêu dùng') selectedTemplates = TEMPLATES_TIEU_DUNG
@@ -814,13 +820,11 @@ export default function CreditAssessmentForm({
                 Chọn tài sản thế chấp
               </Typography>
               <Autocomplete
-                options={collaterals.filter(c => 
-                  !formState.customer_id || c.customer_id.toString() === formState.customer_id
-                )}
+                options={availableCollaterals}
                 getOptionLabel={(option) => `${option.collateral_type} - ${option.description || 'Không có mô tả'}`}
-                value={collaterals.filter(c => 
-                  !formState.customer_id || c.customer_id.toString() === formState.customer_id
-                ).find(c => c.collateral_id.toString() === (formState.assessment_details.collateral_info?.collateral_id?.toString() || '')) || null}
+                value={availableCollaterals.find(c => 
+                  c.collateral_id?.toString() === formState.assessment_details.collateral_info?.collateral_id?.toString()
+                ) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
                     const mapped = {
@@ -847,13 +851,18 @@ export default function CreditAssessmentForm({
                     helperText={
                       !formState.customer_id 
                         ? "Vui lòng chọn khách hàng trước"
-                        : collaterals.filter(c => c.customer_id.toString() === formState.customer_id).length === 0
+                        : availableCollaterals.length === 0
                         ? "Không có tài sản thế chấp nào cho khách hàng này"
-                        : `${collaterals.filter(c => c.customer_id.toString() === formState.customer_id).length} tài sản có sẵn`
+                        : `${availableCollaterals.length} tài sản có sẵn`
                     }
                   />
                 )}
                 disabled={!formState.customer_id}
+                noOptionsText={
+                  !formState.customer_id 
+                    ? "Chọn khách hàng trước"
+                    : "Không có tài sản thế chấp"
+                }
               />
             </CardContent>
           </Card>
