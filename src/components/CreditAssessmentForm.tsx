@@ -93,15 +93,62 @@ const COLLATERAL_TEMPLATE: TemplateConfig = {
   title: 'Thông tin tài sản bảo đảm',
   icon: Description,
   fields: [
-    { key: 'collateral_id', label: 'ID tài sản thế chấp', type: 'text' },
-    { key: 'collateral_type', label: 'Loại tài sản thế chấp', type: 'text' },
-    { key: 'collateral_value', label: 'Giá trị tài sản', type: 'number' },
+    // Thông tin cơ bản
+    { key: 'collateral_id', label: 'ID tài sản thế chấp', type: 'text', readOnly: true },
+    { key: 'collateral_type', label: 'Loại tài sản thế chấp', type: 'select', options: ['Bất động sản', 'Phương tiện', 'Tài sản tài chính', 'Vàng bạc đá quý', 'Máy móc thiết bị', 'Khác'] },
+    { key: 'collateral_value', label: 'Giá trị tài sản (VNĐ)', type: 'number' },
     { key: 'collateral_description', label: 'Mô tả tài sản', type: 'textarea' },
-    { key: 'appraised_value', label: 'Giá trị định giá', type: 'number' },
-    { key: 'market_value', label: 'Giá trị thị trường', type: 'number' },
     { key: 'location', label: 'Vị trí tài sản', type: 'text' },
-    { key: 'condition', label: 'Tình trạng tài sản', type: 'text' },
-    { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'text' }
+    
+    // Thông tin giấy chứng nhận (cho BĐS)
+    { key: 'so_gcn', label: 'Số giấy chứng nhận', type: 'text' },
+    { key: 'ngay_cap_gcn', label: 'Ngày cấp GCN', type: 'date' },
+    { key: 'noi_cap_gcn', label: 'Nơi cấp GCN', type: 'text' },
+    
+    // Thông tin đất đai (cho BĐS)
+    { key: 'so_thua', label: 'Số thửa', type: 'text' },
+    { key: 'to_ban_do', label: 'Tờ bản đồ số', type: 'text' },
+    { key: 'dien_tich', label: 'Diện tích (m²)', type: 'number' },
+    { key: 'muc_dich_su_dung_dat', label: 'Mục đích sử dụng đất', type: 'text' },
+    
+    // Thông tin nhà ở/công trình (cho BĐS)
+    { key: 'dien_tich_xay_dung', label: 'Diện tích xây dựng (m²)', type: 'number' },
+    { key: 'ket_cau', label: 'Kết cấu', type: 'text' },
+    { key: 'so_tang', label: 'Số tầng', type: 'number' },
+    { key: 'nam_hoan_thanh_xd', label: 'Năm hoàn thành', type: 'number' },
+    
+    // Thông tin phương tiện (cho xe cộ)
+    { key: 'vehicle_type', label: 'Loại phương tiện', type: 'select', options: ['Ô tô', 'Xe máy', 'Xe tải', 'Xe khách', 'Khác'] },
+    { key: 'brand', label: 'Thương hiệu', type: 'text' },
+    { key: 'model', label: 'Model', type: 'text' },
+    { key: 'year', label: 'Năm sản xuất', type: 'number' },
+    { key: 'license_plate', label: 'Biển số', type: 'text' },
+    
+    // Thông tin tài chính (cho tài sản tài chính)
+    { key: 'account_type', label: 'Loại tài khoản', type: 'select', options: ['Tiết kiệm', 'Vãng lai', 'Đầu tư', 'Khác'] },
+    { key: 'bank_name', label: 'Tên ngân hàng/Tổ chức tài chính', type: 'text' },
+    { key: 'account_number', label: 'Số tài khoản', type: 'text' },
+    { key: 'balance', label: 'Số dư', type: 'number' },
+    { key: 'currency', label: 'Loại tiền', type: 'select', options: ['VND', 'USD', 'EUR', 'JPY'] },
+    
+    // Thông tin pháp lý
+    { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'select', options: ['Sở hữu hoàn toàn', 'Sở hữu chung', 'Đang thế chấp', 'Đang tranh chấp', 'Khác'] },
+    { key: 'legal_restrictions', label: 'Hạn chế pháp lý', type: 'textarea' },
+    { key: 'registration_date', label: 'Ngày đăng ký', type: 'date' },
+    { key: 'contract_number', label: 'Số hợp đồng', type: 'text' },
+    
+    // Thông tin định giá
+    { key: 'appraised_value', label: 'Giá trị định giá (VNĐ)', type: 'number' },
+    { key: 'appraisal_date', label: 'Ngày định giá', type: 'date' },
+    { key: 'appraiser', label: 'Đơn vị định giá', type: 'text' },
+    { key: 'appraisal_method', label: 'Phương pháp định giá', type: 'select', options: ['So sánh', 'Thu nhập', 'Chi phí', 'Khác'] },
+    { key: 'next_appraisal_date', label: 'Ngày định giá tiếp theo', type: 'date' },
+    
+    // Thông tin liên hệ
+    { key: 'contact_person', label: 'Người liên hệ', type: 'text' },
+    { key: 'phone', label: 'Số điện thoại', type: 'tel' },
+    { key: 'email', label: 'Email', type: 'email' },
+    { key: 'notes', label: 'Ghi chú', type: 'textarea' }
   ]
 }
 
@@ -828,15 +875,62 @@ export default function CreditAssessmentForm({
                 onChange={(event, newValue) => {
                   if (newValue) {
                     const mapped = {
+                      // Thông tin cơ bản
                       collateral_id: newValue.collateral_id,
                       collateral_type: newValue.collateral_type,
-                      collateral_value: newValue.value,
-                      collateral_description: newValue.description,
-                      appraised_value: newValue.appraised_value,
-                      market_value: newValue.market_value,
+                      collateral_value: newValue.value || newValue.collateral_value,
+                      collateral_description: newValue.description || newValue.collateral_description,
                       location: newValue.location,
-                      condition: newValue.condition,
-                      ownership_status: newValue.ownership_status
+                      
+                      // Thông tin giấy chứng nhận
+                      so_gcn: newValue.so_gcn,
+                      ngay_cap_gcn: newValue.ngay_cap_gcn,
+                      noi_cap_gcn: newValue.noi_cap_gcn,
+                      
+                      // Thông tin đất đai
+                      so_thua: newValue.so_thua,
+                      to_ban_do: newValue.to_ban_do,
+                      dien_tich: newValue.dien_tich,
+                      muc_dich_su_dung_dat: newValue.muc_dich_su_dung_dat,
+                      
+                      // Thông tin nhà ở/công trình
+                      dien_tich_xay_dung: newValue.dien_tich_xay_dung,
+                      ket_cau: newValue.ket_cau,
+                      so_tang: newValue.so_tang,
+                      nam_hoan_thanh_xd: newValue.nam_hoan_thanh_xd,
+                      
+                      // Thông tin phương tiện
+                      vehicle_type: newValue.vehicle_type,
+                      brand: newValue.brand,
+                      model: newValue.model,
+                      year: newValue.year,
+                      license_plate: newValue.license_plate,
+                      
+                      // Thông tin tài chính
+                      account_type: newValue.account_type,
+                      bank_name: newValue.bank_name,
+                      account_number: newValue.account_number,
+                      balance: newValue.balance,
+                      currency: newValue.currency,
+                      
+                      // Thông tin pháp lý
+                      ownership_status: newValue.ownership_status,
+                      legal_restrictions: newValue.legal_restrictions,
+                      registration_date: newValue.registration_date,
+                      contract_number: newValue.contract_number,
+                      
+                      // Thông tin định giá
+                      appraised_value: newValue.appraised_value,
+                      appraisal_date: newValue.appraisal_date,
+                      appraiser: newValue.appraiser,
+                      appraisal_method: newValue.appraisal_method,
+                      next_appraisal_date: newValue.next_appraisal_date,
+                      
+                      // Thông tin liên hệ
+                      contact_person: newValue.contact_person,
+                      phone: newValue.phone,
+                      email: newValue.email,
+                      notes: newValue.notes
                     }
                     handleSectionDataChange('collateral_info', mapped)
                   } else {
