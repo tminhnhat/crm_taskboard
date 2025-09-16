@@ -68,6 +68,7 @@ interface CreditAssessmentFormProps {
   customers: any[]
   staff: any[]
   products: any[]
+  collaterals?: any[]
 }
 
 // --- Templates ---
@@ -403,7 +404,7 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
 
 // --- Main Form ---
 export default function CreditAssessmentForm({
-  isOpen, onClose, onSubmit, assessment, isLoading, customers, staff, products
+  isOpen, onClose, onSubmit, assessment, isLoading, customers, staff, products, collaterals = []
 }: CreditAssessmentFormProps) {
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
@@ -793,6 +794,41 @@ export default function CreditAssessmentForm({
                 }}
                 renderInput={(params) => (
                   <TextField {...params} label="Chọn khách hàng làm vợ/chồng" variant="outlined" />
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Collateral Selection */}
+          <Card sx={{ mb: 3, boxShadow: 2 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom color="primary.main" sx={{ mb: 3 }}>
+                Chọn tài sản thế chấp
+              </Typography>
+              <Autocomplete
+                options={collaterals}
+                getOptionLabel={(option) => `${option.collateral_type} - ${option.description || 'Không có mô tả'}`}
+                value={collaterals.find(c => c.collateral_id.toString() === (formState.assessment_details.collateral_info?.collateral_id?.toString() || '')) || null}
+                onChange={(event, newValue) => {
+                  if (newValue) {
+                    const mapped = {
+                      collateral_id: newValue.collateral_id,
+                      collateral_type: newValue.collateral_type,
+                      collateral_value: newValue.value,
+                      collateral_description: newValue.description,
+                      appraised_value: newValue.appraised_value,
+                      market_value: newValue.market_value,
+                      location: newValue.location,
+                      condition: newValue.condition,
+                      ownership_status: newValue.ownership_status
+                    }
+                    handleSectionDataChange('collateral_info', mapped)
+                  } else {
+                    handleSectionDataChange('collateral_info', {})
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Chọn tài sản thế chấp" variant="outlined" />
                 )}
               />
             </CardContent>
