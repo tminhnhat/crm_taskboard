@@ -12,9 +12,10 @@ import {
   useTheme,
   useMediaQuery,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  Alert
 } from '@mui/material'
-import { Close as CloseIcon } from '@mui/icons-material'
+import { Close as CloseIcon, Refresh } from '@mui/icons-material'
 import { Collateral, Customer } from '@/lib/supabase'
 import { CollateralFormProps, CollateralFormData } from './types'
 import CollateralBasicInfoSection from './CollateralBasicInfoSection'
@@ -53,15 +54,18 @@ export default function CollateralFormModular({
 
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loadingCustomers, setLoadingCustomers] = useState(true)
+  const [customerError, setCustomerError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadCustomers = async () => {
       try {
         setLoadingCustomers(true)
+        setCustomerError(null)
         const data = await fetchCustomers()
         setCustomers(data)
       } catch (error) {
         console.error('Error loading customers:', error)
+        setCustomerError(error instanceof Error ? error.message : 'Failed to load customers')
       } finally {
         setLoadingCustomers(false)
       }
@@ -145,6 +149,20 @@ export default function CollateralFormModular({
     setFormState(prev => ({ ...prev, metadata }))
   }
 
+  const handleRetryCustomers = async () => {
+    try {
+      setLoadingCustomers(true)
+      setCustomerError(null)
+      const data = await fetchCustomers()
+      setCustomers(data)
+    } catch (error) {
+      console.error('Error loading customers:', error)
+      setCustomerError(error instanceof Error ? error.message : 'Failed to load customers')
+    } finally {
+      setLoadingCustomers(false)
+    }
+  }
+
   if (loadingCustomers) {
     return (
       <Dialog open={isOpen} maxWidth="sm" fullWidth>
@@ -154,6 +172,42 @@ export default function CollateralFormModular({
             <Typography>Đang tải dữ liệu khách hàng...</Typography>
           </Box>
         </DialogContent>
+      </Dialog>
+    )
+  }
+
+  if (customerError) {
+    return (
+      <Dialog open={isOpen} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h6">Lỗi tải dữ liệu</Typography>
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <Typography variant="body2">
+              Không thể tải danh sách khách hàng: {customerError}
+            </Typography>
+          </Alert>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Vui lòng thử lại hoặc kiểm tra kết nối cơ sở dữ liệu.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} variant="outlined">
+            Đóng
+          </Button>
+          <Button 
+            onClick={handleRetryCustomers} 
+            variant="contained" 
+            startIcon={<Refresh />}
+            disabled={loadingCustomers}
+          >
+            {loadingCustomers ? 'Đang tải...' : 'Thử lại'}
+          </Button>
+        </DialogActions>
       </Dialog>
     )
   }

@@ -6,9 +6,10 @@ import {
   Divider,
   Chip,
   InputAdornment,
-  Paper
+  Paper,
+  Alert
 } from '@mui/material'
-import { DateRange, Today, Person, Group, Schedule } from '@mui/icons-material'
+import { DateRange, Today, Person, Group, Schedule, Warning } from '@mui/icons-material'
 import { CollateralSectionProps, CollateralOwnerInfo } from './types'
 import { toVNDate } from '@/lib/date'
 
@@ -225,6 +226,19 @@ export default function CollateralOwnerInfoSection({
           Thông Tin Chủ Sở Hữu
         </Typography>
 
+        {/* Customer Loading Alert */}
+        {(!customers || customers.length === 0) && (
+          <Alert 
+            severity="warning" 
+            sx={{ mb: 2 }}
+            icon={<Warning />}
+          >
+            <Typography variant="body2">
+              Không thể tải danh sách khách hàng. Vui lòng kiểm tra kết nối cơ sở dữ liệu hoặc thử lại sau.
+            </Typography>
+          </Alert>
+        )}
+
         {/* Owner Information Grid */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
           {/* Primary Owner */}
@@ -242,9 +256,20 @@ export default function CollateralOwnerInfoSection({
               fullWidth
               sx={{ mb: 2 }}
               SelectProps={{ native: true }}
+              disabled={!customers || customers.length === 0}
+              helperText={
+                !customers || customers.length === 0 
+                  ? "Không có khách hàng để lựa chọn"
+                  : "Chọn khách hàng làm chủ sở hữu chính"
+              }
             >
-              <option value="">Chọn chủ sở hữu chính</option>
-              {customers.map(customer => (
+              <option value="">
+                {!customers || customers.length === 0 
+                  ? "Không có khách hàng" 
+                  : "Chọn chủ sở hữu chính"
+                }
+              </option>
+              {customers && customers.map(customer => (
                 <option key={customer.customer_id} value={customer.customer_id}>
                   {customer.full_name}
                 </option>
@@ -279,9 +304,20 @@ export default function CollateralOwnerInfoSection({
               fullWidth
               sx={{ mb: 2 }}
               SelectProps={{ native: true }}
+              disabled={!customers || customers.length === 0}
+              helperText={
+                !customers || customers.length === 0 
+                  ? "Không có khách hàng để lựa chọn"
+                  : "Chọn vợ/chồng đồng sở hữu (tùy chọn)"
+              }
             >
-              <option value="">Chọn vợ/chồng (nếu có)</option>
-              {customers
+              <option value="">
+                {!customers || customers.length === 0 
+                  ? "Không có khách hàng" 
+                  : "Chọn vợ/chồng (nếu có)"
+                }
+              </option>
+              {customers && customers
                 .filter(customer => customer.customer_id.toString() !== ownerInfo.primary_owner_id)
                 .map(customer => (
                   <option key={customer.customer_id} value={customer.customer_id}>
