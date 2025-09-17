@@ -135,7 +135,6 @@ const SPOUSE_TEMPLATE: TemplateConfig = {
 
 // Base collateral fields that are common to all types
 const BASE_COLLATERAL_FIELDS: MetadataField[] = [
-  { key: 'collateral_id', label: 'ID tài sản thế chấp', type: 'text', readOnly: true },
   { key: 'collateral_type', label: 'Loại tài sản thế chấp', type: 'text', readOnly: true },
   { key: 'collateral_value', label: 'Giá trị tài sản (VNĐ)', type: 'number' },
   { key: 'collateral_description', label: 'Mô tả tài sản', type: 'textarea' },
@@ -180,11 +179,9 @@ const FINANCIAL_FIELDS: MetadataField[] = [
 
 // Common legal and assessment fields
 const LEGAL_ASSESSMENT_FIELDS: MetadataField[] = [
-  { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'select', options: ['Sở hữu hoàn toàn', 'Sở hữu chung', 'Đang thế chấp', 'Đang tranh chấp', 'Khác'] },
   { key: 'legal_restrictions', label: 'Hạn chế pháp lý', type: 'textarea' },
   { key: 'appraised_value', label: 'Giá trị định giá', type: 'number' },
-  { key: 'market_value', label: 'Giá trị thị trường', type: 'number' },
-  { key: 'condition', label: 'Tình trạng tài sản', type: 'text' }
+  { key: 'market_value', label: 'Giá trị thị trường', type: 'number' }
 ]
 
 // Function to get collateral template based on type
