@@ -133,67 +133,85 @@ const SPOUSE_TEMPLATE: TemplateConfig = {
   ]
 }
 
+// Base collateral fields that are common to all types
+const BASE_COLLATERAL_FIELDS: MetadataField[] = [
+  { key: 'collateral_id', label: 'ID tài sản thế chấp', type: 'text', readOnly: true },
+  { key: 'collateral_type', label: 'Loại tài sản thế chấp', type: 'text', readOnly: true },
+  { key: 'collateral_value', label: 'Giá trị tài sản (VNĐ)', type: 'number' },
+  { key: 'collateral_description', label: 'Mô tả tài sản', type: 'textarea' },
+  { key: 'location', label: 'Vị trí tài sản', type: 'text' },
+]
+
+// Real estate specific fields
+const REAL_ESTATE_FIELDS: MetadataField[] = [
+  { key: 'so_gcn', label: 'Số giấy chứng nhận', type: 'text' },
+  { key: 'ngay_cap_gcn', label: 'Ngày cấp GCN', type: 'date' },
+  { key: 'noi_cap_gcn', label: 'Nơi cấp GCN', type: 'text' },
+  { key: 'so_thua', label: 'Số thửa', type: 'text' },
+  { key: 'to_ban_do', label: 'Tờ bản đồ số', type: 'text' },
+  { key: 'dien_tich', label: 'Diện tích (m²)', type: 'number' },
+  { key: 'muc_dich_su_dung_dat', label: 'Mục đích sử dụng đất', type: 'text' },
+  { key: 'dien_tich_xay_dung', label: 'Diện tích xây dựng (m²)', type: 'number' },
+  { key: 'ket_cau', label: 'Kết cấu', type: 'text' },
+  { key: 'so_tang', label: 'Số tầng', type: 'number' },
+  { key: 'nam_hoan_thanh_xd', label: 'Năm hoàn thành', type: 'number' }
+]
+
+// Vehicle specific fields
+const VEHICLE_FIELDS: MetadataField[] = [
+  { key: 'vehicle_type', label: 'Loại phương tiện', type: 'select', options: ['Ô tô', 'Xe máy', 'Xe tải', 'Xe khách', 'Khác'] },
+  { key: 'brand', label: 'Thương hiệu', type: 'text' },
+  { key: 'model', label: 'Model', type: 'text' },
+  { key: 'year', label: 'Năm sản xuất', type: 'number' },
+  { key: 'license_plate', label: 'Biển số', type: 'text' },
+  { key: 'chassis_number', label: 'Số khung', type: 'text' },
+  { key: 'engine_number', label: 'Số máy', type: 'text' }
+]
+
+// Financial asset specific fields
+const FINANCIAL_FIELDS: MetadataField[] = [
+  { key: 'account_type', label: 'Loại tài khoản', type: 'select', options: ['Tiết kiệm', 'Vãng lai', 'Đầu tư', 'Khác'] },
+  { key: 'bank_name', label: 'Tên ngân hàng/Tổ chức tài chính', type: 'text' },
+  { key: 'account_number', label: 'Số tài khoản', type: 'text' },
+  { key: 'balance', label: 'Số dư', type: 'number' },
+  { key: 'currency', label: 'Loại tiền', type: 'select', options: ['VND', 'USD', 'EUR', 'JPY'] },
+  { key: 'maturity_date', label: 'Ngày đáo hạn', type: 'date' }
+]
+
+// Common legal and assessment fields
+const LEGAL_ASSESSMENT_FIELDS: MetadataField[] = [
+  { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'select', options: ['Sở hữu hoàn toàn', 'Sở hữu chung', 'Đang thế chấp', 'Đang tranh chấp', 'Khác'] },
+  { key: 'legal_restrictions', label: 'Hạn chế pháp lý', type: 'textarea' },
+  { key: 'appraised_value', label: 'Giá trị định giá', type: 'number' },
+  { key: 'market_value', label: 'Giá trị thị trường', type: 'number' },
+  { key: 'condition', label: 'Tình trạng tài sản', type: 'text' }
+]
+
+// Function to get collateral template based on type
+const getCollateralTemplate = (collateralType: string): TemplateConfig => {
+  let specificFields: MetadataField[] = []
+  
+  const normalizedType = collateralType?.toLowerCase() || ''
+  
+  if (normalizedType.includes('bất động sản') || normalizedType.includes('real_estate') || normalizedType.includes('nhà') || normalizedType.includes('đất')) {
+    specificFields = REAL_ESTATE_FIELDS
+  } else if (normalizedType.includes('phương tiện') || normalizedType.includes('vehicle') || normalizedType.includes('xe') || normalizedType.includes('ô tô')) {
+    specificFields = VEHICLE_FIELDS
+  } else if (normalizedType.includes('tài chính') || normalizedType.includes('financial') || normalizedType.includes('tiết kiệm') || normalizedType.includes('savings')) {
+    specificFields = FINANCIAL_FIELDS
+  }
+  
+  return {
+    title: 'Thông tin tài sản bảo đảm',
+    icon: Description,
+    fields: [...BASE_COLLATERAL_FIELDS, ...specificFields, ...LEGAL_ASSESSMENT_FIELDS]
+  }
+}
+
 const COLLATERAL_TEMPLATE: TemplateConfig = {
   title: 'Thông tin tài sản bảo đảm',
   icon: Description,
-  fields: [
-    // Thông tin cơ bản
-    { key: 'collateral_id', label: 'ID tài sản thế chấp', type: 'text', readOnly: true },
-    { key: 'collateral_type', label: 'Loại tài sản thế chấp', type: 'select', options: ['Bất động sản', 'Phương tiện', 'Tài sản tài chính', 'Vàng bạc đá quý', 'Máy móc thiết bị', 'Khác'] },
-    { key: 'collateral_value', label: 'Giá trị tài sản (VNĐ)', type: 'number' },
-    { key: 'collateral_description', label: 'Mô tả tài sản', type: 'textarea' },
-    { key: 'location', label: 'Vị trí tài sản', type: 'text' },
-    
-    // Thông tin giấy chứng nhận (cho BĐS)
-    { key: 'so_gcn', label: 'Số giấy chứng nhận', type: 'text' },
-    { key: 'ngay_cap_gcn', label: 'Ngày cấp GCN', type: 'text' },
-    { key: 'noi_cap_gcn', label: 'Nơi cấp GCN', type: 'text' },
-    
-    // Thông tin đất đai (cho BĐS)
-    { key: 'so_thua', label: 'Số thửa', type: 'text' },
-    { key: 'to_ban_do', label: 'Tờ bản đồ số', type: 'text' },
-    { key: 'dien_tich', label: 'Diện tích (m²)', type: 'number' },
-    { key: 'muc_dich_su_dung_dat', label: 'Mục đích sử dụng đất', type: 'text' },
-    
-    // Thông tin nhà ở/công trình (cho BĐS)
-    { key: 'dien_tich_xay_dung', label: 'Diện tích xây dựng (m²)', type: 'number' },
-    { key: 'ket_cau', label: 'Kết cấu', type: 'text' },
-    { key: 'so_tang', label: 'Số tầng', type: 'number' },
-    { key: 'nam_hoan_thanh_xd', label: 'Năm hoàn thành', type: 'number' },
-    
-    // Thông tin phương tiện (cho xe cộ)
-    { key: 'vehicle_type', label: 'Loại phương tiện', type: 'select', options: ['Ô tô', 'Xe máy', 'Xe tải', 'Xe khách', 'Khác'] },
-    { key: 'brand', label: 'Thương hiệu', type: 'text' },
-    { key: 'model', label: 'Model', type: 'text' },
-    { key: 'year', label: 'Năm sản xuất', type: 'number' },
-    { key: 'license_plate', label: 'Biển số', type: 'text' },
-    
-    // Thông tin tài chính (cho tài sản tài chính)
-    { key: 'account_type', label: 'Loại tài khoản', type: 'select', options: ['Tiết kiệm', 'Vãng lai', 'Đầu tư', 'Khác'] },
-    { key: 'bank_name', label: 'Tên ngân hàng/Tổ chức tài chính', type: 'text' },
-    { key: 'account_number', label: 'Số tài khoản', type: 'text' },
-    { key: 'balance', label: 'Số dư', type: 'number' },
-    { key: 'currency', label: 'Loại tiền', type: 'select', options: ['VND', 'USD', 'EUR', 'JPY'] },
-    
-    // Thông tin pháp lý
-    { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'select', options: ['Sở hữu hoàn toàn', 'Sở hữu chung', 'Đang thế chấp', 'Đang tranh chấp', 'Khác'] },
-    { key: 'legal_restrictions', label: 'Hạn chế pháp lý', type: 'textarea' },
-    { key: 'registration_date', label: 'Ngày đăng ký', type: 'text' },
-    { key: 'contract_number', label: 'Số hợp đồng', type: 'text' },
-    
-    // Thông tin định giá
-    { key: 'appraised_value', label: 'Giá trị định giá (VNĐ)', type: 'number' },
-    { key: 'appraisal_date', label: 'Ngày định giá', type: 'text' },
-    { key: 'appraiser', label: 'Đơn vị định giá', type: 'text' },
-    { key: 'appraisal_method', label: 'Phương pháp định giá', type: 'select', options: ['So sánh', 'Thu nhập', 'Chi phí', 'Khác'] },
-    { key: 'next_appraisal_date', label: 'Ngày định giá tiếp theo', type: 'text' },
-
-    // Thông tin liên hệ
-    { key: 'contact_person', label: 'Người liên hệ', type: 'text' },
-    { key: 'phone', label: 'Số điện thoại', type: 'tel' },
-    { key: 'email', label: 'Email', type: 'email' },
-    { key: 'notes', label: 'Ghi chú', type: 'textarea' }
-  ]
+  fields: BASE_COLLATERAL_FIELDS
 }
 
 const TEMPLATES_KINH_DOANH: MetadataTemplates = {
@@ -1019,9 +1037,26 @@ export default function CreditAssessmentForm({
           {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
             let initialData = formState.assessment_details[sectionKey] || {};
             
+            // For collateral_info, use dynamic template based on collateral type
+            if (sectionKey === 'collateral_info') {
+              const collateralType = initialData.collateral_type || '';
+              const dynamicTemplate = getCollateralTemplate(collateralType);
+              
+              return (
+                <MetadataSection
+                  key={`${sectionKey}-${JSON.stringify(initialData)}`}
+                  title={dynamicTemplate.title}
+                  icon={dynamicTemplate.icon}
+                  initialData={initialData}
+                  fields={dynamicTemplate.fields}
+                  onChange={data => handleSectionDataChange(sectionKey, data)}
+                />
+              );
+            }
+            
             return (
               <MetadataSection
-                key={sectionKey}
+                key={`${sectionKey}-${JSON.stringify(initialData)}`}
                 title={section.title}
                 icon={section.icon}
                 initialData={initialData}
