@@ -85,9 +85,19 @@ export default function HomePage() {
   const loading = tasksLoading || customersLoading || contractsLoading
   const error = tasksError || customersError || contractsError
 
+  // Dynamic background style based on theme mode
+  const backgroundStyle = themeMode === 'glass' ? {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    backgroundAttachment: 'fixed'
+  } : {
+    minHeight: '100vh',
+    bgcolor: 'background.default'
+  }
+
   if (error) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box sx={backgroundStyle}>
         <Navigation />
         <Container maxWidth="xl" sx={{ py: 4 }}>
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -102,7 +112,7 @@ export default function HomePage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={backgroundStyle}>
       {/* Navigation */}
       <Navigation />
 

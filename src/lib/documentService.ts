@@ -236,8 +236,10 @@ export async function generateCreditDocument({
           }
         });
 
-        // Prepare template data for rendering
+        // Prepare comprehensive template data for rendering
         const templateData = {
+          // === FLATTENED FIELDS FOR BACKWARD COMPATIBILITY ===
+          
           // Customer data - flattened
           customer_id: documentData.customer?.customer_id || '',
           customer_name: documentData.customer?.full_name || documentData.customer?.customer_name || '',
@@ -246,27 +248,78 @@ export async function generateCreditDocument({
           phone: documentData.customer?.phone || '',
           email: documentData.customer?.email || '',
           address: documentData.customer?.address || '',
+          customer_type: documentData.customer?.customer_type || '',
+          date_of_birth: documentData.customer?.date_of_birth || '',
+          gender: documentData.customer?.gender || '',
+          marital_status: documentData.customer?.marital_status || '',
+          occupation: documentData.customer?.occupation || '',
+          income: documentData.customer?.income || '',
+          cif_number: documentData.customer?.cif_number || '',
           
           // Collateral data - flattened  
           collateral_id: documentData.collateral?.collateral_id || '',
           collateral_type: documentData.collateral?.collateral_type || '',
           collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
           collateral_description: documentData.collateral?.description || '',
+          market_value: documentData.collateral?.market_value || '',
+          appraised_value: documentData.collateral?.appraised_value || '',
+          location: documentData.collateral?.location || '',
+          condition: documentData.collateral?.condition || '',
+          ownership_status: documentData.collateral?.ownership_status || '',
           
           // Credit assessment data - flattened
           assessment_id: documentData.creditAssessment?.assessment_id || '',
           loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
           interest_rate: documentData.creditAssessment?.interest_rate || '',
           loan_term: documentData.creditAssessment?.loan_term || '',
+          loan_purpose: documentData.creditAssessment?.loan_purpose || '',
+          loan_type: documentData.creditAssessment?.loan_type || '',
+          assessment_status: documentData.creditAssessment?.status || '',
+          
+          // === COMPLETE OBJECTS FOR FULL ACCESS ===
+          
+          // Complete customer object with all fields and metadata
+          customer: {
+            ...documentData.customer,
+            // Flatten metadata if it exists as JSON
+            ...(documentData.customer?.metadata && typeof documentData.customer.metadata === 'object' 
+              ? documentData.customer.metadata 
+              : {}),
+          } || {},
+          
+          // Complete collateral object with all fields and metadata
+          collateral: {
+            ...documentData.collateral,
+            // Flatten metadata if it exists as JSON
+            ...(documentData.collateral?.metadata && typeof documentData.collateral.metadata === 'object' 
+              ? documentData.collateral.metadata 
+              : {}),
+          } || {},
+          
+          // Complete credit assessment object with all fields and assessment_details
+          creditAssessment: {
+            ...documentData.creditAssessment,
+            // Flatten assessment_details if it exists as JSON
+            ...(documentData.creditAssessment?.assessment_details && typeof documentData.creditAssessment.assessment_details === 'object' 
+              ? documentData.creditAssessment.assessment_details 
+              : {}),
+          } || {},
+          
+          // === SYSTEM FIELDS ===
           
           // Date fields
           current_date: format(new Date(), 'dd/MM/yyyy'),
           current_year: format(new Date(), 'yyyy'),
+          current_month: format(new Date(), 'MM'),
+          current_day: format(new Date(), 'dd'),
+          current_time: format(new Date(), 'HH:mm:ss'),
+          current_datetime: format(new Date(), 'dd/MM/yyyy HH:mm:ss'),
           
-          // Keep original nested structure as backup
-          customer: documentData.customer || {},
-          collateral: documentData.collateral || {},
-          creditAssessment: documentData.creditAssessment || {}
+          // Formatted currency values (for display)
+          loan_amount_formatted: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+            .format(parseFloat(documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '0')),
+          collateral_value_formatted: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+            .format(parseFloat(documentData.collateral?.appraised_value || documentData.collateral?.market_value || '0')),
         };
 
         console.log('Template data prepared with keys:', Object.keys(templateData));
@@ -306,8 +359,10 @@ export async function generateCreditDocument({
         // Read the Excel template
         const workbook = XLSX.read(templateBuffer, { type: 'buffer' });
         
-        // Prepare template data for Excel (similar to DOCX)
+        // Prepare comprehensive template data for Excel (similar to DOCX)
         const templateData = {
+          // === FLATTENED FIELDS FOR BACKWARD COMPATIBILITY ===
+          
           // Customer data - flattened
           customer_id: documentData.customer?.customer_id || '',
           customer_name: documentData.customer?.full_name || documentData.customer?.customer_name || '',
@@ -316,24 +371,72 @@ export async function generateCreditDocument({
           phone: documentData.customer?.phone || '',
           email: documentData.customer?.email || '',
           address: documentData.customer?.address || '',
+          customer_type: documentData.customer?.customer_type || '',
+          date_of_birth: documentData.customer?.date_of_birth || '',
+          gender: documentData.customer?.gender || '',
+          marital_status: documentData.customer?.marital_status || '',
+          occupation: documentData.customer?.occupation || '',
+          income: documentData.customer?.income || '',
+          cif_number: documentData.customer?.cif_number || '',
           
           // Collateral data - flattened  
           collateral_id: documentData.collateral?.collateral_id || '',
           collateral_type: documentData.collateral?.collateral_type || '',
           collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
           collateral_description: documentData.collateral?.description || '',
+          market_value: documentData.collateral?.market_value || '',
+          appraised_value: documentData.collateral?.appraised_value || '',
+          location: documentData.collateral?.location || '',
+          condition: documentData.collateral?.condition || '',
+          ownership_status: documentData.collateral?.ownership_status || '',
           
           // Credit assessment data - flattened
           assessment_id: documentData.creditAssessment?.assessment_id || '',
           loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
           interest_rate: documentData.creditAssessment?.interest_rate || '',
           loan_term: documentData.creditAssessment?.loan_term || '',
+          loan_purpose: documentData.creditAssessment?.loan_purpose || '',
+          loan_type: documentData.creditAssessment?.loan_type || '',
+          assessment_status: documentData.creditAssessment?.status || '',
+          
+          // === COMPLETE OBJECTS FOR FULL ACCESS ===
+          
+          // Complete customer object with all fields and metadata
+          customer: {
+            ...documentData.customer,
+            // Flatten metadata if it exists as JSON
+            ...(documentData.customer?.metadata && typeof documentData.customer.metadata === 'object' 
+              ? documentData.customer.metadata 
+              : {}),
+          } || {},
+          
+          // Complete collateral object with all fields and metadata
+          collateral: {
+            ...documentData.collateral,
+            // Flatten metadata if it exists as JSON
+            ...(documentData.collateral?.metadata && typeof documentData.collateral.metadata === 'object' 
+              ? documentData.collateral.metadata 
+              : {}),
+          } || {},
+          
+          // Complete credit assessment object with all fields and assessment_details
+          creditAssessment: {
+            ...documentData.creditAssessment,
+            // Flatten assessment_details if it exists as JSON
+            ...(documentData.creditAssessment?.assessment_details && typeof documentData.creditAssessment.assessment_details === 'object' 
+              ? documentData.creditAssessment.assessment_details 
+              : {}),
+          } || {},
+          
+          // === SYSTEM FIELDS ===
           
           // Date fields
           current_date: format(new Date(), 'dd/MM/yyyy'),
           current_year: format(new Date(), 'yyyy'),
           current_month: format(new Date(), 'MM'),
           current_day: format(new Date(), 'dd'),
+          current_time: format(new Date(), 'HH:mm:ss'),
+          current_datetime: format(new Date(), 'dd/MM/yyyy HH:mm:ss'),
           
           // Additional Excel-friendly numeric fields
           loan_amount_number: parseFloat(documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '0'),
