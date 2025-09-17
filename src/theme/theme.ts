@@ -935,6 +935,7 @@ export const createBrightTheme = (isDark: boolean = false): Theme => {
       },
     },
   });
+};
 
 // Glass/Transparent Theme
 export const glassTheme: Theme = createTheme({
@@ -1399,4 +1400,3 @@ export const glassDarkTheme: Theme = createTheme({
     },
   },
 });
-};
