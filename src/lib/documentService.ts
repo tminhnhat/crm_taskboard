@@ -47,6 +47,40 @@ const CONTENT_TYPE_MAP: Record<ExportType, string> = {
 };
 
 /**
+ * Helper function to safely flatten metadata
+ */
+function safelyFlattenMetadata(metadata: any): Record<string, any> {
+  if (!metadata) return {};
+  
+  try {
+    if (typeof metadata === 'string') {
+      // Try to parse JSON string
+      const parsed = JSON.parse(metadata);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } else if (typeof metadata === 'object' && metadata !== null) {
+      // Already an object, return as-is
+      return metadata;
+    }
+  } catch (error) {
+    console.warn('Failed to parse metadata as JSON:', error);
+  }
+  
+  return {};
+}
+
+/**
+ * Helper function to create template data objects safely
+ */
+function createTemplateDataObject(data: any, metadataField: string): Record<string, any> {
+  if (!data) return {};
+  
+  return {
+    ...data,
+    ...safelyFlattenMetadata(data[metadataField]),
+  };
+}
+
+/**
  * Helper function to format values for Excel cells
  */
 function formatValueForExcel(value: any): string | number {
@@ -206,6 +240,13 @@ export async function generateCreditDocument({
       creditAssessment: creditAssessmentResult.data,
     };
 
+    // Debug: Log document data being used
+    console.log('=== DEBUG: Document Data ===');
+    console.log('Customer data:', JSON.stringify(documentData.customer, null, 2));
+    console.log('Collateral data:', JSON.stringify(documentData.collateral, null, 2));
+    console.log('Credit assessment data:', JSON.stringify(documentData.creditAssessment, null, 2));
+    console.log('Template info:', JSON.stringify(template, null, 2));
+
     // Generate document based on export type
     let outBuffer: Buffer;
     let contentType: string;
@@ -279,31 +320,31 @@ export async function generateCreditDocument({
           // === COMPLETE OBJECTS FOR FULL ACCESS ===
           
           // Complete customer object with all fields and metadata
-          customer: {
+          customer: documentData.customer ? {
             ...documentData.customer,
             // Flatten metadata if it exists as JSON
-            ...(documentData.customer?.metadata && typeof documentData.customer.metadata === 'object' 
+            ...(documentData.customer.metadata && typeof documentData.customer.metadata === 'object' 
               ? documentData.customer.metadata 
               : {}),
-          } || {},
+          } : {},
           
           // Complete collateral object with all fields and metadata
-          collateral: {
+          collateral: documentData.collateral ? {
             ...documentData.collateral,
             // Flatten metadata if it exists as JSON
-            ...(documentData.collateral?.metadata && typeof documentData.collateral.metadata === 'object' 
+            ...(documentData.collateral.metadata && typeof documentData.collateral.metadata === 'object' 
               ? documentData.collateral.metadata 
               : {}),
-          } || {},
+          } : {},
           
           // Complete credit assessment object with all fields and assessment_details
-          creditAssessment: {
+          creditAssessment: documentData.creditAssessment ? {
             ...documentData.creditAssessment,
             // Flatten assessment_details if it exists as JSON
-            ...(documentData.creditAssessment?.assessment_details && typeof documentData.creditAssessment.assessment_details === 'object' 
+            ...(documentData.creditAssessment.assessment_details && typeof documentData.creditAssessment.assessment_details === 'object' 
               ? documentData.creditAssessment.assessment_details 
               : {}),
-          } || {},
+          } : {},
           
           // === SYSTEM FIELDS ===
           
@@ -323,6 +364,17 @@ export async function generateCreditDocument({
         };
 
         console.log('Template data prepared with keys:', Object.keys(templateData));
+        console.log('=== DEBUG: Template Data ===');
+        console.log('Customer object in template:', JSON.stringify(templateData.customer, null, 2));
+        console.log('Collateral object in template:', JSON.stringify(templateData.collateral, null, 2));
+        console.log('Credit assessment object in template:', JSON.stringify(templateData.creditAssessment, null, 2));
+        console.log('Flattened customer fields:', {
+          customer_id: templateData.customer_id,
+          customer_name: templateData.customer_name,
+          full_name: templateData.full_name,
+          id_number: templateData.id_number
+        });
+        console.log('=== END DEBUG ===');
         
         // Render template with data
         doc.render(templateData);
@@ -402,31 +454,31 @@ export async function generateCreditDocument({
           // === COMPLETE OBJECTS FOR FULL ACCESS ===
           
           // Complete customer object with all fields and metadata
-          customer: {
+          customer: documentData.customer ? {
             ...documentData.customer,
             // Flatten metadata if it exists as JSON
-            ...(documentData.customer?.metadata && typeof documentData.customer.metadata === 'object' 
+            ...(documentData.customer.metadata && typeof documentData.customer.metadata === 'object' 
               ? documentData.customer.metadata 
               : {}),
-          } || {},
+          } : {},
           
           // Complete collateral object with all fields and metadata
-          collateral: {
+          collateral: documentData.collateral ? {
             ...documentData.collateral,
             // Flatten metadata if it exists as JSON
-            ...(documentData.collateral?.metadata && typeof documentData.collateral.metadata === 'object' 
+            ...(documentData.collateral.metadata && typeof documentData.collateral.metadata === 'object' 
               ? documentData.collateral.metadata 
               : {}),
-          } || {},
+          } : {},
           
           // Complete credit assessment object with all fields and assessment_details
-          creditAssessment: {
+          creditAssessment: documentData.creditAssessment ? {
             ...documentData.creditAssessment,
             // Flatten assessment_details if it exists as JSON
-            ...(documentData.creditAssessment?.assessment_details && typeof documentData.creditAssessment.assessment_details === 'object' 
+            ...(documentData.creditAssessment.assessment_details && typeof documentData.creditAssessment.assessment_details === 'object' 
               ? documentData.creditAssessment.assessment_details 
               : {}),
-          } || {},
+          } : {},
           
           // === SYSTEM FIELDS ===
           
@@ -452,6 +504,16 @@ export async function generateCreditDocument({
         };
 
         console.log('Excel template data prepared with keys:', Object.keys(templateData));
+        console.log('=== DEBUG: Excel Template Data ===');
+        console.log('Customer object in template:', JSON.stringify(templateData.customer, null, 2));
+        console.log('Collateral object in template:', JSON.stringify(templateData.collateral, null, 2));
+        console.log('Credit assessment object in template:', JSON.stringify(templateData.creditAssessment, null, 2));
+        console.log('Numeric fields for Excel:', {
+          loan_amount_number: templateData.loan_amount_number,
+          interest_rate_number: templateData.interest_rate_number,
+          collateral_value_number: templateData.collateral_value_number
+        });
+        console.log('=== END DEBUG ===');
         
         // Process each worksheet using the helper function
         workbook.SheetNames.forEach(sheetName => {
