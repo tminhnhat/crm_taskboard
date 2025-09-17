@@ -421,14 +421,6 @@ export const CREDIT_ASSESSMENT_PLACEHOLDERS: PlaceholderCategory = {
       dataType: 'number',
       example: '1000000',
       source: 'credit_assessment'
-    },
-    {
-      key: 'approval_decision',
-      label: 'Approval Decision',
-      description: 'Final approval decision',
-      dataType: 'string',
-      example: 'Approved',
-      source: 'credit_assessment'
     }
   ]
 };

@@ -219,7 +219,7 @@ export function useDocuments(): UseDocumentsReturn {
             .in('collateral_id', collateralIds) : Promise.resolve({ data: [] }),
           assessmentIds.length > 0 ? supabase
             .from('credit_assessments')
-            .select('assessment_id, status, approval_decision')
+            .select('assessment_id, status')
             .in('assessment_id', assessmentIds) : Promise.resolve({ data: [] })
         ]);
         
@@ -329,7 +329,7 @@ export function useDocuments(): UseDocumentsReturn {
             .single() : Promise.resolve({ data: null }),
           doc.assessment_id ? supabase
             .from('credit_assessments')
-            .select('assessment_id, status, approval_decision')
+            .select('assessment_id, status')
             .eq('assessment_id', doc.assessment_id)
             .single() : Promise.resolve({ data: null })
         ]);
