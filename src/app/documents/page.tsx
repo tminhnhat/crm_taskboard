@@ -78,7 +78,7 @@ function DocumentsContent() {
     documents, 
     loading: documentsLoading, 
     error: documentsError, 
-    generateDocument, 
+    generateDocument,
     downloadDocument,
     deleteDocument, 
     fetchDocuments,
