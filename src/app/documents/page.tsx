@@ -293,6 +293,13 @@ function DocumentsContent() {
     return typeLabels[type] || type;
   };
 
+  // Debug: log thông tin truyền vào khi render document
+  console.log('DEBUG documents:', documents);
+  console.log('DEBUG templates:', templates);
+  console.log('DEBUG customersList:', customersList);
+  console.log('DEBUG collateralsList:', collateralsList);
+  console.log('DEBUG assessmentsList:', assessmentsList);
+  console.log('DEBUG formData:', formData);
   return (
     <Box sx={{ maxWidth: 1400, mx: 'auto', p: 3 }}>
       {/* Header */}
