@@ -30,7 +30,23 @@ const EnhancedStatsCard: React.FC<EnhancedStatsCardProps> = ({
   const { themeMode } = useCustomTheme();
 
   const getColorValue = (colorName: string) => {
-    return theme.palette[colorName as keyof typeof theme.palette]?.main || theme.palette.primary.main;
+    // Type-safe color extraction from MUI theme palette
+    switch (colorName) {
+      case 'primary':
+        return theme.palette.primary.main;
+      case 'secondary':
+        return theme.palette.secondary.main;
+      case 'success':
+        return theme.palette.success.main;
+      case 'warning':
+        return theme.palette.warning.main;
+      case 'error':
+        return theme.palette.error.main;
+      case 'info':
+        return theme.palette.info.main;
+      default:
+        return theme.palette.primary.main;
+    }
   };
 
   const cardStyle = {
