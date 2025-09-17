@@ -175,6 +175,8 @@ function DocumentsContent() {
         assessmentId: formData.assessmentId ? parseInt(formData.assessmentId) : undefined,
         exportType: formData.exportType
       });
+      // Debug: show document generation result in browser console
+      console.log('Document generation result:', result);
       
       // If user wants to send via email, send it
       if (formData.sendViaEmail && formData.emailAddress) {
