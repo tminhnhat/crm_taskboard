@@ -29,12 +29,15 @@ import {
 } from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
 import BirthdayCustomers from '@/components/BirthdayCustomers'
+import EnhancedStatsCard from '@/components/EnhancedStatsCard'
 import { useTasks } from '@/hooks/useTasks'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useContracts } from '@/hooks/useContracts'
+import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
 
 export default function HomePage() {
   const theme = useTheme()
+  const { themeMode } = useCustomTheme()
   const { tasks, loading: tasksLoading, error: tasksError } = useTasks()
   const { customers, loading: customersLoading, error: customersError } = useCustomers()
   const { contracts, loading: contractsLoading, error: contractsError } = useContracts()
