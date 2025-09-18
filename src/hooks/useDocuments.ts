@@ -259,6 +259,103 @@ export function useDocuments(): UseDocumentsReturn {
         throw new Error('Missing required parameters: templateId, customerId, exportType');
       }
 
+      // === CLIENT-SIDE DATA LOGGING FOR DEBUGGING ===
+      console.log('🚀 CLIENT-SIDE: Document Generation Started');
+      console.log('======================================');
+      console.log('Parameters:', { templateId, customerId, collateralId, assessmentId, exportType });
+      
+      // Fetch data for logging before API call
+      console.log('📋 Fetching data for logging...');
+      
+      try {
+        // Fetch customer data
+        const { data: customerData, error: customerError } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('customer_id', customerId)
+          .single();
+          
+        if (!customerError && customerData) {
+          console.log('👤 CLIENT-SIDE Customer Data:');
+          console.log('  - customer_id:', customerData.customer_id);
+          console.log('  - customer_name:', customerData.customer_name);
+          console.log('  - full_name:', customerData.full_name);
+          console.log('  - id_number:', customerData.id_number);
+          console.log('  - phone:', customerData.phone);
+          console.log('  - email:', customerData.email);
+          console.log('  - address:', customerData.address);
+          console.log('  - metadata:', customerData.metadata);
+          console.log('  - All customer keys:', Object.keys(customerData));
+        }
+        
+        // Fetch collateral data if provided
+        if (collateralId) {
+          const { data: collateralData, error: collateralError } = await supabase
+            .from('collaterals')
+            .select('*')
+            .eq('collateral_id', collateralId)
+            .single();
+            
+          if (!collateralError && collateralData) {
+            console.log('🏢 CLIENT-SIDE Collateral Data:');
+            console.log('  - collateral_id:', collateralData.collateral_id);
+            console.log('  - collateral_type:', collateralData.collateral_type);
+            console.log('  - description:', collateralData.description);
+            console.log('  - market_value:', collateralData.market_value);
+            console.log('  - appraised_value:', collateralData.appraised_value);
+            console.log('  - location:', collateralData.location);
+            console.log('  - condition:', collateralData.condition);
+            console.log('  - metadata:', collateralData.metadata);
+            console.log('  - All collateral keys:', Object.keys(collateralData));
+          }
+        }
+        
+        // Fetch credit assessment data if provided
+        if (assessmentId) {
+          const { data: assessmentData, error: assessmentError } = await supabase
+            .from('credit_assessments')
+            .select('*')
+            .eq('assessment_id', assessmentId)
+            .single();
+            
+          if (!assessmentError && assessmentData) {
+            console.log('💰 CLIENT-SIDE Credit Assessment Data:');
+            console.log('  - assessment_id:', assessmentData.assessment_id);
+            console.log('  - requested_amount:', assessmentData.requested_amount);
+            console.log('  - approved_amount:', assessmentData.approved_amount);
+            console.log('  - interest_rate:', assessmentData.interest_rate);
+            console.log('  - loan_term:', assessmentData.loan_term);
+            console.log('  - loan_purpose:', assessmentData.loan_purpose);
+            console.log('  - loan_type:', assessmentData.loan_type);
+            console.log('  - status:', assessmentData.status);
+            console.log('  - assessment_details:', assessmentData.assessment_details);
+            console.log('  - All assessment keys:', Object.keys(assessmentData));
+          }
+        }
+        
+        // Fetch template data
+        const { data: templateData, error: templateError } = await supabase
+          .from('templates')
+          .select('*')
+          .eq('template_id', templateId)
+          .single();
+          
+        if (!templateError && templateData) {
+          console.log('📄 CLIENT-SIDE Template Data:');
+          console.log('  - template_id:', templateData.template_id);
+          console.log('  - template_name:', templateData.template_name);
+          console.log('  - template_type:', templateData.template_type);
+          console.log('  - file_url:', templateData.file_url);
+          console.log('  - All template keys:', Object.keys(templateData));
+        }
+        
+      } catch (debugError) {
+        console.warn('⚠️ Error fetching debug data:', debugError);
+      }
+      
+      console.log('======================================');
+      console.log('🌐 Making API call to generate document...');
+
       // Generate document and save to blob storage
       const response = await fetch('/api/documents?return=json', {
         method: 'POST',
@@ -273,11 +370,15 @@ export function useDocuments(): UseDocumentsReturn {
       });
 
       if (!response.ok) {
+        console.error('❌ API call failed:', response.status, response.statusText);
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Error details:', errorData);
         throw new Error(errorData.error || `Document generation failed with status ${response.status}`);
       }
 
       const result = await response.json();
+      console.log('✅ API Response received:', result);
+      
       const { filename, blobUrl } = result;
 
       if (!filename) {
@@ -344,8 +445,23 @@ export function useDocuments(): UseDocumentsReturn {
         setDocuments(prevDocs => [enrichedDoc, ...prevDocs]);
       }
 
+      // Final success logging
+      console.log('🎉 CLIENT-SIDE: Document Generation Completed Successfully!');
+      console.log('===============================================');
+      console.log('Generated filename:', filename);
+      console.log('File URL:', fileUrl);
+      console.log('Blob URL:', blobUrl);
+      console.log('Template ID used:', templateId);
+      console.log('Customer ID used:', customerId);
+      console.log('Collateral ID used:', collateralId || 'None');
+      console.log('Assessment ID used:', assessmentId || 'None');
+      console.log('Export type:', exportType);
+      console.log('===============================================');
+
       return { filename, url: fileUrl };
     } catch (err) {
+      console.error('❌ CLIENT-SIDE: Document Generation Failed!');
+      console.error('Error details:', err);
       console.error('Error generating document:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate document');
       throw err;
@@ -419,6 +535,10 @@ export function useDocuments(): UseDocumentsReturn {
         throw new Error('Missing required parameters: templateId, customerId, exportType');
       }
 
+      // Log download initiation
+      console.log('📥 CLIENT-SIDE: Document Download Started');
+      console.log('Parameters:', { templateId, customerId, collateralId, assessmentId, exportType });
+
       // Generate document for direct download (original behavior)
       const response = await fetch('/api/documents', {
         method: 'POST',
@@ -433,7 +553,9 @@ export function useDocuments(): UseDocumentsReturn {
       });
 
       if (!response.ok) {
+        console.error('❌ Download API call failed:', response.status, response.statusText);
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Download error details:', errorData);
         throw new Error(errorData.error || `Document generation failed with status ${response.status}`);
       }
 
@@ -458,10 +580,17 @@ export function useDocuments(): UseDocumentsReturn {
       document.body.appendChild(downloadLink);
       downloadLink.click();
       
+      // Log successful download
+      console.log('✅ CLIENT-SIDE: Document Download Completed Successfully!');
+      console.log('Downloaded filename:', filename);
+      console.log('Blob size:', blob.size, 'bytes');
+      
       // Cleanup
       window.URL.revokeObjectURL(url);
       document.body.removeChild(downloadLink);
     } catch (err) {
+      console.error('❌ CLIENT-SIDE: Document Download Failed!');
+      console.error('Download error details:', err);
       console.error('Error downloading document:', err);
       setError(err instanceof Error ? err.message : 'Failed to download document');
       throw err;
