@@ -53,18 +53,23 @@ function safelyFlattenMetadata(metadata: any): Record<string, any> {
   if (!metadata) return {};
   
   try {
+    console.log('🔧 Flattening metadata:', typeof metadata, metadata);
+    
     if (typeof metadata === 'string') {
       // Try to parse JSON string
       const parsed = JSON.parse(metadata);
+      console.log('  ✅ Parsed JSON metadata:', parsed);
       return typeof parsed === 'object' && parsed !== null ? parsed : {};
     } else if (typeof metadata === 'object' && metadata !== null) {
       // Already an object, return as-is
+      console.log('  ✅ Object metadata used as-is:', metadata);
       return metadata;
     }
   } catch (error) {
-    console.warn('Failed to parse metadata as JSON:', error);
+    console.warn('  ❌ Failed to parse metadata as JSON:', error);
   }
   
+  console.log('  ⚠️ Returning empty object for metadata');
   return {};
 }
 
@@ -241,11 +246,68 @@ export async function generateCreditDocument({
     };
 
     // Debug: Log document data being used
-    console.log('=== DEBUG: Document Data ===');
+    console.log('=== DEBUG: Raw Database Data ===');
     console.log('Customer data:', JSON.stringify(documentData.customer, null, 2));
     console.log('Collateral data:', JSON.stringify(documentData.collateral, null, 2));
     console.log('Credit assessment data:', JSON.stringify(documentData.creditAssessment, null, 2));
     console.log('Template info:', JSON.stringify(template, null, 2));
+    
+    // Debug: Log specific fields for mapping verification
+    console.log('=== DEBUG: Field Mapping Verification ===');
+    
+    // Customer fields
+    console.log('🔍 Customer Fields:');
+    console.log('  - customer_id:', documentData.customer?.customer_id);
+    console.log('  - customer_name:', documentData.customer?.customer_name);
+    console.log('  - full_name:', documentData.customer?.full_name);
+    console.log('  - id_number:', documentData.customer?.id_number);
+    console.log('  - phone:', documentData.customer?.phone);
+    console.log('  - email:', documentData.customer?.email);
+    console.log('  - address:', documentData.customer?.address);
+    console.log('  - customer_type:', documentData.customer?.customer_type);
+    console.log('  - date_of_birth:', documentData.customer?.date_of_birth);
+    console.log('  - gender:', documentData.customer?.gender);
+    console.log('  - marital_status:', documentData.customer?.marital_status);
+    console.log('  - occupation:', documentData.customer?.occupation);
+    console.log('  - income:', documentData.customer?.income);
+    console.log('  - cif_number:', documentData.customer?.cif_number);
+    console.log('  - metadata:', documentData.customer?.metadata);
+    console.log('  - All customer keys:', documentData.customer ? Object.keys(documentData.customer) : 'null');
+    
+    // Collateral fields
+    console.log('🏢 Collateral Fields:');
+    if (documentData.collateral) {
+      console.log('  - collateral_id:', documentData.collateral.collateral_id);
+      console.log('  - collateral_type:', documentData.collateral.collateral_type);
+      console.log('  - description:', documentData.collateral.description);
+      console.log('  - market_value:', documentData.collateral.market_value);
+      console.log('  - appraised_value:', documentData.collateral.appraised_value);
+      console.log('  - location:', documentData.collateral.location);
+      console.log('  - condition:', documentData.collateral.condition);
+      console.log('  - ownership_status:', documentData.collateral.ownership_status);
+      console.log('  - metadata:', documentData.collateral.metadata);
+      console.log('  - All collateral keys:', Object.keys(documentData.collateral));
+    } else {
+      console.log('  - No collateral data provided');
+    }
+    
+    // Credit assessment fields
+    console.log('💰 Credit Assessment Fields:');
+    if (documentData.creditAssessment) {
+      console.log('  - assessment_id:', documentData.creditAssessment.assessment_id);
+      console.log('  - requested_amount:', documentData.creditAssessment.requested_amount);
+      console.log('  - approved_amount:', documentData.creditAssessment.approved_amount);
+      console.log('  - interest_rate:', documentData.creditAssessment.interest_rate);
+      console.log('  - loan_term:', documentData.creditAssessment.loan_term);
+      console.log('  - loan_purpose:', documentData.creditAssessment.loan_purpose);
+      console.log('  - loan_type:', documentData.creditAssessment.loan_type);
+      console.log('  - status:', documentData.creditAssessment.status);
+      console.log('  - assessment_details:', documentData.creditAssessment.assessment_details);
+      console.log('  - All credit assessment keys:', Object.keys(documentData.creditAssessment));
+    } else {
+      console.log('  - No credit assessment data provided');
+    }
+    console.log('=== END Field Mapping Verification ===');
 
     // Generate document based on export type
     let outBuffer: Buffer;
@@ -364,16 +426,84 @@ export async function generateCreditDocument({
         };
 
         console.log('Template data prepared with keys:', Object.keys(templateData));
-        console.log('=== DEBUG: Template Data ===');
+        
+        // Log metadata processing for DOCX
+        console.log('🔄 DOCX Template - Metadata Processing:');
+        if (documentData.customer?.metadata) {
+          console.log('  Customer metadata found:', documentData.customer.metadata);
+          console.log('  Customer metadata type:', typeof documentData.customer.metadata);
+        }
+        if (documentData.collateral?.metadata) {
+          console.log('  Collateral metadata found:', documentData.collateral.metadata);
+          console.log('  Collateral metadata type:', typeof documentData.collateral.metadata);
+        }
+        if (documentData.creditAssessment?.assessment_details) {
+          console.log('  Credit assessment details found:', documentData.creditAssessment.assessment_details);
+          console.log('  Credit assessment details type:', typeof documentData.creditAssessment.assessment_details);
+        }
+        
+        console.log('=== DEBUG: Template Data for DOCX ===');
+        
+        // Log flattened fields that will be used in templates
+        console.log('📋 Flattened Customer Fields for Template:');
+        console.log('  customer_id:', templateData.customer_id);
+        console.log('  customer_name:', templateData.customer_name);
+        console.log('  full_name:', templateData.full_name);
+        console.log('  id_number:', templateData.id_number);
+        console.log('  phone:', templateData.phone);
+        console.log('  email:', templateData.email);
+        console.log('  address:', templateData.address);
+        console.log('  customer_type:', templateData.customer_type);
+        console.log('  date_of_birth:', templateData.date_of_birth);
+        console.log('  gender:', templateData.gender);
+        console.log('  marital_status:', templateData.marital_status);
+        console.log('  occupation:', templateData.occupation);
+        console.log('  income:', templateData.income);
+        console.log('  cif_number:', templateData.cif_number);
+        
+        console.log('🏢 Flattened Collateral Fields for Template:');
+        console.log('  collateral_id:', templateData.collateral_id);
+        console.log('  collateral_type:', templateData.collateral_type);
+        console.log('  collateral_value:', templateData.collateral_value);
+        console.log('  collateral_description:', templateData.collateral_description);
+        console.log('  market_value:', templateData.market_value);
+        console.log('  appraised_value:', templateData.appraised_value);
+        console.log('  location:', templateData.location);
+        console.log('  condition:', templateData.condition);
+        console.log('  ownership_status:', templateData.ownership_status);
+        
+        console.log('💰 Flattened Credit Assessment Fields for Template:');
+        console.log('  assessment_id:', templateData.assessment_id);
+        console.log('  loan_amount:', templateData.loan_amount);
+        console.log('  interest_rate:', templateData.interest_rate);
+        console.log('  loan_term:', templateData.loan_term);
+        console.log('  loan_purpose:', templateData.loan_purpose);
+        console.log('  loan_type:', templateData.loan_type);
+        console.log('  assessment_status:', templateData.assessment_status);
+        
+        console.log('📅 System Generated Fields:');
+        console.log('  current_date:', templateData.current_date);
+        console.log('  current_year:', templateData.current_year);
+        console.log('  current_month:', templateData.current_month);
+        console.log('  current_day:', templateData.current_day);
+        console.log('  current_time:', templateData.current_time);
+        console.log('  current_datetime:', templateData.current_datetime);
+        
+        console.log('💵 Formatted Values:');
+        console.log('  loan_amount_formatted:', templateData.loan_amount_formatted);
+        console.log('  collateral_value_formatted:', templateData.collateral_value_formatted);
+        
+        console.log('📦 Complete Objects (with metadata flattened):');
         console.log('Customer object in template:', JSON.stringify(templateData.customer, null, 2));
         console.log('Collateral object in template:', JSON.stringify(templateData.collateral, null, 2));
         console.log('Credit assessment object in template:', JSON.stringify(templateData.creditAssessment, null, 2));
-        console.log('Flattened customer fields:', {
-          customer_id: templateData.customer_id,
-          customer_name: templateData.customer_name,
-          full_name: templateData.full_name,
-          id_number: templateData.id_number
-        });
+        
+        console.log('🔍 Template Placeholder Examples:');
+        console.log('Use {{customer_name}} for customer name');
+        console.log('Use {{loan_amount}} for loan amount');
+        console.log('Use {{collateral_value}} for collateral value');
+        console.log('Use {{current_date}} for current date');
+        console.log('Use {{customer.metadata.custom_field}} for custom metadata fields');
         console.log('=== END DEBUG ===');
         
         // Render template with data
@@ -504,16 +634,91 @@ export async function generateCreditDocument({
         };
 
         console.log('Excel template data prepared with keys:', Object.keys(templateData));
+        
+        // Log metadata processing for Excel
+        console.log('🔄 Excel Template - Metadata Processing:');
+        if (documentData.customer?.metadata) {
+          console.log('  Customer metadata found:', documentData.customer.metadata);
+          console.log('  Customer metadata type:', typeof documentData.customer.metadata);
+        }
+        if (documentData.collateral?.metadata) {
+          console.log('  Collateral metadata found:', documentData.collateral.metadata);
+          console.log('  Collateral metadata type:', typeof documentData.collateral.metadata);
+        }
+        if (documentData.creditAssessment?.assessment_details) {
+          console.log('  Credit assessment details found:', documentData.creditAssessment.assessment_details);
+          console.log('  Credit assessment details type:', typeof documentData.creditAssessment.assessment_details);
+        }
+        
         console.log('=== DEBUG: Excel Template Data ===');
-        console.log('Customer object in template:', JSON.stringify(templateData.customer, null, 2));
-        console.log('Collateral object in template:', JSON.stringify(templateData.collateral, null, 2));
-        console.log('Credit assessment object in template:', JSON.stringify(templateData.creditAssessment, null, 2));
-        console.log('Numeric fields for Excel:', {
-          loan_amount_number: templateData.loan_amount_number,
-          interest_rate_number: templateData.interest_rate_number,
-          collateral_value_number: templateData.collateral_value_number
-        });
-        console.log('=== END DEBUG ===');
+        
+        // Log flattened fields that will be used in Excel templates
+        console.log('📋 Flattened Customer Fields for Excel Template:');
+        console.log('  customer_id:', templateData.customer_id);
+        console.log('  customer_name:', templateData.customer_name);
+        console.log('  full_name:', templateData.full_name);
+        console.log('  id_number:', templateData.id_number);
+        console.log('  phone:', templateData.phone);
+        console.log('  email:', templateData.email);
+        console.log('  address:', templateData.address);
+        console.log('  customer_type:', templateData.customer_type);
+        console.log('  date_of_birth:', templateData.date_of_birth);
+        console.log('  gender:', templateData.gender);
+        console.log('  marital_status:', templateData.marital_status);
+        console.log('  occupation:', templateData.occupation);
+        console.log('  income:', templateData.income);
+        console.log('  cif_number:', templateData.cif_number);
+        
+        console.log('🏢 Flattened Collateral Fields for Excel Template:');
+        console.log('  collateral_id:', templateData.collateral_id);
+        console.log('  collateral_type:', templateData.collateral_type);
+        console.log('  collateral_value:', templateData.collateral_value);
+        console.log('  collateral_description:', templateData.collateral_description);
+        console.log('  market_value:', templateData.market_value);
+        console.log('  appraised_value:', templateData.appraised_value);
+        console.log('  location:', templateData.location);
+        console.log('  condition:', templateData.condition);
+        console.log('  ownership_status:', templateData.ownership_status);
+        
+        console.log('💰 Flattened Credit Assessment Fields for Excel Template:');
+        console.log('  assessment_id:', templateData.assessment_id);
+        console.log('  loan_amount:', templateData.loan_amount);
+        console.log('  interest_rate:', templateData.interest_rate);
+        console.log('  loan_term:', templateData.loan_term);
+        console.log('  loan_purpose:', templateData.loan_purpose);
+        console.log('  loan_type:', templateData.loan_type);
+        console.log('  assessment_status:', templateData.assessment_status);
+        
+        console.log('📅 System Generated Fields for Excel:');
+        console.log('  current_date:', templateData.current_date);
+        console.log('  current_year:', templateData.current_year);
+        console.log('  current_month:', templateData.current_month);
+        console.log('  current_day:', templateData.current_day);
+        console.log('  current_time:', templateData.current_time);
+        console.log('  current_datetime:', templateData.current_datetime);
+        
+        console.log('🔢 Numeric Fields for Excel (proper number format):');
+        console.log('  loan_amount_number:', templateData.loan_amount_number, '(type:', typeof templateData.loan_amount_number, ')');
+        console.log('  interest_rate_number:', templateData.interest_rate_number, '(type:', typeof templateData.interest_rate_number, ')');
+        console.log('  loan_term_number:', templateData.loan_term_number, '(type:', typeof templateData.loan_term_number, ')');
+        console.log('  collateral_value_number:', templateData.collateral_value_number, '(type:', typeof templateData.collateral_value_number, ')');
+        
+        console.log('💵 Formatted Values for Excel:');
+        console.log('  loan_amount_formatted:', templateData.loan_amount_formatted);
+        console.log('  collateral_value_formatted:', templateData.collateral_value_formatted);
+        
+        console.log('📦 Complete Objects for Excel (with metadata flattened):');
+        console.log('Customer object in Excel template:', JSON.stringify(templateData.customer, null, 2));
+        console.log('Collateral object in Excel template:', JSON.stringify(templateData.collateral, null, 2));
+        console.log('Credit assessment object in Excel template:', JSON.stringify(templateData.creditAssessment, null, 2));
+        
+        console.log('🔍 Excel Template Placeholder Examples:');
+        console.log('Use {{customer_name}} for customer name');
+        console.log('Use {{loan_amount_number}} for numeric loan amount (Excel numbers)');
+        console.log('Use {{loan_amount_formatted}} for formatted loan amount (display)');
+        console.log('Use {{collateral_value_number}} for numeric collateral value');
+        console.log('Use {{current_date}} for current date');
+        console.log('=== END Excel DEBUG ===');
         
         // Process each worksheet using the helper function
         workbook.SheetNames.forEach(sheetName => {
@@ -563,6 +768,19 @@ export async function generateCreditDocument({
       console.warn('Failed to save document to Vercel Blob:', blobError);
       // Continue without blob storage if it fails
     }
+
+    // Final mapping summary log
+    console.log('📋 FINAL MAPPING SUMMARY - Document Generation Complete');
+    console.log('======================================================');
+    console.log('Template used:', template.template_name, '(' + template.template_type + ')');
+    console.log('Export type:', exportType);
+    console.log('Generated filename:', filename);
+    console.log('Buffer size:', outBuffer.length, 'bytes');
+    console.log('Blob URL:', blobUrl || 'Not saved to blob');
+    console.log('Customer ID used:', customerId);
+    console.log('Collateral ID used:', collateralId || 'None');
+    console.log('Credit Assessment ID used:', creditAssessmentId || 'None');
+    console.log('======================================================');
 
     return {
       buffer: outBuffer,
