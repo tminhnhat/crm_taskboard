@@ -1,0 +1,57 @@
+Field Name,Variable Placeholder,Sample Value,Description
+Tên khách hàng,{{customer_name}},Nguyễn Văn A,Họ tên đầy đủ của khách hàng
+Mã khách hàng,{{customer_id}},KH001,ID duy nhất của khách hàng
+Số CMND/CCCD,{{id_number}},123456789,Số chứng minh nhân dân hoặc căn cước
+Ngày sinh,{{date_of_birth}},01/01/1990,Ngày sinh của khách hàng
+Điện thoại,{{phone}},0123456789,Số điện thoại liên lạc
+Email,{{email}},email@example.com,Địa chỉ email
+Địa chỉ,{{address}},"123 Đường ABC, Quận 1, TP.HCM",Địa chỉ thường trú
+Thu nhập,{{income}},15000000,Thu nhập hàng tháng (số)
+Thu nhập định dạng,{{income_formatted}},₫15.000.000,Thu nhập có định dạng tiền tệ
+Nghề nghiệp,{{occupation}},Kỹ sư,Nghề nghiệp hiện tại
+Loại tài sản,{{collateral_type}},Bất động sản,Loại tài sản thế chấp
+Giá trị tài sản,{{collateral_value}},2000000000,Giá trị tài sản (số)
+Giá trị tài sản định dạng,{{collateral_value_formatted}},₫2.000.000.000,Giá trị có định dạng
+Mô tả tài sản,{{collateral_description}},Nhà phố 3 tầng,Mô tả chi tiết tài sản
+Vị trí tài sản,{{location}},"456 Đường XYZ, Quận 2",Địa chỉ tài sản
+Số GCN,{{so_gcn}},GCN123456,Số giấy chứng nhận quyền sử dụng đất
+Biển số xe,{{license_plate}},30A-12345,Biển số đăng ký xe
+Số khung xe,{{chassis_number}},VIN123456789,Số khung xe
+Số tiền vay,{{loan_amount}},1500000000,Số tiền vay yêu cầu
+Số tiền vay định dạng,{{loan_amount_formatted}},₫1.500.000.000,Số tiền có định dạng
+Lãi suất,{{interest_rate}},8.5,Lãi suất cho vay (%/năm)
+Thời hạn vay,{{loan_term}},60,Thời hạn vay (tháng)
+Loại vay,{{loan_type}},Vay tiêu dùng,Loại hình vay
+Mục đích vay,{{loan_purpose}},Mua nhà,Mục đích sử dụng vốn
+Số tiền được duyệt,{{approved_amount}},1400000000,Số tiền được phê duyệt
+Ngày phê duyệt,{{approval_date}},25/01/2025,Ngày quyết định phê duyệt
+Tên vợ/chồng,{{spouse_name}},Trần Thị B,Họ tên vợ/chồng
+Thu nhập vợ/chồng,{{spouse_income}},12000000,Thu nhập của vợ/chồng
+Tổng nguồn trả nợ,{{total_repayment_sources}},27000000,Tổng nguồn thu để trả nợ
+Tổng nợ hiện tại,{{total_liability}},5000000,Tổng các khoản nợ hiện có
+Chi phí sinh hoạt,{{total_expenses}},15000000,Tổng chi phí sinh hoạt hàng tháng
+Thu nhập còn lại,{{total_residual_income}},7000000,Thu nhập sau khi trừ nợ và chi phí
+Ngày hiện tại,{{current_date}},25/01/2025,Ngày hiện tại hệ thống
+Ngày giờ hiện tại,{{current_datetime}},25/01/2025 14:30:15,Ngày giờ hiện tại đầy đủ
+Năm hiện tại,{{current_year}},2025,Năm hiện tại
+Tháng hiện tại,{{current_month}},01,Tháng hiện tại
+Ngày hiện tại (số),{{current_day}},25,Ngày trong tháng hiện tại
+ID thẩm định,{{assessment_id}},TD001,Mã thẩm định tín dụng
+Phòng ban,{{department}},Phòng Tín dụng,Phòng ban thực hiện thẩm định
+Lãnh đạo phòng,{{department_head}},Trương Phòng C,Lãnh đạo phòng ban
+Phí thẩm định,{{fee_amount}},2000000,Phí thẩm định tín dụng
+Trạng thái thẩm định,{{assessment_status}},Đã phê duyệt,Trạng thái hiện tại
+Hãng xe,{{vehicle_brand}},Toyota,Hãng sản xuất xe
+Model xe,{{vehicle_model}},Camry,Model/dòng xe
+Năm sản xuất,{{manufacturing_year}},2020,Năm sản xuất xe
+Màu xe,{{vehicle_color}},Trắng,Màu sắc xe
+Số chỗ ngồi,{{seating_capacity}},5,Số chỗ ngồi của xe
+Ngân hàng,{{bank_name}},Vietcombank,Tên ngân hàng
+Chi nhánh,{{bank_branch}},Chi nhánh Đống Đa,Chi nhánh ngân hàng
+Số dư tài khoản,{{account_balance}},50000000,Số dư hiện tại
+Ngày mở tài khoản,{{account_opening_date}},01/01/2020,Ngày mở tài khoản
+Ngày đáo hạn,{{maturity_date}},01/01/2026,Ngày đáo hạn sản phẩm
+Diện tích đất,{{dien_tich_dat}},100,Diện tích đất (m²)
+Diện tích sàn,{{dien_tich_san}},250,Diện tích sàn xây dựng (m²)
+Loại đất,{{loai_dat}},Đất ở,Loại đất theo pháp luật
+Hình thức sở hữu,{{hinh_thuc_so_huu}},Sở hữu riêng,Hình thức sở hữu đất
