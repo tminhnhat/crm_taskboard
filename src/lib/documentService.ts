@@ -267,9 +267,6 @@ export async function generateCreditDocument({
     console.log('  - customer_type:', documentData.customer?.customer_type);
     console.log('  - date_of_birth:', documentData.customer?.date_of_birth);
     console.log('  - gender:', documentData.customer?.gender);
-    console.log('  - marital_status:', documentData.customer?.marital_status);
-    console.log('  - occupation:', documentData.customer?.occupation);
-    console.log('  - income:', documentData.customer?.income);
     console.log('  - cif_number:', documentData.customer?.cif_number);
     console.log('  - metadata:', documentData.customer?.metadata);
     console.log('  - All customer keys:', documentData.customer ? Object.keys(documentData.customer) : 'null');
@@ -354,30 +351,47 @@ export async function generateCreditDocument({
           customer_type: documentData.customer?.customer_type || '',
           date_of_birth: documentData.customer?.date_of_birth || '',
           gender: documentData.customer?.gender || '',
-          marital_status: documentData.customer?.marital_status || '',
-          occupation: documentData.customer?.occupation || '',
-          income: documentData.customer?.income || '',
+          // ...fields removed as requested
           cif_number: documentData.customer?.cif_number || '',
+          id_issued_date: documentData.customer?.id_issued_date || '',
+          id_issued_authority: documentData.customer?.id_issued_authority || '',
+          account_number: documentData.customer?.account_number || '',
+          numerology_data: documentData.customer?.numerology_data || '',
+          hobbys: documentData.customer?.hobbies || '',
+          company_name: documentData.customer?.company_name || '',
+          business_registration_number: documentData.customer?.business_registration_number || '',
+          registration_date: documentData.customer?.registration_date || '',
+          legal_representative: documentData.customer?.legal_representative || '',
+          business_sector: documentData.customer?.business_sector || '',
+          legal_representative_cif_number: documentData.customer?.legal_representative_cif_number || '',
+          business_registration_authority: documentData.customer?.business_registration_authority || '',
+          relationship_manager: documentData.customer?.relationship_manager || '',
           
           // Collateral data - flattened  
           collateral_id: documentData.collateral?.collateral_id || '',
           collateral_type: documentData.collateral?.collateral_type || '',
           collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
           collateral_description: documentData.collateral?.description || '',
-          market_value: documentData.collateral?.market_value || '',
-          appraised_value: documentData.collateral?.appraised_value || '',
           location: documentData.collateral?.location || '',
-          condition: documentData.collateral?.condition || '',
-          ownership_status: documentData.collateral?.ownership_status || '',
-          
+          description: documentData.collateral?.description || '',
+          value: documentData.collateral?.value || '',
+          valuation_date: documentData.collateral?.valuation_date || '',
+          owner_info: documentData.collateral?.owner_info || '',
+          metadata: documentData.collateral?.metadata || '',
+          re_evaluation_date: documentData.collateral?.re_evaluation_date || '',
+
+
           // Credit assessment data - flattened
           assessment_id: documentData.creditAssessment?.assessment_id || '',
-          loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
-          interest_rate: documentData.creditAssessment?.interest_rate || '',
-          loan_term: documentData.creditAssessment?.loan_term || '',
-          loan_purpose: documentData.creditAssessment?.loan_purpose || '',
           loan_type: documentData.creditAssessment?.loan_type || '',
           assessment_status: documentData.creditAssessment?.status || '',
+          staff_id: documentData.creditAssessment?.staff_id || '',
+          product_id: documentData.creditAssessment?.product_id || '',
+          department: documentData.creditAssessment?.department || '',
+          department_head: documentData.creditAssessment?.department_head || '',
+          fee_amount: documentData.creditAssessment?.fee_amount || '',
+          assessment_details: documentData.creditAssessment?.assessment_details || '',
+          
           
           // === COMPLETE OBJECTS FOR FULL ACCESS ===
           
@@ -456,9 +470,7 @@ export async function generateCreditDocument({
         console.log('  customer_type:', templateData.customer_type);
         console.log('  date_of_birth:', templateData.date_of_birth);
         console.log('  gender:', templateData.gender);
-        console.log('  marital_status:', templateData.marital_status);
-        console.log('  occupation:', templateData.occupation);
-        console.log('  income:', templateData.income);
+  // ...fields removed as requested
         console.log('  cif_number:', templateData.cif_number);
         
         console.log('🏢 Flattened Collateral Fields for Template:');
@@ -466,18 +478,9 @@ export async function generateCreditDocument({
         console.log('  collateral_type:', templateData.collateral_type);
         console.log('  collateral_value:', templateData.collateral_value);
         console.log('  collateral_description:', templateData.collateral_description);
-        console.log('  market_value:', templateData.market_value);
-        console.log('  appraised_value:', templateData.appraised_value);
-        console.log('  location:', templateData.location);
-        console.log('  condition:', templateData.condition);
-        console.log('  ownership_status:', templateData.ownership_status);
         
         console.log('💰 Flattened Credit Assessment Fields for Template:');
         console.log('  assessment_id:', templateData.assessment_id);
-        console.log('  loan_amount:', templateData.loan_amount);
-        console.log('  interest_rate:', templateData.interest_rate);
-        console.log('  loan_term:', templateData.loan_term);
-        console.log('  loan_purpose:', templateData.loan_purpose);
         console.log('  loan_type:', templateData.loan_type);
         console.log('  assessment_status:', templateData.assessment_status);
         
@@ -556,30 +559,45 @@ export async function generateCreditDocument({
           customer_type: documentData.customer?.customer_type || '',
           date_of_birth: documentData.customer?.date_of_birth || '',
           gender: documentData.customer?.gender || '',
-          marital_status: documentData.customer?.marital_status || '',
-          occupation: documentData.customer?.occupation || '',
-          income: documentData.customer?.income || '',
           cif_number: documentData.customer?.cif_number || '',
+          id_issued_date: documentData.customer?.id_issued_date || '',
+          id_issued_authority: documentData.customer?.id_issued_authority || '',
+          account_number: documentData.customer?.account_number || '',
+          numerology_data: documentData.customer?.numerology_data || '',
+          hobbys: documentData.customer?.hobbies || '',
+          company_name: documentData.customer?.company_name || '',
+          business_registration_number: documentData.customer?.business_registration_number || '',
+          registration_date: documentData.customer?.registration_date || '',
+          legal_representative: documentData.customer?.legal_representative || '',
+          business_sector: documentData.customer?.business_sector || '',
+          legal_representative_cif_number: documentData.customer?.legal_representative_cif_number || '',
+          business_registration_authority: documentData.customer?.business_registration_authority || '',
+          relationship_manager: documentData.customer?.relationship_manager || '',
           
           // Collateral data - flattened  
           collateral_id: documentData.collateral?.collateral_id || '',
           collateral_type: documentData.collateral?.collateral_type || '',
           collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
           collateral_description: documentData.collateral?.description || '',
-          market_value: documentData.collateral?.market_value || '',
-          appraised_value: documentData.collateral?.appraised_value || '',
           location: documentData.collateral?.location || '',
-          condition: documentData.collateral?.condition || '',
-          ownership_status: documentData.collateral?.ownership_status || '',
+          description: documentData.collateral?.description || '',
+          value: documentData.collateral?.value || '',
+          valuation_date: documentData.collateral?.valuation_date || '',
+          owner_info: documentData.collateral?.owner_info || '',
+          metadata: documentData.collateral?.metadata || '',
+          re_evaluation_date: documentData.collateral?.re_evaluation_date || '',
+
           
           // Credit assessment data - flattened
           assessment_id: documentData.creditAssessment?.assessment_id || '',
-          loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
-          interest_rate: documentData.creditAssessment?.interest_rate || '',
-          loan_term: documentData.creditAssessment?.loan_term || '',
-          loan_purpose: documentData.creditAssessment?.loan_purpose || '',
           loan_type: documentData.creditAssessment?.loan_type || '',
           assessment_status: documentData.creditAssessment?.status || '',
+          staff_id: documentData.creditAssessment?.staff_id || '',
+          product_id: documentData.creditAssessment?.product_id || '',
+          department: documentData.creditAssessment?.department || '',
+          department_head: documentData.creditAssessment?.department_head || '',
+          fee_amount: documentData.creditAssessment?.fee_amount || '',
+          assessment_details: documentData.creditAssessment?.assessment_details || '',
           
           // === COMPLETE OBJECTS FOR FULL ACCESS ===
           
@@ -664,9 +682,6 @@ export async function generateCreditDocument({
         console.log('  customer_type:', templateData.customer_type);
         console.log('  date_of_birth:', templateData.date_of_birth);
         console.log('  gender:', templateData.gender);
-        console.log('  marital_status:', templateData.marital_status);
-        console.log('  occupation:', templateData.occupation);
-        console.log('  income:', templateData.income);
         console.log('  cif_number:', templateData.cif_number);
         
         console.log('🏢 Flattened Collateral Fields for Excel Template:');
@@ -674,18 +689,10 @@ export async function generateCreditDocument({
         console.log('  collateral_type:', templateData.collateral_type);
         console.log('  collateral_value:', templateData.collateral_value);
         console.log('  collateral_description:', templateData.collateral_description);
-        console.log('  market_value:', templateData.market_value);
-        console.log('  appraised_value:', templateData.appraised_value);
         console.log('  location:', templateData.location);
-        console.log('  condition:', templateData.condition);
-        console.log('  ownership_status:', templateData.ownership_status);
         
         console.log('💰 Flattened Credit Assessment Fields for Excel Template:');
         console.log('  assessment_id:', templateData.assessment_id);
-        console.log('  loan_amount:', templateData.loan_amount);
-        console.log('  interest_rate:', templateData.interest_rate);
-        console.log('  loan_term:', templateData.loan_term);
-        console.log('  loan_purpose:', templateData.loan_purpose);
         console.log('  loan_type:', templateData.loan_type);
         console.log('  assessment_status:', templateData.assessment_status);
         
