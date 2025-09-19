@@ -286,6 +286,8 @@ export function useDocuments(): UseDocumentsReturn {
           console.log('  - address:', customerData.address);
           console.log('  - metadata:', customerData.metadata);
           console.log('  - All customer keys:', Object.keys(customerData));
+          console.log('  - value:', customerData.value);
+
         }
         
         // Fetch collateral data if provided
