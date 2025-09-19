@@ -347,6 +347,7 @@ export function useDocuments(): UseDocumentsReturn {
           console.log('  - template_type:', templateData.template_type);
           console.log('  - file_url:', templateData.file_url);
           console.log('  - All template keys:', Object.keys(templateData));
+          console.log('  - value:', templateData.value);
         }
         
       } catch (debugError) {
