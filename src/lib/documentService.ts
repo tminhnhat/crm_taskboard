@@ -53,23 +53,17 @@ function safelyFlattenMetadata(metadata: any): Record<string, any> {
   if (!metadata) return {};
   
   try {
-    console.log('🔧 Flattening metadata:', typeof metadata, metadata);
-    
     if (typeof metadata === 'string') {
       // Try to parse JSON string
       const parsed = JSON.parse(metadata);
-      console.log('  ✅ Parsed JSON metadata:', parsed);
       return typeof parsed === 'object' && parsed !== null ? parsed : {};
     } else if (typeof metadata === 'object' && metadata !== null) {
       // Already an object, return as-is
-      console.log('  ✅ Object metadata used as-is:', metadata);
       return metadata;
     }
   } catch (error) {
-    console.warn('  ❌ Failed to parse metadata as JSON:', error);
+    // Ignore parse errors
   }
-  
-  console.log('  ⚠️ Returning empty object for metadata');
   return {};
 }
 
@@ -245,66 +239,6 @@ export async function generateCreditDocument({
       creditAssessment: creditAssessmentResult.data,
     };
 
-    // Debug: Log document data being used
-    console.log('=== DEBUG: Raw Database Data ===');
-    console.log('Customer data:', JSON.stringify(documentData.customer, null, 2));
-    console.log('Collateral data:', JSON.stringify(documentData.collateral, null, 2));
-    console.log('Credit assessment data:', JSON.stringify(documentData.creditAssessment, null, 2));
-    console.log('Template info:', JSON.stringify(template, null, 2));
-    
-    // Debug: Log specific fields for mapping verification
-    console.log('=== DEBUG: Field Mapping Verification ===');
-    
-    // Customer fields
-    console.log('🔍 Customer Fields:');
-    console.log('  - customer_id:', documentData.customer?.customer_id);
-    console.log('  - customer_name:', documentData.customer?.customer_name);
-    console.log('  - full_name:', documentData.customer?.full_name);
-    console.log('  - id_number:', documentData.customer?.id_number);
-    console.log('  - phone:', documentData.customer?.phone);
-    console.log('  - email:', documentData.customer?.email);
-    console.log('  - address:', documentData.customer?.address);
-    console.log('  - customer_type:', documentData.customer?.customer_type);
-    console.log('  - date_of_birth:', documentData.customer?.date_of_birth);
-    console.log('  - gender:', documentData.customer?.gender);
-    console.log('  - cif_number:', documentData.customer?.cif_number);
-    console.log('  - metadata:', documentData.customer?.metadata);
-    console.log('  - All customer keys:', documentData.customer ? Object.keys(documentData.customer) : 'null');
-    
-    // Collateral fields
-    console.log('🏢 Collateral Fields:');
-    if (documentData.collateral) {
-      console.log('  - collateral_id:', documentData.collateral.collateral_id);
-      console.log('  - collateral_type:', documentData.collateral.collateral_type);
-      console.log('  - description:', documentData.collateral.description);
-      console.log('  - market_value:', documentData.collateral.market_value);
-      console.log('  - appraised_value:', documentData.collateral.appraised_value);
-      console.log('  - location:', documentData.collateral.location);
-      console.log('  - condition:', documentData.collateral.condition);
-      console.log('  - ownership_status:', documentData.collateral.ownership_status);
-      console.log('  - metadata:', documentData.collateral.metadata);
-      console.log('  - All collateral keys:', Object.keys(documentData.collateral));
-    } else {
-      console.log('  - No collateral data provided');
-    }
-    
-    // Credit assessment fields
-    console.log('💰 Credit Assessment Fields:');
-    if (documentData.creditAssessment) {
-      console.log('  - assessment_id:', documentData.creditAssessment.assessment_id);
-      console.log('  - requested_amount:', documentData.creditAssessment.requested_amount);
-      console.log('  - approved_amount:', documentData.creditAssessment.approved_amount);
-      console.log('  - interest_rate:', documentData.creditAssessment.interest_rate);
-      console.log('  - loan_term:', documentData.creditAssessment.loan_term);
-      console.log('  - loan_purpose:', documentData.creditAssessment.loan_purpose);
-      console.log('  - loan_type:', documentData.creditAssessment.loan_type);
-      console.log('  - status:', documentData.creditAssessment.status);
-      console.log('  - assessment_details:', documentData.creditAssessment.assessment_details);
-      console.log('  - All credit assessment keys:', Object.keys(documentData.creditAssessment));
-    } else {
-      console.log('  - No credit assessment data provided');
-    }
-    console.log('=== END Field Mapping Verification ===');
 
     // Generate document based on export type
     let outBuffer: Buffer;
@@ -353,14 +287,14 @@ export async function generateCreditDocument({
           gender: documentData.customer?.gender || '',
           // ...fields removed as requested
           cif_number: documentData.customer?.cif_number || '',
-          id_issue_date: documentData.customer?.id_issue_date || '',
+          id_issue_date: documentData.customer?.id_issue_date ? format(documentData.customer.id_issue_date, 'dd/MM/yyyy') : '',
           id_issue_authority: documentData.customer?.id_issue_authority || '',
           account_number: documentData.customer?.account_number || '',
           numerology_data: documentData.customer?.numerology_data || '',
           hobbys: documentData.customer?.hobbies || '',
           company_name: documentData.customer?.company_name || '',
           business_registration_number: documentData.customer?.business_registration_number || '',
-          registration_date: documentData.customer?.registration_date || '',
+          registration_date: documentData.customer?.registration_date ? format(documentData.customer.registration_date, 'dd/MM/yyyy') : '',
           legal_representative: documentData.customer?.legal_representative || '',
           business_sector: documentData.customer?.business_sector || '',
           legal_representative_cif_number: documentData.customer?.legal_representative_cif_number || '',
@@ -439,39 +373,17 @@ export async function generateCreditDocument({
             .format(parseFloat(documentData.collateral?.appraised_value || documentData.collateral?.market_value || '0')),
         };
 
-        console.log('Template data prepared with keys:', Object.keys(templateData));
-        
-        // Log metadata processing for DOCX
-        console.log('🔄 DOCX Template - Metadata Processing:');
-        if (documentData.customer?.metadata) {
-          console.log('  Customer metadata found:', documentData.customer.metadata);
-          console.log('  Customer metadata type:', typeof documentData.customer.metadata);
-        }
-        if (documentData.collateral?.metadata) {
-          console.log('  Collateral metadata found:', documentData.collateral.metadata);
-          console.log('  Collateral metadata type:', typeof documentData.collateral.metadata);
-        }
-        if (documentData.creditAssessment?.assessment_details) {
-          console.log('  Credit assessment details found:', documentData.creditAssessment.assessment_details);
-          console.log('  Credit assessment details type:', typeof documentData.creditAssessment.assessment_details);
-        }
-        
-       
         // Render template with data
         doc.render(templateData);
-        console.log('Document rendered successfully');
-        
         outBuffer = doc.getZip().generate({ 
           type: 'nodebuffer',
           compression: 'DEFLATE',
           compressionOptions: { level: 6 }
         });
-        
         contentType = CONTENT_TYPE_MAP[exportType];
-        console.log(`Generated DOCX document buffer size: ${outBuffer.length} bytes`);
         
       } catch (templateError) {
-        console.error('DOCX template processing error:', templateError);
+  // Handle DOCX template processing error
         
         const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
         
@@ -484,10 +396,7 @@ export async function generateCreditDocument({
     } else if (exportType === 'xlsx') {
       // Handle Excel documents with content rendering
       try {
-        console.log(`Fetching XLSX template: ${template.template_name}`);
-        const templateBuffer = await fetchTemplateFromVercelBlob(template.file_url);
-        
-        console.log(`XLSX template fetched successfully, size: ${templateBuffer.length} bytes`);
+  const templateBuffer = await fetchTemplateFromVercelBlob(template.file_url);
         
         // Read the Excel template
         const workbook = XLSX.read(templateBuffer, { type: 'buffer' });
@@ -508,14 +417,14 @@ export async function generateCreditDocument({
           date_of_birth: documentData.customer?.date_of_birth || '',
           gender: documentData.customer?.gender || '',
           cif_number: documentData.customer?.cif_number || '',
-          id_issue_date: documentData.customer?.id_issue_date || '',
+          id_issue_date: documentData.customer?.id_issue_date ? format(documentData.customer.id_issue_date, 'dd/MM/yyyy') : '',
           id_issue_authority: documentData.customer?.id_issue_authority || '',
           account_number: documentData.customer?.account_number || '',
           numerology_data: documentData.customer?.numerology_data || '',
           hobbys: documentData.customer?.hobbies || '',
           company_name: documentData.customer?.company_name || '',
           business_registration_number: documentData.customer?.business_registration_number || '',
-          registration_date: documentData.customer?.registration_date || '',
+          registration_date: documentData.customer?.registration_date ? format(documentData.customer.registration_date, 'dd/MM/yyyy') : '',
           legal_representative: documentData.customer?.legal_representative || '',
           business_sector: documentData.customer?.business_sector || '',
           legal_representative_cif_number: documentData.customer?.legal_representative_cif_number || '',
@@ -605,12 +514,9 @@ export async function generateCreditDocument({
         
         // Process each worksheet using the helper function
         workbook.SheetNames.forEach(sheetName => {
-          console.log(`Processing Excel worksheet: ${sheetName}`);
           const worksheet = workbook.Sheets[sheetName];
           replaceExcelPlaceholders(worksheet, templateData);
         });
-        
-        console.log('Excel template rendered successfully');
         
         // Generate the Excel buffer
         outBuffer = XLSX.write(workbook, { 
@@ -620,10 +526,10 @@ export async function generateCreditDocument({
         });
         
         contentType = CONTENT_TYPE_MAP[exportType];
-        console.log(`Generated XLSX document buffer size: ${outBuffer.length} bytes`);
+  // XLSX document buffer generated
         
       } catch (templateError) {
-        console.error('XLSX template processing error:', templateError);
+  // Handle XLSX template processing error
         
         const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
         
@@ -634,7 +540,7 @@ export async function generateCreditDocument({
         throw new Error(`XLSX template processing failed: ${errorMessage}`);
       }
     } else {
-      throw new Error(`Unsupported export type: ${exportType}`);
+  throw new Error(`Unsupported export type: ${exportType}`);
     }
 
     // Create filename with timestamp
@@ -646,24 +552,11 @@ export async function generateCreditDocument({
     try {
       const blobPath = `ketqua/${filename}`;
       blobUrl = await uploadBufferToVercelBlob(outBuffer, blobPath);
-      console.log(`Document saved to Vercel Blob: ${blobPath}`);
     } catch (blobError) {
-      console.warn('Failed to save document to Vercel Blob:', blobError);
       // Continue without blob storage if it fails
     }
 
-    // Final mapping summary log
-    console.log('📋 FINAL MAPPING SUMMARY - Document Generation Complete');
-    console.log('======================================================');
-    console.log('Template used:', template.template_name, '(' + template.template_type + ')');
-    console.log('Export type:', exportType);
-    console.log('Generated filename:', filename);
-    console.log('Buffer size:', outBuffer.length, 'bytes');
-    console.log('Blob URL:', blobUrl || 'Not saved to blob');
-    console.log('Customer ID used:', customerId);
-    console.log('Collateral ID used:', collateralId || 'None');
-    console.log('Credit Assessment ID used:', creditAssessmentId || 'None');
-    console.log('======================================================');
+  // Final mapping summary log removed
 
     return {
       buffer: outBuffer,
@@ -673,7 +566,7 @@ export async function generateCreditDocument({
     };
 
   } catch (error) {
-    console.error('Document generation error:', error);
+  // Handle document generation error
     throw new Error(`Document generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -691,8 +584,6 @@ export function searchDocuments({
   status?: string; 
 }): Promise<any[]> {
   // TODO: Implement document search functionality
-  // This could read from ketqua folder and filter by filename patterns or metadata
-  console.warn('searchDocuments function not yet implemented');
   return Promise.resolve([]);
 }
 
@@ -704,8 +595,6 @@ export async function uploadTemplateToVercelBlob(
   documentType: DocumentType
 ): Promise<void> {
   // TODO: Implement template upload functionality
-  // This would upload the file to Vercel Blob Storage under maubieu/ folder
-  console.warn('uploadTemplateToVercelBlob function not yet implemented');
   throw new Error('Template upload functionality not yet implemented');
 }
 
@@ -717,7 +606,6 @@ export async function sendDocumentByEmailFromBlob(fileName: string, email: strin
       throw new Error('File name and email are required');
     }
 
-    console.log(`Attempting to send document: ${fileName} to ${email}`);
 
     // Construct blob path - handle both full blob URLs and filenames
     let blobPath: string;
@@ -726,34 +614,22 @@ export async function sendDocumentByEmailFromBlob(fileName: string, email: strin
       const urlParts = fileName.split('/');
       const actualFileName = urlParts[urlParts.length - 1];
       blobPath = `ketqua/${actualFileName}`;
-      console.log(`Extracted filename from URL: ${actualFileName}`);
     } else {
       // Use filename as-is
       blobPath = fileName.startsWith('ketqua/') ? fileName : `ketqua/${fileName}`;
     }
-    
-    console.log(`Using blob path: ${blobPath}`);
     
     // Check SMTP configuration
     if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
       throw new Error('SMTP configuration is not properly set up. Please configure SMTP_HOST, SMTP_USER, SMTP_PASSWORD, and optionally EMAIL_USE_SSL environment variables.');
     }
 
-    console.log('SMTP Configuration:', {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      user: process.env.SMTP_USER,
-      ssl: process.env.EMAIL_USE_SSL
-    });
 
     // Fetch document from Vercel Blob
     let fileBuffer: Buffer;
     try {
       fileBuffer = await fetchTemplateFromVercelBlob(blobPath);
-      console.log(`Document fetched from blob: ${blobPath}, size: ${fileBuffer.length} bytes`);
     } catch (fetchError) {
-      console.error('Failed to fetch document from blob:', fetchError);
-      console.error('Blob path attempted:', blobPath);
       throw new Error(`Document not found: ${fileName}. Please ensure the document exists in blob storage.`);
     }
 
@@ -772,9 +648,7 @@ export async function sendDocumentByEmailFromBlob(fileName: string, email: strin
     // Verify transporter configuration
     try {
       await transporter.verify();
-      console.log('SMTP configuration verified successfully');
     } catch (verifyError) {
-      console.error('SMTP verification failed:', verifyError);
       throw new Error('Email server configuration error. Please check SMTP settings.');
     }
 
