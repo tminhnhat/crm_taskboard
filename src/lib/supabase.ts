@@ -459,7 +459,6 @@ export interface CreditAssessment {
   department: string | null
   department_head: string | null
   fee_amount: number | null
-  approval_decision: string | null
   loan_type?: string | null // Loại khoản vay
   loan_info: LoanInfo
   business_plan: BusinessPlan

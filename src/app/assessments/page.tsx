@@ -36,6 +36,7 @@ import useCreditAssessments from '@/hooks/useCreditAssessments'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useStaff } from '@/hooks/useStaff'
 import { useProducts } from '@/hooks/useProducts'
+import { useCollaterals } from '@/hooks/useCollaterals'
 import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
 import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient, getThemeStatusGradient } from '@/lib/themeUtils'
 
@@ -57,6 +58,8 @@ export default function AssessmentsPage() {
     updateAssessment,
     deleteAssessment
   } = useCreditAssessments()
+  
+  const { collaterals } = useCollaterals()
 
   const { customers } = useCustomers()
   const { staff } = useStaff()
@@ -415,6 +418,7 @@ export default function AssessmentsPage() {
           customers={customers}
           staff={staff}
           products={products}
+          collaterals={collaterals}
         />
       )}
 

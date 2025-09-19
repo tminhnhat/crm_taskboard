@@ -78,7 +78,7 @@ function DocumentsContent() {
     documents, 
     loading: documentsLoading, 
     error: documentsError, 
-    generateDocument, 
+    generateDocument,
     downloadDocument,
     deleteDocument, 
     fetchDocuments,
@@ -175,6 +175,8 @@ function DocumentsContent() {
         assessmentId: formData.assessmentId ? parseInt(formData.assessmentId) : undefined,
         exportType: formData.exportType
       });
+      // Debug: show document generation result in browser console
+      console.log('Document generation result:', result);
       
       // If user wants to send via email, send it
       if (formData.sendViaEmail && formData.emailAddress) {
@@ -292,6 +294,7 @@ function DocumentsContent() {
     };
     return typeLabels[type] || type;
   };
+
 
   return (
     <Box sx={{ maxWidth: 1400, mx: 'auto', p: 3 }}>

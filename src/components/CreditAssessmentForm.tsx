@@ -40,6 +40,50 @@ import {
 } from '@mui/icons-material'
 import { toVNDate } from '@/lib/date'
 
+// Helper function to flatten nested metadata structure
+// Helper function to extract metadata from collateral using the same logic as CollateralCard
+const extractCollateralMetadata = (collateral: any): Record<string, any> => {
+  if (!collateral) return {}
+  
+  console.log('Extracting metadata from collateral:', collateral)
+  
+  // Use the metadata from the collaterals table if available
+  if (collateral.metadata && typeof collateral.metadata === 'object') {
+    const flattened: Record<string, any> = {}
+    
+    // Flatten the nested metadata structure like in CollateralCard
+    Object.entries(collateral.metadata as Record<string, Record<string, unknown>>).forEach(([categoryKey, categoryData]) => {
+      if (categoryData && typeof categoryData === 'object' && !Array.isArray(categoryData)) {
+        // This is a nested category object, flatten its contents
+        Object.entries(categoryData as Record<string, unknown>).forEach(([fieldKey, fieldValue]) => {
+          flattened[fieldKey] = fieldValue
+        })
+      } else {
+        // This is a direct property at the root level
+        flattened[categoryKey] = categoryData
+      }
+    })
+    
+    console.log('Flattened metadata:', flattened)
+    return flattened
+  }
+  
+  // Fallback to direct field mapping if no metadata
+  const fallbackData = {
+    collateral_id: collateral.collateral_id || '',
+    collateral_type: collateral.collateral_type || '',
+    appraisal_date: collateral.valuation_date || '',
+    appraised_value: collateral.value || '',
+    ownership_status: collateral.legal_status || '',
+    location: collateral.location || '',
+    notes: collateral.description || '',
+    contact_person: collateral.owner_info || ''
+  }
+  
+  console.log('Using fallback data:', fallbackData)
+  return fallbackData
+}
+
 // --- Types ---
 interface MetadataField {
   key: string
@@ -89,20 +133,82 @@ const SPOUSE_TEMPLATE: TemplateConfig = {
   ]
 }
 
+// Base collateral fields that are common to all types
+const BASE_COLLATERAL_FIELDS: MetadataField[] = [
+  { key: 'collateral_type', label: 'Loại tài sản thế chấp', type: 'text', readOnly: true },
+  { key: 'collateral_value', label: 'Giá trị tài sản (VNĐ)', type: 'number' },
+  { key: 'collateral_description', label: 'Mô tả tài sản', type: 'textarea' },
+  { key: 'location', label: 'Vị trí tài sản', type: 'text' },
+]
+
+// Real estate specific fields
+const REAL_ESTATE_FIELDS: MetadataField[] = [
+  { key: 'so_gcn', label: 'Số giấy chứng nhận', type: 'text' },
+  { key: 'ngay_cap_gcn', label: 'Ngày cấp GCN', type: 'date' },
+  { key: 'noi_cap_gcn', label: 'Nơi cấp GCN', type: 'text' },
+  { key: 'so_thua', label: 'Số thửa', type: 'text' },
+  { key: 'to_ban_do', label: 'Tờ bản đồ số', type: 'text' },
+  { key: 'dien_tich', label: 'Diện tích (m²)', type: 'number' },
+  { key: 'muc_dich_su_dung_dat', label: 'Mục đích sử dụng đất', type: 'text' },
+  { key: 'dien_tich_xay_dung', label: 'Diện tích xây dựng (m²)', type: 'number' },
+  { key: 'ket_cau', label: 'Kết cấu', type: 'text' },
+  { key: 'so_tang', label: 'Số tầng', type: 'number' },
+  { key: 'nam_hoan_thanh_xd', label: 'Năm hoàn thành', type: 'number' }
+]
+
+// Vehicle specific fields
+const VEHICLE_FIELDS: MetadataField[] = [
+  { key: 'vehicle_type', label: 'Loại phương tiện', type: 'select', options: ['Ô tô', 'Xe máy', 'Xe tải', 'Xe khách', 'Khác'] },
+  { key: 'brand', label: 'Thương hiệu', type: 'text' },
+  { key: 'model', label: 'Model', type: 'text' },
+  { key: 'year', label: 'Năm sản xuất', type: 'number' },
+  { key: 'license_plate', label: 'Biển số', type: 'text' },
+  { key: 'chassis_number', label: 'Số khung', type: 'text' },
+  { key: 'engine_number', label: 'Số máy', type: 'text' }
+]
+
+// Financial asset specific fields
+const FINANCIAL_FIELDS: MetadataField[] = [
+  { key: 'account_type', label: 'Loại tài khoản', type: 'select', options: ['Tiết kiệm', 'Vãng lai', 'Đầu tư', 'Khác'] },
+  { key: 'bank_name', label: 'Tên ngân hàng/Tổ chức tài chính', type: 'text' },
+  { key: 'account_number', label: 'Số tài khoản', type: 'text' },
+  { key: 'balance', label: 'Số dư', type: 'number' },
+  { key: 'currency', label: 'Loại tiền', type: 'select', options: ['VND', 'USD', 'EUR', 'JPY'] },
+  { key: 'maturity_date', label: 'Ngày đáo hạn', type: 'date' }
+]
+
+// Common legal and assessment fields
+const LEGAL_ASSESSMENT_FIELDS: MetadataField[] = [
+  { key: 'legal_restrictions', label: 'Hạn chế pháp lý', type: 'textarea' },
+  { key: 'appraised_value', label: 'Giá trị định giá', type: 'number' },
+  { key: 'market_value', label: 'Giá trị thị trường', type: 'number' }
+]
+
+// Function to get collateral template based on type
+const getCollateralTemplate = (collateralType: string): TemplateConfig => {
+  let specificFields: MetadataField[] = []
+  
+  const normalizedType = collateralType?.toLowerCase() || ''
+  
+  if (normalizedType.includes('bất động sản') || normalizedType.includes('real_estate') || normalizedType.includes('nhà') || normalizedType.includes('đất')) {
+    specificFields = REAL_ESTATE_FIELDS
+  } else if (normalizedType.includes('phương tiện') || normalizedType.includes('vehicle') || normalizedType.includes('xe') || normalizedType.includes('ô tô')) {
+    specificFields = VEHICLE_FIELDS
+  } else if (normalizedType.includes('tài chính') || normalizedType.includes('financial') || normalizedType.includes('tiết kiệm') || normalizedType.includes('savings')) {
+    specificFields = FINANCIAL_FIELDS
+  }
+  
+  return {
+    title: 'Thông tin tài sản bảo đảm',
+    icon: Description,
+    fields: [...BASE_COLLATERAL_FIELDS, ...specificFields, ...LEGAL_ASSESSMENT_FIELDS]
+  }
+}
+
 const COLLATERAL_TEMPLATE: TemplateConfig = {
   title: 'Thông tin tài sản bảo đảm',
   icon: Description,
-  fields: [
-    { key: 'collateral_id', label: 'ID tài sản thế chấp', type: 'text' },
-    { key: 'collateral_type', label: 'Loại tài sản thế chấp', type: 'text' },
-    { key: 'collateral_value', label: 'Giá trị tài sản', type: 'number' },
-    { key: 'collateral_description', label: 'Mô tả tài sản', type: 'textarea' },
-    { key: 'appraised_value', label: 'Giá trị định giá', type: 'number' },
-    { key: 'market_value', label: 'Giá trị thị trường', type: 'number' },
-    { key: 'location', label: 'Vị trí tài sản', type: 'text' },
-    { key: 'condition', label: 'Tình trạng tài sản', type: 'text' },
-    { key: 'ownership_status', label: 'Tình trạng sở hữu', type: 'text' }
-  ]
+  fields: BASE_COLLATERAL_FIELDS
 }
 
 const TEMPLATES_KINH_DOANH: MetadataTemplates = {
@@ -257,7 +363,10 @@ function MetadataSection({ title, icon: Icon, initialData, fields, onChange }: {
   const [metadata, setMetadata] = useState<Record<string, any>>(initialData)
   const [expanded, setExpanded] = useState<boolean>(true)
 
-  useEffect(() => { setMetadata(initialData) }, [initialData])
+  // Use effect to update metadata when initialData changes
+  useEffect(() => { 
+    setMetadata(initialData) 
+  }, [initialData])
 
   const handleFieldChange = (field: string, value: any) => {
     const newMetadata = { ...metadata, [field]: value }
@@ -434,6 +543,12 @@ export default function CreditAssessmentForm({
         }
       }
   })
+
+  // Filter collaterals by customer_id
+  const availableCollaterals = React.useMemo(() => {
+    if (!formState.customer_id || !collaterals.length) return []
+    return collaterals.filter(c => c.customer_id?.toString() === formState.customer_id)
+  }, [collaterals, formState.customer_id])
 
   // --- Template selection ---
   let selectedTemplates: MetadataTemplates = TEMPLATES_KINH_DOANH
@@ -659,7 +774,15 @@ export default function CreditAssessmentForm({
                     getOptionLabel={(option) => option.full_name}
                     value={customers.find(c => c.customer_id.toString() === formState.customer_id) || null}
                     onChange={(event, newValue) => {
-                      setFormState(prev => ({ ...prev, customer_id: newValue?.customer_id.toString() || '' }))
+                      setFormState(prev => ({ 
+                        ...prev, 
+                        customer_id: newValue?.customer_id.toString() || '',
+                        // Clear collateral selection when customer changes
+                        assessment_details: {
+                          ...prev.assessment_details,
+                          collateral_info: {}
+                        }
+                      }))
                     }}
                     renderInput={(params) => (
                       <TextField {...params} label="Khách hàng" variant="outlined" required />
@@ -806,21 +929,77 @@ export default function CreditAssessmentForm({
                 Chọn tài sản thế chấp
               </Typography>
               <Autocomplete
-                options={collaterals}
+                options={availableCollaterals}
                 getOptionLabel={(option) => `${option.collateral_type} - ${option.description || 'Không có mô tả'}`}
-                value={collaterals.find(c => c.collateral_id.toString() === (formState.assessment_details.collateral_info?.collateral_id?.toString() || '')) || null}
+                value={availableCollaterals.find(c => 
+                  c.collateral_id?.toString() === formState.assessment_details.collateral_info?.collateral_id?.toString()
+                ) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
+                    console.log('🔍 Selected collateral object:', newValue)
+                    console.log('🔍 Raw metadata field:', newValue.metadata)
+                    
+                    // Extract and flatten metadata structure to handle multiple formats
+                    const metadata = extractCollateralMetadata(newValue)
+                    console.log('🔍 Extracted metadata:', metadata)
+                    
                     const mapped = {
+                      // Thông tin cơ bản từ table chính
                       collateral_id: newValue.collateral_id,
                       collateral_type: newValue.collateral_type,
                       collateral_value: newValue.value,
-                      collateral_description: newValue.description,
-                      appraised_value: newValue.appraised_value,
-                      market_value: newValue.market_value,
-                      location: newValue.location,
-                      condition: newValue.condition,
-                      ownership_status: newValue.ownership_status
+                      collateral_description: newValue.description || '',
+                      location: newValue.location || '',
+                      
+                      // Thông tin từ metadata JSONB - với fallback empty string
+                      so_gcn: metadata.so_gcn || '',
+                      ngay_cap_gcn: metadata.ngay_cap_gcn || '',
+                      noi_cap_gcn: metadata.noi_cap_gcn || '',
+                      
+                      // Thông tin đất đai
+                      so_thua: metadata.so_thua || '',
+                      to_ban_do: metadata.to_ban_do || '',
+                      dien_tich: metadata.dien_tich || '',
+                      muc_dich_su_dung_dat: metadata.muc_dich_su_dung_dat || '',
+                      
+                      // Thông tin nhà ở/công trình
+                      dien_tich_xay_dung: metadata.dien_tich_xay_dung || '',
+                      ket_cau: metadata.ket_cau || '',
+                      so_tang: metadata.so_tang || '',
+                      nam_hoan_thanh_xd: metadata.nam_hoan_thanh_xd || '',
+                      
+                      // Thông tin phương tiện
+                      vehicle_type: metadata.vehicle_type || '',
+                      brand: metadata.brand || '',
+                      model: metadata.model || '',
+                      year: metadata.year || '',
+                      license_plate: metadata.license_plate || '',
+                      
+                      // Thông tin tài chính
+                      account_type: metadata.account_type || '',
+                      bank_name: metadata.bank_name || '',
+                      account_number: metadata.account_number || '',
+                      balance: metadata.balance || '',
+                      currency: metadata.currency || '',
+                      
+                      // Thông tin pháp lý
+                      ownership_status: metadata.ownership_status || newValue.legal_status || '',
+                      legal_restrictions: metadata.legal_restrictions || '',
+                      registration_date: metadata.registration_date || '',
+                      contract_number: metadata.contract_number || '',
+                      
+                      // Thông tin định giá
+                      appraised_value: metadata.appraised_value || newValue.value || '',
+                      appraisal_date: metadata.appraisal_date || newValue.valuation_date || '',
+                      appraiser: metadata.appraiser || '',
+                      appraisal_method: metadata.appraisal_method || '',
+                      next_appraisal_date: metadata.next_appraisal_date || newValue.re_evaluation_date || '',
+                      
+                      // Thông tin liên hệ
+                      contact_person: metadata.contact_person || '',
+                      phone: metadata.phone || '',
+                      email: metadata.email || '',
+                      notes: metadata.notes || ''
                     }
                     handleSectionDataChange('collateral_info', mapped)
                   } else {
@@ -828,8 +1007,25 @@ export default function CreditAssessmentForm({
                   }
                 }}
                 renderInput={(params) => (
-                  <TextField {...params} label="Chọn tài sản thế chấp" variant="outlined" />
+                  <TextField 
+                    {...params} 
+                    label="Chọn tài sản thế chấp" 
+                    variant="outlined" 
+                    helperText={
+                      !formState.customer_id 
+                        ? "Vui lòng chọn khách hàng trước"
+                        : availableCollaterals.length === 0
+                        ? "Không có tài sản thế chấp nào cho khách hàng này"
+                        : `${availableCollaterals.length} tài sản có sẵn`
+                    }
+                  />
                 )}
+                disabled={!formState.customer_id}
+                noOptionsText={
+                  !formState.customer_id 
+                    ? "Chọn khách hàng trước"
+                    : "Không có tài sản thế chấp"
+                }
               />
             </CardContent>
           </Card>
@@ -838,13 +1034,21 @@ export default function CreditAssessmentForm({
           {Object.entries(selectedTemplates).map(([sectionKey, section]) => {
             let initialData = formState.assessment_details[sectionKey] || {};
             
-            // Format date fields for spouse_info
-            if (sectionKey === 'spouse_info') {
-              initialData = {
-                ...initialData,
-                date_of_birth: initialData.date_of_birth ? toVNDate(initialData.date_of_birth) : '',
-                id_issue_date: initialData.id_issue_date ? toVNDate(initialData.id_issue_date) : ''
-              };
+            // For collateral_info, use dynamic template based on collateral type
+            if (sectionKey === 'collateral_info') {
+              const collateralType = initialData.collateral_type || '';
+              const dynamicTemplate = getCollateralTemplate(collateralType);
+              
+              return (
+                <MetadataSection
+                  key={`${sectionKey}-${JSON.stringify(initialData)}`}
+                  title={dynamicTemplate.title}
+                  icon={dynamicTemplate.icon}
+                  initialData={initialData}
+                  fields={dynamicTemplate.fields}
+                  onChange={data => handleSectionDataChange(sectionKey, data)}
+                />
+              );
             }
             
             return (

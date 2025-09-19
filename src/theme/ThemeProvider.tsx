@@ -1,8 +1,8 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
-import { lightTheme, darkTheme, createCustomTheme } from './theme';
+import { CssBaseline, GlobalStyles } from '@mui/material';
+import { lightTheme, darkTheme, glassTheme, glassDarkTheme, createCustomTheme } from './theme';
 
 interface CustomColors {
   primary: string;
@@ -28,9 +28,13 @@ interface ThemeSettings {
   darkColors: CustomColors;
 }
 
+type ThemeMode = 'normal' | 'glass';
+
 interface ThemeContextType {
   darkMode: boolean;
   toggleDarkMode: () => void;
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
   updateThemeSettings: (settings: ThemeSettings) => void;
   themeSettings: ThemeSettings | null;
 }
@@ -38,6 +42,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType>({
   darkMode: false,
   toggleDarkMode: () => {},
+  themeMode: 'normal',
+  setThemeMode: () => {},
   updateThemeSettings: () => {},
   themeSettings: null,
 });
@@ -48,14 +54,92 @@ interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
+// Glass theme global styles for enhanced effects
+const glassGlobalStyles = (
+  <GlobalStyles
+    styles={{
+      '*': {
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent',
+      },
+      '*::-webkit-scrollbar': {
+        width: '8px',
+        height: '8px',
+      },
+      '*::-webkit-scrollbar-track': {
+        background: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: '10px',
+      },
+      '*::-webkit-scrollbar-thumb': {
+        background: 'rgba(255, 255, 255, 0.3)',
+        borderRadius: '10px',
+        border: '2px solid transparent',
+        backgroundClip: 'padding-box',
+        '&:hover': {
+          background: 'rgba(255, 255, 255, 0.5)',
+        },
+      },
+      body: {
+        '&.glass-theme': {
+          backgroundAttachment: 'fixed',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+        },
+        '&.glass-theme.light': {
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        },
+        '&.glass-theme.dark': {
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        },
+      },
+      // Enhanced animations
+      '@keyframes float': {
+        '0%, 100%': { transform: 'translateY(0px)' },
+        '50%': { transform: 'translateY(-10px)' },
+      },
+      '@keyframes glow': {
+        '0%, 100%': { boxShadow: '0 0 5px rgba(59, 130, 246, 0.5)' },
+        '50%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.6)' },
+      },
+      '@keyframes shimmer': {
+        '0%': { transform: 'translateX(-100%)' },
+        '100%': { transform: 'translateX(100%)' },
+      },
+      // Glass effect utilities
+      '.glass': {
+        background: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        borderRadius: '16px',
+      },
+      '.glass-hover': {
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover': {
+          background: 'rgba(255, 255, 255, 0.2)',
+          transform: 'translateY(-2px)',
+          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        },
+      },
+    }}
+  />
+);
+
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [darkMode, setDarkMode] = useState(false);
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('normal');
   const [themeSettings, setThemeSettings] = useState<ThemeSettings | null>(null);
 
   // Auto-detect system theme preference and load saved settings
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     setDarkMode(mediaQuery.matches);
+
+    // Load saved theme mode
+    const savedThemeMode = localStorage.getItem('themeMode') as ThemeMode;
+    if (savedThemeMode) {
+      setThemeModeState(savedThemeMode);
+    }
 
     // Load saved theme settings from Vercel Blob
     const loadThemeSettings = async () => {
@@ -100,10 +184,29 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // Update body class when theme mode changes
+  useEffect(() => {
+    const body = document.body;
+    
+    // Remove existing theme classes
+    body.classList.remove('glass-theme', 'light', 'dark');
+    
+    // Add new theme classes
+    if (themeMode === 'glass') {
+      body.classList.add('glass-theme');
+      body.classList.add(darkMode ? 'dark' : 'light');
+    }
+  }, [themeMode, darkMode]);
+
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
     localStorage.setItem('darkModePreference', JSON.stringify(newDarkMode));
+  };
+
+  const setThemeMode = (mode: ThemeMode) => {
+    setThemeModeState(mode);
+    localStorage.setItem('themeMode', mode);
   };
 
   const updateThemeSettings = async (settings: ThemeSettings) => {
@@ -130,20 +233,33 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  // Create theme based on custom settings or use default
-  const theme = themeSettings 
-    ? createCustomTheme(darkMode ? themeSettings.darkColors : themeSettings.lightColors, darkMode)
-    : (darkMode ? darkTheme : lightTheme);
+  // Create theme based on custom settings or use default/glass theme
+  const getTheme = () => {
+    if (themeSettings) {
+      return createCustomTheme(darkMode ? themeSettings.darkColors : themeSettings.lightColors, darkMode);
+    }
+    
+    if (themeMode === 'glass') {
+      return darkMode ? glassDarkTheme : glassTheme;
+    }
+    
+    return darkMode ? darkTheme : lightTheme;
+  };
+
+  const theme = getTheme();
 
   return (
     <ThemeContext.Provider value={{ 
       darkMode, 
-      toggleDarkMode, 
+      toggleDarkMode,
+      themeMode,
+      setThemeMode,
       updateThemeSettings,
       themeSettings 
     }}>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
+        {themeMode === 'glass' && glassGlobalStyles}
         {children}
       </MuiThemeProvider>
     </ThemeContext.Provider>

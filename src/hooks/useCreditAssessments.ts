@@ -12,7 +12,6 @@ interface Assessment {
   department: string
   department_head: string
   fee_amount: number
-  approval_decision: string
   status: string
   loan_info: any
   business_plan: any

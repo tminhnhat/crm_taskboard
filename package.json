@@ -26,7 +26,7 @@
     "docxtemplater": "^3.65.3",
     "ioredis": "^5.7.0",
     "jsqr": "^1.4.0",
-    "next": "15.3.5",
+    "next": "^15.3.5",
     "nodemailer": "^7.0.5",
     "pizzip": "^3.2.0",
     "qrcode": "^1.5.4",
@@ -37,11 +37,11 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@types/node": "^20.19.9",
+    "@types/node": "^20.19.16",
     "@types/nodemailer": "^7.0.0",
     "@types/qrcode": "^1.5.5",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@types/react": "^18.3.24",
+    "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",

@@ -29,12 +29,15 @@ import {
 } from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
 import BirthdayCustomers from '@/components/BirthdayCustomers'
+import EnhancedStatsCard from '@/components/EnhancedStatsCard'
 import { useTasks } from '@/hooks/useTasks'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useContracts } from '@/hooks/useContracts'
+import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
 
 export default function HomePage() {
   const theme = useTheme()
+  const { themeMode } = useCustomTheme()
   const { tasks, loading: tasksLoading, error: tasksError } = useTasks()
   const { customers, loading: customersLoading, error: customersError } = useCustomers()
   const { contracts, loading: contractsLoading, error: contractsError } = useContracts()
@@ -82,9 +85,19 @@ export default function HomePage() {
   const loading = tasksLoading || customersLoading || contractsLoading
   const error = tasksError || customersError || contractsError
 
+  // Dynamic background style based on theme mode
+  const backgroundStyle = themeMode === 'glass' ? {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    backgroundAttachment: 'fixed'
+  } : {
+    minHeight: '100vh',
+    bgcolor: 'background.default'
+  }
+
   if (error) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box sx={backgroundStyle}>
         <Navigation />
         <Container maxWidth="xl" sx={{ py: 4 }}>
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -99,7 +112,7 @@ export default function HomePage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={backgroundStyle}>
       {/* Navigation */}
       <Navigation />
 

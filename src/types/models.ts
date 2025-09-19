@@ -48,7 +48,6 @@ export interface CreditAssessment extends BaseModel {
   department?: string;
   department_head?: string;
   fee_amount?: number;
-  approval_decision?: string;
   loan_info: {
     loan_type?: {
       category?: string;
