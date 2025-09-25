@@ -30,7 +30,8 @@ import {
   Home,
   Search,
   Folder,
-  Settings
+  Settings,
+  AutoAwesome
 } from '@mui/icons-material'
 import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
 
@@ -38,7 +39,7 @@ export default function Navigation() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const theme = useTheme()
-  const { darkMode, toggleDarkMode } = useCustomTheme()
+  const { darkMode, toggleDarkMode, themeMode, setThemeMode } = useCustomTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const navigation = [
@@ -191,6 +192,28 @@ export default function Navigation() {
             </Box>
           )}
 
+          {/* Theme Mode Toggle */}
+          <IconButton
+            onClick={() => setThemeMode(themeMode === 'glass' ? 'normal' : 'glass')}
+            sx={{ 
+              ml: 1,
+              bgcolor: themeMode === 'glass' ? 'primary.main' : 'action.selected',
+              color: themeMode === 'glass' ? 'primary.contrastText' : 'inherit',
+              '&:hover': {
+                bgcolor: themeMode === 'glass' ? 'primary.dark' : 'action.hover',
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              ...(themeMode === 'glass' && {
+                boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)',
+                animation: 'glow 2s ease-in-out infinite alternate',
+              }),
+            }}
+            size="small"
+            title={themeMode === 'glass' ? 'Switch to Normal Theme' : 'Switch to Glass Theme'}
+          >
+            <AutoAwesome />
+          </IconButton>
+
           {/* Dark Mode Toggle */}
           <IconButton
             onClick={toggleDarkMode}
@@ -202,6 +225,7 @@ export default function Navigation() {
               },
             }}
             size="small"
+            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
             {darkMode ? '🌙' : '☀️'}
           </IconButton>

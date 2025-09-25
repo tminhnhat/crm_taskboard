@@ -47,6 +47,39 @@ const CONTENT_TYPE_MAP: Record<ExportType, string> = {
 };
 
 /**
+ * Helper function to safely flatten metadata
+ */
+function safelyFlattenMetadata(metadata: any): Record<string, any> {
+  if (!metadata) return {};
+  
+  try {
+    if (typeof metadata === 'string') {
+      // Try to parse JSON string
+      const parsed = JSON.parse(metadata);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } else if (typeof metadata === 'object' && metadata !== null) {
+      // Already an object, return as-is
+      return metadata;
+    }
+  } catch (error) {
+    // Ignore parse errors
+  }
+  return {};
+}
+
+/**
+ * Helper function to create template data objects safely
+ */
+function createTemplateDataObject(data: any, metadataField: string): Record<string, any> {
+  if (!data) return {};
+  
+  return {
+    ...data,
+    ...safelyFlattenMetadata(data[metadataField]),
+  };
+}
+
+/**
  * Helper function to format values for Excel cells
  */
 function formatValueForExcel(value: any): string | number {
@@ -206,6 +239,7 @@ export async function generateCreditDocument({
       creditAssessment: creditAssessmentResult.data,
     };
 
+
     // Generate document based on export type
     let outBuffer: Buffer;
     let contentType: string;
@@ -236,8 +270,10 @@ export async function generateCreditDocument({
           }
         });
 
-        // Prepare template data for rendering
+        // Prepare comprehensive template data for rendering
         const templateData = {
+          // === FLATTENED FIELDS FOR BACKWARD COMPATIBILITY ===
+          
           // Customer data - flattened
           customer_id: documentData.customer?.customer_id || '',
           customer_name: documentData.customer?.full_name || documentData.customer?.customer_name || '',
@@ -246,46 +282,108 @@ export async function generateCreditDocument({
           phone: documentData.customer?.phone || '',
           email: documentData.customer?.email || '',
           address: documentData.customer?.address || '',
+          customer_type: documentData.customer?.customer_type || '',
+          date_of_birth: documentData.customer?.date_of_birth ? format(documentData.customer.date_of_birth, 'dd/MM/yyyy') : '',
+          gender: documentData.customer?.gender || '',
+          // ...fields removed as requested
+          cif_number: documentData.customer?.cif_number || '',
+          id_issue_date: documentData.customer?.id_issue_date ? format(documentData.customer.id_issue_date, 'dd/MM/yyyy') : '',
+          id_issue_authority: documentData.customer?.id_issue_authority || '',
+          account_number: documentData.customer?.account_number || '',
+          numerology_data: documentData.customer?.numerology_data || '',
+          hobbys: documentData.customer?.hobbies || '',
+          company_name: documentData.customer?.company_name || '',
+          business_registration_number: documentData.customer?.business_registration_number || '',
+          registration_date: documentData.customer?.registration_date ? format(documentData.customer.registration_date, 'dd/MM/yyyy') : '',
+          legal_representative: documentData.customer?.legal_representative || '',
+          business_sector: documentData.customer?.business_sector || '',
+          legal_representative_cif_number: documentData.customer?.legal_representative_cif_number || '',
+          business_registration_authority: documentData.customer?.business_registration_authority || '',
+          relationship_manager: documentData.customer?.relationship_manager || '',
           
           // Collateral data - flattened  
           collateral_id: documentData.collateral?.collateral_id || '',
           collateral_type: documentData.collateral?.collateral_type || '',
           collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
           collateral_description: documentData.collateral?.description || '',
-          
+          location: documentData.collateral?.location || '',
+          description: documentData.collateral?.description || '',
+          value: documentData.collateral?.value || '',
+          valuation_date: documentData.collateral?.valuation_date || '',
+          owner_info: documentData.collateral?.owner_info || '',
+          metadata: documentData.collateral?.metadata || '',
+          re_evaluation_date: documentData.collateral?.re_evaluation_date || '',
+
+
           // Credit assessment data - flattened
           assessment_id: documentData.creditAssessment?.assessment_id || '',
-          loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
-          interest_rate: documentData.creditAssessment?.interest_rate || '',
-          loan_term: documentData.creditAssessment?.loan_term || '',
+          loan_type: documentData.creditAssessment?.loan_type || '',
+          assessment_status: documentData.creditAssessment?.status || '',
+          staff_id: documentData.creditAssessment?.staff_id || '',
+          product_id: documentData.creditAssessment?.product_id || '',
+          department: documentData.creditAssessment?.department || '',
+          department_head: documentData.creditAssessment?.department_head || '',
+          fee_amount: documentData.creditAssessment?.fee_amount || '',
+          assessment_details: documentData.creditAssessment?.assessment_details || '',
+          
+          
+          // === COMPLETE OBJECTS FOR FULL ACCESS ===
+          
+          // Complete customer object with all fields and metadata
+          customer: documentData.customer ? {
+            ...documentData.customer,
+            // Flatten metadata if it exists as JSON
+            ...(documentData.customer.metadata && typeof documentData.customer.metadata === 'object' 
+              ? documentData.customer.metadata 
+              : {}),
+          } : {},
+          
+          // Complete collateral object with all fields and metadata
+          collateral: documentData.collateral ? {
+            ...documentData.collateral,
+            // Flatten metadata if it exists as JSON
+            ...(documentData.collateral.metadata && typeof documentData.collateral.metadata === 'object' 
+              ? documentData.collateral.metadata 
+              : {}),
+          } : {},
+          
+          // Complete credit assessment object with all fields and assessment_details
+          creditAssessment: documentData.creditAssessment ? {
+            ...documentData.creditAssessment,
+            // Flatten assessment_details if it exists as JSON
+            ...(documentData.creditAssessment.assessment_details && typeof documentData.creditAssessment.assessment_details === 'object' 
+              ? documentData.creditAssessment.assessment_details 
+              : {}),
+          } : {},
+          
+          // === SYSTEM FIELDS ===
           
           // Date fields
           current_date: format(new Date(), 'dd/MM/yyyy'),
           current_year: format(new Date(), 'yyyy'),
+          current_month: format(new Date(), 'MM'),
+          current_day: format(new Date(), 'dd'),
+          current_time: format(new Date(), 'HH:mm:ss'),
+          current_datetime: format(new Date(), 'dd/MM/yyyy HH:mm:ss'),
           
-          // Keep original nested structure as backup
-          customer: documentData.customer || {},
-          collateral: documentData.collateral || {},
-          creditAssessment: documentData.creditAssessment || {}
+          // Formatted currency values (for display)
+          loan_amount_formatted: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+            .format(parseFloat(documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '0')),
+          collateral_value_formatted: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+            .format(parseFloat(documentData.collateral?.appraised_value || documentData.collateral?.market_value || '0')),
         };
 
-        console.log('Template data prepared with keys:', Object.keys(templateData));
-        
         // Render template with data
         doc.render(templateData);
-        console.log('Document rendered successfully');
-        
         outBuffer = doc.getZip().generate({ 
           type: 'nodebuffer',
           compression: 'DEFLATE',
           compressionOptions: { level: 6 }
         });
-        
         contentType = CONTENT_TYPE_MAP[exportType];
-        console.log(`Generated DOCX document buffer size: ${outBuffer.length} bytes`);
         
       } catch (templateError) {
-        console.error('DOCX template processing error:', templateError);
+  // Handle DOCX template processing error
         
         const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
         
@@ -298,16 +396,15 @@ export async function generateCreditDocument({
     } else if (exportType === 'xlsx') {
       // Handle Excel documents with content rendering
       try {
-        console.log(`Fetching XLSX template: ${template.template_name}`);
-        const templateBuffer = await fetchTemplateFromVercelBlob(template.file_url);
-        
-        console.log(`XLSX template fetched successfully, size: ${templateBuffer.length} bytes`);
+  const templateBuffer = await fetchTemplateFromVercelBlob(template.file_url);
         
         // Read the Excel template
         const workbook = XLSX.read(templateBuffer, { type: 'buffer' });
         
-        // Prepare template data for Excel (similar to DOCX)
+        // Prepare comprehensive template data for Excel (similar to DOCX)
         const templateData = {
+          // === FLATTENED FIELDS FOR BACKWARD COMPATIBILITY ===
+          
           // Customer data - flattened
           customer_id: documentData.customer?.customer_id || '',
           customer_name: documentData.customer?.full_name || documentData.customer?.customer_name || '',
@@ -316,24 +413,87 @@ export async function generateCreditDocument({
           phone: documentData.customer?.phone || '',
           email: documentData.customer?.email || '',
           address: documentData.customer?.address || '',
+          customer_type: documentData.customer?.customer_type || '',
+          date_of_birth: documentData.customer?.date_of_birth ? format(documentData.customer.date_of_birth, 'dd/MM/yyyy') : '',
+          gender: documentData.customer?.gender || '',
+          cif_number: documentData.customer?.cif_number || '',
+          id_issue_date: documentData.customer?.id_issue_date ? format(documentData.customer.id_issue_date, 'dd/MM/yyyy') : '',
+          id_issue_authority: documentData.customer?.id_issue_authority || '',
+          account_number: documentData.customer?.account_number || '',
+          numerology_data: documentData.customer?.numerology_data || '',
+          hobbys: documentData.customer?.hobbies || '',
+          company_name: documentData.customer?.company_name || '',
+          business_registration_number: documentData.customer?.business_registration_number || '',
+          registration_date: documentData.customer?.registration_date ? format(documentData.customer.registration_date, 'dd/MM/yyyy') : '',
+          legal_representative: documentData.customer?.legal_representative || '',
+          business_sector: documentData.customer?.business_sector || '',
+          legal_representative_cif_number: documentData.customer?.legal_representative_cif_number || '',
+          business_registration_authority: documentData.customer?.business_registration_authority || '',
+          relationship_manager: documentData.customer?.relationship_manager || '',
           
           // Collateral data - flattened  
           collateral_id: documentData.collateral?.collateral_id || '',
           collateral_type: documentData.collateral?.collateral_type || '',
           collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
           collateral_description: documentData.collateral?.description || '',
+          location: documentData.collateral?.location || '',
+          description: documentData.collateral?.description || '',
+          value: documentData.collateral?.value || '',
+          valuation_date: documentData.collateral?.valuation_date || '',
+          owner_info: documentData.collateral?.owner_info || '',
+          metadata: documentData.collateral?.metadata || '',
+          re_evaluation_date: documentData.collateral?.re_evaluation_date || '',
+
           
           // Credit assessment data - flattened
           assessment_id: documentData.creditAssessment?.assessment_id || '',
-          loan_amount: documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '',
-          interest_rate: documentData.creditAssessment?.interest_rate || '',
-          loan_term: documentData.creditAssessment?.loan_term || '',
+          loan_type: documentData.creditAssessment?.loan_type || '',
+          assessment_status: documentData.creditAssessment?.status || '',
+          staff_id: documentData.creditAssessment?.staff_id || '',
+          product_id: documentData.creditAssessment?.product_id || '',
+          department: documentData.creditAssessment?.department || '',
+          department_head: documentData.creditAssessment?.department_head || '',
+          fee_amount: documentData.creditAssessment?.fee_amount || '',
+          assessment_details: documentData.creditAssessment?.assessment_details || '',
+          
+          // === COMPLETE OBJECTS FOR FULL ACCESS ===
+          
+          // Complete customer object with all fields and metadata
+          customer: documentData.customer ? {
+            ...documentData.customer,
+            // Flatten metadata if it exists as JSON
+            ...(documentData.customer.metadata && typeof documentData.customer.metadata === 'object' 
+              ? documentData.customer.metadata 
+              : {}),
+          } : {},
+          
+          // Complete collateral object with all fields and metadata
+          collateral: documentData.collateral ? {
+            ...documentData.collateral,
+            // Flatten metadata if it exists as JSON
+            ...(documentData.collateral.metadata && typeof documentData.collateral.metadata === 'object' 
+              ? documentData.collateral.metadata 
+              : {}),
+          } : {},
+          
+          // Complete credit assessment object with all fields and assessment_details
+          creditAssessment: documentData.creditAssessment ? {
+            ...documentData.creditAssessment,
+            // Flatten assessment_details if it exists as JSON
+            ...(documentData.creditAssessment.assessment_details && typeof documentData.creditAssessment.assessment_details === 'object' 
+              ? documentData.creditAssessment.assessment_details 
+              : {}),
+          } : {},
+          
+          // === SYSTEM FIELDS ===
           
           // Date fields
           current_date: format(new Date(), 'dd/MM/yyyy'),
           current_year: format(new Date(), 'yyyy'),
           current_month: format(new Date(), 'MM'),
           current_day: format(new Date(), 'dd'),
+          current_time: format(new Date(), 'HH:mm:ss'),
+          current_datetime: format(new Date(), 'dd/MM/yyyy HH:mm:ss'),
           
           // Additional Excel-friendly numeric fields
           loan_amount_number: parseFloat(documentData.creditAssessment?.approved_amount || documentData.creditAssessment?.requested_amount || '0'),
@@ -350,14 +510,13 @@ export async function generateCreditDocument({
 
         console.log('Excel template data prepared with keys:', Object.keys(templateData));
         
+        
+        
         // Process each worksheet using the helper function
         workbook.SheetNames.forEach(sheetName => {
-          console.log(`Processing Excel worksheet: ${sheetName}`);
           const worksheet = workbook.Sheets[sheetName];
           replaceExcelPlaceholders(worksheet, templateData);
         });
-        
-        console.log('Excel template rendered successfully');
         
         // Generate the Excel buffer
         outBuffer = XLSX.write(workbook, { 
@@ -367,10 +526,10 @@ export async function generateCreditDocument({
         });
         
         contentType = CONTENT_TYPE_MAP[exportType];
-        console.log(`Generated XLSX document buffer size: ${outBuffer.length} bytes`);
+  // XLSX document buffer generated
         
       } catch (templateError) {
-        console.error('XLSX template processing error:', templateError);
+  // Handle XLSX template processing error
         
         const errorMessage = templateError instanceof Error ? templateError.message : 'Unknown template error';
         
@@ -381,7 +540,7 @@ export async function generateCreditDocument({
         throw new Error(`XLSX template processing failed: ${errorMessage}`);
       }
     } else {
-      throw new Error(`Unsupported export type: ${exportType}`);
+  throw new Error(`Unsupported export type: ${exportType}`);
     }
 
     // Create filename with timestamp
@@ -393,11 +552,11 @@ export async function generateCreditDocument({
     try {
       const blobPath = `ketqua/${filename}`;
       blobUrl = await uploadBufferToVercelBlob(outBuffer, blobPath);
-      console.log(`Document saved to Vercel Blob: ${blobPath}`);
     } catch (blobError) {
-      console.warn('Failed to save document to Vercel Blob:', blobError);
       // Continue without blob storage if it fails
     }
+
+  // Final mapping summary log removed
 
     return {
       buffer: outBuffer,
@@ -407,7 +566,7 @@ export async function generateCreditDocument({
     };
 
   } catch (error) {
-    console.error('Document generation error:', error);
+  // Handle document generation error
     throw new Error(`Document generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -425,8 +584,6 @@ export function searchDocuments({
   status?: string; 
 }): Promise<any[]> {
   // TODO: Implement document search functionality
-  // This could read from ketqua folder and filter by filename patterns or metadata
-  console.warn('searchDocuments function not yet implemented');
   return Promise.resolve([]);
 }
 
@@ -438,8 +595,6 @@ export async function uploadTemplateToVercelBlob(
   documentType: DocumentType
 ): Promise<void> {
   // TODO: Implement template upload functionality
-  // This would upload the file to Vercel Blob Storage under maubieu/ folder
-  console.warn('uploadTemplateToVercelBlob function not yet implemented');
   throw new Error('Template upload functionality not yet implemented');
 }
 
@@ -451,7 +606,6 @@ export async function sendDocumentByEmailFromBlob(fileName: string, email: strin
       throw new Error('File name and email are required');
     }
 
-    console.log(`Attempting to send document: ${fileName} to ${email}`);
 
     // Construct blob path - handle both full blob URLs and filenames
     let blobPath: string;
@@ -460,34 +614,22 @@ export async function sendDocumentByEmailFromBlob(fileName: string, email: strin
       const urlParts = fileName.split('/');
       const actualFileName = urlParts[urlParts.length - 1];
       blobPath = `ketqua/${actualFileName}`;
-      console.log(`Extracted filename from URL: ${actualFileName}`);
     } else {
       // Use filename as-is
       blobPath = fileName.startsWith('ketqua/') ? fileName : `ketqua/${fileName}`;
     }
-    
-    console.log(`Using blob path: ${blobPath}`);
     
     // Check SMTP configuration
     if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
       throw new Error('SMTP configuration is not properly set up. Please configure SMTP_HOST, SMTP_USER, SMTP_PASSWORD, and optionally EMAIL_USE_SSL environment variables.');
     }
 
-    console.log('SMTP Configuration:', {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      user: process.env.SMTP_USER,
-      ssl: process.env.EMAIL_USE_SSL
-    });
 
     // Fetch document from Vercel Blob
     let fileBuffer: Buffer;
     try {
       fileBuffer = await fetchTemplateFromVercelBlob(blobPath);
-      console.log(`Document fetched from blob: ${blobPath}, size: ${fileBuffer.length} bytes`);
     } catch (fetchError) {
-      console.error('Failed to fetch document from blob:', fetchError);
-      console.error('Blob path attempted:', blobPath);
       throw new Error(`Document not found: ${fileName}. Please ensure the document exists in blob storage.`);
     }
 
@@ -506,9 +648,7 @@ export async function sendDocumentByEmailFromBlob(fileName: string, email: strin
     // Verify transporter configuration
     try {
       await transporter.verify();
-      console.log('SMTP configuration verified successfully');
     } catch (verifyError) {
-      console.error('SMTP verification failed:', verifyError);
       throw new Error('Email server configuration error. Please check SMTP settings.');
     }
 
