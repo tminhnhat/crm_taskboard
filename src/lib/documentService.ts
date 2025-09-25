@@ -283,7 +283,7 @@ export async function generateCreditDocument({
           email: documentData.customer?.email || '',
           address: documentData.customer?.address || '',
           customer_type: documentData.customer?.customer_type || '',
-          date_of_birth: documentData.customer?.date_of_birth || '',
+          date_of_birth: documentData.customer?.date_of_birth ? format(documentData.customer.date_of_birth, 'dd/MM/yyyy') : '',
           gender: documentData.customer?.gender || '',
           // ...fields removed as requested
           cif_number: documentData.customer?.cif_number || '',
@@ -414,7 +414,7 @@ export async function generateCreditDocument({
           email: documentData.customer?.email || '',
           address: documentData.customer?.address || '',
           customer_type: documentData.customer?.customer_type || '',
-          date_of_birth: documentData.customer?.date_of_birth || '',
+          date_of_birth: documentData.customer?.date_of_birth ? format(documentData.customer.date_of_birth, 'dd/MM/yyyy') : '',
           gender: documentData.customer?.gender || '',
           cif_number: documentData.customer?.cif_number || '',
           id_issue_date: documentData.customer?.id_issue_date ? format(documentData.customer.id_issue_date, 'dd/MM/yyyy') : '',
