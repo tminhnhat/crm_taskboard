@@ -349,7 +349,8 @@ const TEMPLATES_THE_TIN_DUNG: MetadataTemplates = {
   },
   collateral_info: COLLATERAL_TEMPLATE,
   repayment_sources: TEMPLATES_TIEU_DUNG.repayment_sources,
-  liabilities: TEMPLATES_TIEU_DUNG.liabilities
+  liabilities: TEMPLATES_TIEU_DUNG.liabilities,
+  monthly_expenses: TEMPLATES_TIEU_DUNG.monthly_expenses
 }
 
 // --- Metadata Section ---
