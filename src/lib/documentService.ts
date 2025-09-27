@@ -316,15 +316,15 @@ export async function generateCreditDocument({
 
 
           // Credit assessment data - flattened
-          assessment_id: documentData.creditAssessment?.assessment_id || '',
-          loan_type: documentData.creditAssessment?.loan_type || '',
-          assessment_status: documentData.creditAssessment?.status || '',
-          staff_id: documentData.creditAssessment?.staff_id || '',
-          product_id: documentData.creditAssessment?.product_id || '',
-          department: documentData.creditAssessment?.department || '',
-          department_head: documentData.creditAssessment?.department_head || '',
-          fee_amount: documentData.creditAssessment?.fee_amount || '',
-          assessment_details: documentData.creditAssessment?.assessment_details || '',
+            assessment_id: documentData.creditAssessment?.assessment_id || '',
+            loan_type: documentData.creditAssessment?.loan_type || '',
+            assessment_status: documentData.creditAssessment?.status || '',
+            staff_id: documentData.creditAssessment?.staff_id || '',
+            product_id: documentData.creditAssessment?.product_id || '',
+            department: documentData.creditAssessment?.department || '',
+            department_head: documentData.creditAssessment?.department_head || '',
+            fee_amount: documentData.creditAssessment?.fee_amount ? new Intl.NumberFormat('vi-VN', { style: 'decimal', maximumFractionDigits: 2 }).format(Number(documentData.creditAssessment.fee_amount)) : '',
+            assessment_details: documentData.creditAssessment?.assessment_details || '',
           
           
           // === COMPLETE OBJECTS FOR FULL ACCESS ===
