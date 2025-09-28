@@ -309,22 +309,32 @@ export async function generateCreditDocument({
           location: documentData.collateral?.location || '',
           description: documentData.collateral?.description || '',
           value: documentData.collateral?.value || '',
-          valuation_date: documentData.collateral?.valuation_date || '',
-          owner_info: documentData.collateral?.owner_info || '',
+          valuation_date: documentData.collateral?.valuation_date ? format(new Date(documentData.collateral.valuation_date), 'dd/MM/yyyy') : '',
+          owner_info: (() => {
+              try {
+              let info = documentData.collateral?.owner_info;
+              if (typeof info === 'string') {
+                info = JSON.parse(info);
+              }
+              return { thong_tin_chu_so_huu: info || {} };
+              } catch {
+              return { thong_tin_chu_so_huu: {} };
+              }
+            })(),
           metadata: documentData.collateral?.metadata || '',
-          re_evaluation_date: documentData.collateral?.re_evaluation_date || '',
+          re_evaluation_date: documentData.collateral?.re_evaluation_date ? format(new Date(documentData.collateral.re_evaluation_date), 'dd/MM/yyyy') : '',
 
 
           // Credit assessment data - flattened
-            assessment_id: documentData.creditAssessment?.assessment_id || '',
-            loan_type: documentData.creditAssessment?.loan_type || '',
-            assessment_status: documentData.creditAssessment?.status || '',
-            staff_id: documentData.creditAssessment?.staff_id || '',
-            product_id: documentData.creditAssessment?.product_id || '',
-            department: documentData.creditAssessment?.department || '',
-            department_head: documentData.creditAssessment?.department_head || '',
-            fee_amount: documentData.creditAssessment?.fee_amount ? new Intl.NumberFormat('vi-VN', { style: 'decimal', maximumFractionDigits: 2 }).format(Number(documentData.creditAssessment.fee_amount)) : '',
-            assessment_details: documentData.creditAssessment?.assessment_details || '',
+          assessment_id: documentData.creditAssessment?.assessment_id || '',
+          loan_type: documentData.creditAssessment?.loan_type || '',
+          assessment_status: documentData.creditAssessment?.status || '',
+          staff_id: documentData.creditAssessment?.staff_id || '',
+          product_id: documentData.creditAssessment?.product_id || '',
+          department: documentData.creditAssessment?.department || '',
+          department_head: documentData.creditAssessment?.department_head || '',
+          fee_amount: documentData.creditAssessment?.fee_amount ? new Intl.NumberFormat('vi-VN', { style: 'decimal', maximumFractionDigits: 2 }).format(Number(documentData.creditAssessment.fee_amount)) : '',
+          assessment_details: documentData.creditAssessment?.assessment_details || '',
           
           
           // === COMPLETE OBJECTS FOR FULL ACCESS ===
@@ -432,17 +442,27 @@ export async function generateCreditDocument({
           relationship_manager: documentData.customer?.relationship_manager || '',
           
           // Collateral data - flattened  
-          collateral_id: documentData.collateral?.collateral_id || '',
-          collateral_type: documentData.collateral?.collateral_type || '',
-          collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
-          collateral_description: documentData.collateral?.description || '',
-          location: documentData.collateral?.location || '',
-          description: documentData.collateral?.description || '',
-          value: documentData.collateral?.value || '',
-          valuation_date: documentData.collateral?.valuation_date || '',
-          owner_info: documentData.collateral?.owner_info || '',
-          metadata: documentData.collateral?.metadata || '',
-          re_evaluation_date: documentData.collateral?.re_evaluation_date || '',
+            collateral_id: documentData.collateral?.collateral_id || '',
+            collateral_type: documentData.collateral?.collateral_type || '',
+            collateral_value: documentData.collateral?.appraised_value || documentData.collateral?.market_value || '',
+            collateral_description: documentData.collateral?.description || '',
+            location: documentData.collateral?.location || '',
+            description: documentData.collateral?.description || '',
+            value: documentData.collateral?.value || '',
+            valuation_date: documentData.collateral?.valuation_date ? format(new Date(documentData.collateral.valuation_date), 'dd/MM/yyyy') : '',
+            owner_info: (() => {
+              try {
+              let info = documentData.collateral?.owner_info;
+              if (typeof info === 'string') {
+                info = JSON.parse(info);
+              }
+              return { thong_tin_chu_so_huu: info || {} };
+              } catch {
+              return { thong_tin_chu_so_huu: {} };
+              }
+            })(),
+            metadata: documentData.collateral?.metadata || '',
+            re_evaluation_date: documentData.collateral?.re_evaluation_date ? format(new Date(documentData.collateral.re_evaluation_date), 'dd/MM/yyyy') : '',
 
           
           // Credit assessment data - flattened
