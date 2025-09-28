@@ -310,7 +310,7 @@ export async function generateCreditDocument({
           description: documentData.collateral?.description || '',
           value: documentData.collateral?.value || '',
           valuation_date: documentData.collateral?.valuation_date ? format(new Date(documentData.collateral.valuation_date), 'dd/MM/yyyy') : '',
-          owner_info: (() => {
+          thong_tin_chu_so_huu: (() => {
               try {
               let info = documentData.collateral?.owner_info;
               if (typeof info === 'string') {
@@ -450,7 +450,7 @@ export async function generateCreditDocument({
             description: documentData.collateral?.description || '',
             value: documentData.collateral?.value || '',
             valuation_date: documentData.collateral?.valuation_date ? format(new Date(documentData.collateral.valuation_date), 'dd/MM/yyyy') : '',
-            owner_info: (() => {
+            thong_tin_chu_so_huu: (() => {
               try {
               let info = documentData.collateral?.owner_info;
               if (typeof info === 'string') {
