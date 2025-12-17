@@ -48,6 +48,11 @@ export function calculateLendingProfit(
     termMonths = calculateMonthsDifference(contract.start_date, contract.end_date)
   }
 
+  // Validate inputs before calculation
+  if (loanAmount <= 0 || interestRate <= 0 || termMonths <= 0) {
+    return 0
+  }
+
   // Calculate profit: Principal × Rate × Time (in years)
   const profit = loanAmount * interestRate * (termMonths / 12)
   
@@ -121,7 +126,7 @@ export function calculateFeeProfit(
   // Add fees from loan_info if available
   if (assessment?.loan_info?.fees && Array.isArray(assessment.loan_info.fees)) {
     assessment.loan_info.fees.forEach(fee => {
-      if (fee.amount) {
+      if (fee && typeof fee.amount === 'number' && fee.amount > 0) {
         totalFees += fee.amount
       }
     })
