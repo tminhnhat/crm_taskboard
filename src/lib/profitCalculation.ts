@@ -24,22 +24,29 @@ function calculateMonthsDifference(startDate: string | null, endDate: string | n
 
 /**
  * Calculate profit from lending activities
- * Profit = Loan Amount × Interest Rate × (Term in months / 12)
+ * New formula: Monthly profit = Average loan balance × (lending rate - FTP rate - liquidity cost)
+ * Total profit = Monthly profit × term in months
  */
 export function calculateLendingProfit(
   contract: Contract,
   assessment?: CreditAssessment
 ): number {
-  // Get loan amount from contract or assessment
-  const loanAmount = assessment?.loan_info?.amount?.approved || 
-                     assessment?.loan_info?.amount?.disbursement ||
-                     contract.contract_credit_limit || 
-                     0
+  // Get average loan balance (using approved/disbursement amount as average)
+  const averageLoanBalance = assessment?.loan_info?.amount?.approved || 
+                             assessment?.loan_info?.amount?.disbursement ||
+                             contract.contract_credit_limit || 
+                             0
 
-  // Get interest rate from assessment or product
-  const interestRate = (assessment?.loan_info?.interest?.final_rate || 
+  // Get lending interest rate from assessment or product
+  const lendingRate = (assessment?.loan_info?.interest?.final_rate || 
                        contract.product?.interest_rate || 
                        0) / 100 // Convert percentage to decimal
+
+  // Get FTP rate from contract metadata (Fund Transfer Pricing)
+  const ftpRate = (contract.metadata?.ftp_rate as number || 0) / 100
+
+  // Get liquidity cost from contract metadata
+  const liquidityCost = (contract.metadata?.liquidity_cost as number || 0) / 100
 
   // Get term from assessment or calculate from contract dates
   let termMonths = assessment?.loan_info?.term?.approved_months || 0
@@ -49,22 +56,24 @@ export function calculateLendingProfit(
   }
 
   // Validate inputs before calculation
-  if (loanAmount <= 0 || interestRate <= 0 || termMonths <= 0) {
+  if (averageLoanBalance <= 0 || termMonths <= 0) {
     return 0
   }
 
-  // Calculate profit: Principal × Rate × Time (in years)
-  const profit = loanAmount * interestRate * (termMonths / 12)
+  // Calculate monthly profit: Average balance × (lending rate - FTP rate - liquidity cost) / 12
+  const monthlyProfit = averageLoanBalance * (lendingRate - ftpRate - liquidityCost) / 12
   
-  return Math.round(profit)
+  // Total profit over the term
+  const totalProfit = monthlyProfit * termMonths
+  
+  return Math.round(totalProfit)
 }
 
 /**
  * Calculate profit from capital mobilization (deposits)
- * This assumes the bank uses customer deposits to lend at a higher rate
- * Profit = Deposit Amount × (Lending Rate - Deposit Rate) × (Term / 12)
- * 
- * Note: For simplicity, we use a spread assumption if deposit rate is not available
+ * Formula: Monthly profit = Average deposit balance × (FTP rate - deposit rate)
+ * Total profit = Monthly profit × term in months
+ * Note: No liquidity cost for deposits
  */
 export function calculateCapitalMobilizationProfit(
   contract: Contract,
@@ -81,15 +90,14 @@ export function calculateCapitalMobilizationProfit(
     return 0
   }
 
-  // Get deposit amount
-  const depositAmount = contract.contract_credit_limit || 0
+  // Get average deposit balance
+  const averageDepositBalance = contract.contract_credit_limit || 0
 
   // Get deposit rate from product
   const depositRate = (contract.product?.interest_rate || 0) / 100
 
-  // Assume a lending spread (typically 2-4% higher than deposit rate)
-  // In a real system, this would come from actual lending rates
-  const lendingSpread = 0.03 // 3% spread assumption
+  // Get FTP rate from contract metadata (Fund Transfer Pricing)
+  const ftpRate = (contract.metadata?.ftp_rate as number || 0) / 100
 
   // Calculate term
   let termMonths = 0
@@ -97,10 +105,18 @@ export function calculateCapitalMobilizationProfit(
     termMonths = calculateMonthsDifference(contract.start_date, contract.end_date)
   }
 
-  // Profit = Amount × Spread × Time
-  const profit = depositAmount * lendingSpread * (termMonths / 12)
+  // Validate inputs before calculation
+  if (averageDepositBalance <= 0 || termMonths <= 0) {
+    return 0
+  }
+
+  // Calculate monthly profit: Average balance × (FTP rate - deposit rate) / 12
+  const monthlyProfit = averageDepositBalance * (ftpRate - depositRate) / 12
   
-  return Math.round(profit)
+  // Total profit over the term
+  const totalProfit = monthlyProfit * termMonths
+  
+  return Math.round(totalProfit)
 }
 
 /**

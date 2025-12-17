@@ -4,45 +4,91 @@
 
 Tính năng tính toán lợi nhuận khách hàng giúp dự tính lợi nhuận mang lại từ từng khách hàng dựa trên các hợp đồng và hồ sơ thẩm định tín dụng của họ.
 
+## Cấu Hình Metadata Hợp Đồng
+
+Để tính toán lợi nhuận chính xác, cần cấu hình các trường metadata trong hợp đồng:
+
+### Trường Metadata Cần Thiết
+
+1. **`ftp_rate`** (number): Lãi mua vốn FTP - Fund Transfer Pricing (%)
+   - Áp dụng cho cả cho vay và huy động vốn
+   - Ví dụ: 8 (tương đương 8%)
+
+2. **`liquidity_cost`** (number): Chi phí thanh khoản (%)
+   - Chỉ áp dụng cho cho vay, không áp dụng cho huy động vốn
+   - Ví dụ: 1 (tương đương 1%)
+
+### Ví Dụ Cấu Hình
+
+```json
+{
+  "contract_id": 1,
+  "contract_number": "C001",
+  "contract_credit_limit": 100000000,
+  "metadata": {
+    "ftp_rate": 8,
+    "liquidity_cost": 1
+  }
+}
+```
+
+**Lưu ý:** Nếu không có giá trị trong metadata, hệ thống sẽ sử dụng giá trị 0 cho các trường này.
+
 ## Các Loại Lợi Nhuận
 
 ### 1. Lợi Nhuận Từ Cho Vay (Lending Profit)
 
 Lợi nhuận từ hoạt động cho vay được tính dựa trên:
-- Số tiền vay (từ hợp đồng hoặc hồ sơ thẩm định)
-- Lãi suất (từ hồ sơ thẩm định hoặc sản phẩm)
+- Số dư vay bình quân (từ hợp đồng hoặc hồ sơ thẩm định)
+- Lãi suất cho vay (từ hồ sơ thẩm định hoặc sản phẩm)
+- Lãi mua vốn FTP (Fund Transfer Pricing - từ metadata hợp đồng)
+- Chi phí thanh khoản (từ metadata hợp đồng)
 - Thời hạn vay (tính theo tháng)
 
 **Công thức:**
 ```
-Lợi nhuận cho vay = Số tiền vay × Lãi suất × (Thời hạn / 12)
+Lợi nhuận hàng tháng = Số dư vay bình quân × (Lãi cho vay - Lãi mua vốn FTP - Chi phí thanh khoản) / 12
+Tổng lợi nhuận = Lợi nhuận hàng tháng × Số tháng
 ```
 
 **Ví dụ:**
-- Số tiền vay: 100,000,000 VNĐ
-- Lãi suất: 12% năm
+- Số dư vay bình quân: 100,000,000 VNĐ
+- Lãi suất cho vay: 12% năm
+- Lãi mua vốn FTP: 8% năm
+- Chi phí thanh khoản: 1% năm
 - Thời hạn: 12 tháng
-- Lợi nhuận = 100,000,000 × 0.12 × 1 = 12,000,000 VNĐ
+- Lợi nhuận hàng tháng = 100,000,000 × (0.12 - 0.08 - 0.01) / 12 = 250,000 VNĐ
+- Tổng lợi nhuận = 250,000 × 12 = 3,000,000 VNĐ
+
+**Lưu ý:** Lãi mua vốn FTP và chi phí thanh khoản được lưu trong trường `metadata` của hợp đồng:
+- `metadata.ftp_rate`: Lãi mua vốn FTP (%)
+- `metadata.liquidity_cost`: Chi phí thanh khoản (%)
 
 ### 2. Lợi Nhuận Từ Huy Động Vốn (Capital Mobilization Profit)
 
 Lợi nhuận từ hoạt động huy động vốn (tiền gửi) được tính dựa trên:
-- Số tiền gửi
-- Chênh lệch lãi suất cho vay và huy động (mặc định 3%)
-- Thời hạn gửi
+- Số dư tiền gửi bình quân
+- Lãi suất tiền gửi (từ sản phẩm)
+- Lãi mua vốn FTP (Fund Transfer Pricing - từ metadata hợp đồng)
+- Thời hạn gửi (tính theo tháng)
 
 **Công thức:**
 ```
-Lợi nhuận huy động = Số tiền gửi × Chênh lệch lãi suất × (Thời hạn / 12)
+Lợi nhuận hàng tháng = Số dư tiền gửi bình quân × (Lãi mua vốn FTP - Lãi tiền gửi) / 12
+Tổng lợi nhuận = Lợi nhuận hàng tháng × Số tháng
 ```
 
-**Lưu ý:** Tính năng này chỉ áp dụng cho các sản phẩm có loại là "deposit", "tiền gửi", hoặc "huy động".
+**Lưu ý:** 
+- Tính năng này chỉ áp dụng cho các sản phẩm có loại là "deposit", "tiền gửi", hoặc "huy động".
+- Huy động vốn **không** có chi phí thanh khoản
 
 **Ví dụ:**
-- Số tiền gửi: 50,000,000 VNĐ
-- Chênh lệch lãi suất: 3% (giả định)
+- Số dư tiền gửi bình quân: 50,000,000 VNĐ
+- Lãi suất tiền gửi: 6% năm
+- Lãi mua vốn FTP: 8% năm
 - Thời hạn: 12 tháng
-- Lợi nhuận = 50,000,000 × 0.03 × 1 = 1,500,000 VNĐ
+- Lợi nhuận hàng tháng = 50,000,000 × (0.08 - 0.06) / 12 = 83,333 VNĐ
+- Tổng lợi nhuận = 83,333 × 12 = 1,000,000 VNĐ
 
 ### 3. Lợi Nhuận Từ Thu Phí (Fee Profit)
 
