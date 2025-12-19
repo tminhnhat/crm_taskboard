@@ -28,20 +28,16 @@ import {
 } from '@mui/icons-material'
 import Navigation from '@/components/Navigation'
 import { useCustomerProfits } from '@/hooks/useCustomerProfits'
+import { useKPIWeights } from '@/hooks/useKPIWeights'
 import { formatCurrency } from '@/lib/profitCalculation'
+import { weightToPercentage } from '@/lib/kpiWeights'
 import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
 import { getThemePrimaryGradient, getThemeTextGradient } from '@/lib/themeUtils'
-
-// KPI weights
-const KPI_WEIGHTS = {
-  lending: 0.4,      // 40%
-  mobilization: 0.4, // 40%
-  fees: 0.2          // 20%
-}
 
 export default function KPIPage() {
   const { darkMode, themeSettings } = useCustomTheme()
   const { allCustomerProfits, loading, error, totalProfitAcrossAllCustomers } = useCustomerProfits()
+  const { weights: KPI_WEIGHTS } = useKPIWeights()
 
   // Calculate aggregate KPIs
   const kpiSummary = useMemo(() => {
@@ -151,7 +147,7 @@ export default function KPIPage() {
                   Lợi nhuận cho vay
                 </Typography>
                 <Typography variant="h6" fontWeight="bold">
-                  {(KPI_WEIGHTS.lending * 100).toFixed(0)}%
+                  {weightToPercentage(KPI_WEIGHTS.lending)}%
                 </Typography>
               </Box>
             </Box>
@@ -162,7 +158,7 @@ export default function KPIPage() {
                   Lợi nhuận huy động vốn
                 </Typography>
                 <Typography variant="h6" fontWeight="bold">
-                  {(KPI_WEIGHTS.mobilization * 100).toFixed(0)}%
+                  {weightToPercentage(KPI_WEIGHTS.mobilization)}%
                 </Typography>
               </Box>
             </Box>
@@ -173,7 +169,7 @@ export default function KPIPage() {
                   Lợi nhuận phí
                 </Typography>
                 <Typography variant="h6" fontWeight="bold">
-                  {(KPI_WEIGHTS.fees * 100).toFixed(0)}%
+                  {weightToPercentage(KPI_WEIGHTS.fees)}%
                 </Typography>
               </Box>
             </Box>
@@ -219,7 +215,7 @@ export default function KPIPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <MonetizationOnIcon color="primary" />
                   <Typography variant="subtitle2" color="text.secondary">
-                    Cho vay (40%)
+                    Cho vay ({weightToPercentage(KPI_WEIGHTS.lending)}%)
                   </Typography>
                 </Box>
                 <Typography variant="h5" fontWeight="700" color="primary">
@@ -237,7 +233,7 @@ export default function KPIPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <AccountBalanceIcon color="info" />
                   <Typography variant="subtitle2" color="text.secondary">
-                    Huy động vốn (40%)
+                    Huy động vốn ({weightToPercentage(KPI_WEIGHTS.mobilization)}%)
                   </Typography>
                 </Box>
                 <Typography variant="h5" fontWeight="700" color="info.main">
@@ -255,7 +251,7 @@ export default function KPIPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <AttachMoneyIcon color="warning" />
                   <Typography variant="subtitle2" color="text.secondary">
-                    Phí (20%)
+                    Phí ({weightToPercentage(KPI_WEIGHTS.fees)}%)
                   </Typography>
                 </Box>
                 <Typography variant="h5" fontWeight="700" color="warning.main">
@@ -294,9 +290,9 @@ export default function KPIPage() {
                     <TableCell><strong>#</strong></TableCell>
                     <TableCell><strong>Khách Hàng</strong></TableCell>
                     <TableCell align="right"><strong>KPI Score</strong></TableCell>
-                    <TableCell align="right"><strong>Cho Vay (40%)</strong></TableCell>
-                    <TableCell align="right"><strong>Huy Động (40%)</strong></TableCell>
-                    <TableCell align="right"><strong>Phí (20%)</strong></TableCell>
+                    <TableCell align="right"><strong>Cho Vay ({weightToPercentage(KPI_WEIGHTS.lending)}%)</strong></TableCell>
+                    <TableCell align="right"><strong>Huy Động ({weightToPercentage(KPI_WEIGHTS.mobilization)}%)</strong></TableCell>
+                    <TableCell align="right"><strong>Phí ({weightToPercentage(KPI_WEIGHTS.fees)}%)</strong></TableCell>
                     <TableCell align="right"><strong>Tổng Lợi Nhuận</strong></TableCell>
                     <TableCell align="right"><strong>Hợp Đồng</strong></TableCell>
                   </TableRow>
