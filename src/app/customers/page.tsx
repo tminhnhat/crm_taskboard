@@ -32,14 +32,17 @@ import CustomerFilters from '@/components/CustomerFilters'
 import { CustomerCardSkeleton } from '@/components/LoadingSpinner'
 import QRPaymentGenerator from '@/components/QRPaymentGenerator'
 import { useCustomers } from '@/hooks/useCustomers'
+import { useCustomerProfits } from '@/hooks/useCustomerProfits'
 import type { CustomerType } from '@/lib/supabase'
 import { Customer } from '@/lib/supabase'
 import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
 import { getThemePrimaryGradient, getThemeSecondaryGradient, getThemeTextGradient } from '@/lib/themeUtils'
+import { formatCurrency } from '@/lib/profitCalculation'
 
 export default function CustomersPage() {
   const { darkMode, themeSettings } = useCustomTheme()
   const { customers, loading, error, createCustomer, updateCustomer, deleteCustomer, updateCustomerStatus, recalculateNumerology } = useCustomers()
+  const { allCustomerProfits, loading: profitsLoading, totalProfitAcrossAllCustomers } = useCustomerProfits()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
   const [isQRGeneratorOpen, setIsQRGeneratorOpen] = useState(false)
@@ -211,9 +214,10 @@ export default function CustomersPage() {
     const inactive = customers.filter(c => c.status === 'inactive').length
     const individual = customers.filter(c => c.customer_type === 'individual').length
     const corporate = customers.filter(c => c.customer_type === 'corporate').length
+    const totalProfit = totalProfitAcrossAllCustomers
 
-    return { total, active, inactive, individual, corporate }
-  }, [customers])
+    return { total, active, inactive, individual, corporate, totalProfit }
+  }, [customers, totalProfitAcrossAllCustomers])
 
   if (error) {
     return (
@@ -328,7 +332,8 @@ export default function CustomersPage() {
             gridTemplateColumns: { 
               xs: '1fr', 
               sm: 'repeat(2, 1fr)', 
-              md: 'repeat(5, 1fr)' 
+              md: 'repeat(3, 1fr)',
+              lg: 'repeat(6, 1fr)' 
             }, 
             gap: 3
           }}>
@@ -521,6 +526,44 @@ export default function CustomersPage() {
                 </Typography>
               </CardContent>
             </Card>
+            
+            {/* Total Profit */}
+            <Card elevation={0} sx={{ 
+              bgcolor: 'background.paper',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 1,
+              borderColor: 'divider',
+              '&:hover': { 
+                transform: 'translateY(-4px)', 
+                boxShadow: '0px 4px 16px rgba(16, 185, 129, 0.1)' 
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, position: 'relative', zIndex: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+                    color: 'white'
+                  }}>
+                    <TrendingUpIcon fontSize="large" />
+                  </Box>
+                </Box>
+                <Typography variant="h6" component="div" fontWeight="700" sx={{ mb: 1, color: 'text.primary', fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}>
+                  {profitsLoading ? '...' : formatCurrency(stats.totalProfit)}
+                </Typography>
+                <Typography variant="body2" fontWeight="500" sx={{ color: 'text.secondary' }}>
+                  Lợi Nhuận Dự Tính
+                </Typography>
+              </CardContent>
+            </Card>
           </Box>
         </Box>
 
@@ -591,17 +634,23 @@ export default function CustomersPage() {
               }}>
                 {filteredCustomers
                   .slice((currentPage - 1) * customersPerPage, currentPage * customersPerPage)
-                  .map((customer) => (
-                    <CustomerCard
-                      key={customer.customer_id}
-                      customer={customer}
-                      onEdit={handleEditCustomer}
-                      onDelete={handleDeleteCustomer}
-                      onStatusChange={handleStatusChange}
-                      onRecalculateNumerology={handleRecalculateNumerology}
-                      onGenerateQR={handleOpenQRGeneratorForCustomer}
-                    />
-                  ))}
+                  .map((customer) => {
+                    // Find profit data for this customer
+                    const customerProfit = allCustomerProfits.find(p => p.customerId === customer.customer_id)
+                    
+                    return (
+                      <CustomerCard
+                        key={customer.customer_id}
+                        customer={customer}
+                        onEdit={handleEditCustomer}
+                        onDelete={handleDeleteCustomer}
+                        onStatusChange={handleStatusChange}
+                        onRecalculateNumerology={handleRecalculateNumerology}
+                        onGenerateQR={handleOpenQRGeneratorForCustomer}
+                        profitData={customerProfit || null}
+                      />
+                    )
+                  })}
               </Box>
 
               {/* Pagination Controls */}

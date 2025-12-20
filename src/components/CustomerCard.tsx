@@ -28,7 +28,8 @@ import {
   Calculate,
   QrCode,
   Psychology,
-  Star
+  Star,
+  TrendingUp
 } from '@mui/icons-material'
 import {
   StyledCard,
@@ -37,6 +38,7 @@ import {
   CardHeader,
   CardActions
 } from './StyledComponents'
+import { formatCurrency } from '@/lib/profitCalculation'
 
 // Interface for numerology data structure
 interface NumerologyData {
@@ -126,6 +128,13 @@ interface CustomerCardProps {
   onStatusChange: (customerId: number, status: string) => void
   onRecalculateNumerology?: (customerId: number) => void
   onGenerateQR?: (customer: Customer) => void
+  profitData?: {
+    totalProfit: number
+    totalLendingProfit: number
+    totalCapitalMobilizationProfit: number
+    totalFeeProfit: number
+    contractCount: number
+  } | null
 }
 
 const customerTypeIcons = {
@@ -207,7 +216,7 @@ const NumerologyCard = ({ title, value, explanation, meaning, color, icon }: {
   </Box>
 )
 
-export default function CustomerCard({ customer, onEdit, onDelete, onStatusChange, onRecalculateNumerology, onGenerateQR }: CustomerCardProps) {
+export default function CustomerCard({ customer, onEdit, onDelete, onStatusChange, onRecalculateNumerology, onGenerateQR, profitData }: CustomerCardProps) {
   const TypeIcon = customerTypeIcons[customer.customer_type]
   const [showNumerology, setShowNumerology] = useState(false)
 
@@ -303,6 +312,24 @@ export default function CustomerCard({ customer, onEdit, onDelete, onStatusChang
                 size="small"
                 sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
               />
+              {profitData && profitData.totalProfit > 0 && (
+                <Tooltip title={`Lợi nhuận dự tính từ ${profitData.contractCount} hợp đồng`}>
+                  <Chip 
+                    icon={<TrendingUp />}
+                    label={formatCurrency(profitData.totalProfit)}
+                    color="success"
+                    size="small"
+                    variant="outlined"
+                    sx={{ 
+                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                      fontWeight: 'bold',
+                      '& .MuiChip-icon': {
+                        color: 'success.main'
+                      }
+                    }}
+                  />
+                </Tooltip>
+              )}
             </Stack>
             
             <Stack spacing={1}>

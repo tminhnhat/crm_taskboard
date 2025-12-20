@@ -31,7 +31,8 @@ import {
   Search,
   Folder,
   Settings,
-  AutoAwesome
+  AutoAwesome,
+  Assessment
 } from '@mui/icons-material'
 import { useTheme as useCustomTheme } from '@/theme/ThemeProvider'
 
@@ -56,6 +57,9 @@ export default function Navigation() {
     { name: 'Hợp Đồng', href: '/contracts', icon: Description },
     { name: 'Tài Sản Thế Chấp', href: '/collaterals', icon: Search },
     { name: 'Thẩm Định', href: '/assessments', icon: Folder },
+    
+    // Analytics & Reports
+    { name: 'KPI & Lợi Nhuận', href: '/kpi', icon: Assessment },
     
     // Document management
     { name: 'Tài Liệu', href: '/documents', icon: Description },
