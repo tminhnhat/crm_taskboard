@@ -39,6 +39,8 @@ import Navigation from '@/components/Navigation';
 import { getThemePrimaryGradient } from '@/lib/themeUtils';
 import { useKPIWeights } from '@/hooks/useKPIWeights';
 import { percentageToWeight, weightToPercentage, resetKPIWeights } from '@/lib/kpiWeights';
+import { useDefaultRates } from '@/hooks/useDefaultRates';
+import { resetDefaultRates } from '@/lib/defaultRates';
 
 interface CustomColors {
   primary: string;
@@ -183,6 +185,12 @@ export default function SettingsPage() {
   const [mobilizationWeight, setMobilizationWeight] = useState(weightToPercentage(kpiWeights.mobilization));
   const [feesWeight, setFeesWeight] = useState(weightToPercentage(kpiWeights.fees));
   const [kpiWeightsError, setKpiWeightsError] = useState<string | null>(null);
+  
+  // Default Rates management
+  const { rates: defaultRates, updateRates: updateDefaultRates } = useDefaultRates();
+  const [ftpLending, setFtpLending] = useState(defaultRates.ftpLending);
+  const [ftpDeposit, setFtpDeposit] = useState(defaultRates.ftpDeposit);
+  const [liquidityCost, setLiquidityCost] = useState(defaultRates.liquidityCost);
 
   // Load current theme settings
   useEffect(() => {
@@ -198,6 +206,13 @@ export default function SettingsPage() {
     setMobilizationWeight(weightToPercentage(kpiWeights.mobilization));
     setFeesWeight(weightToPercentage(kpiWeights.fees));
   }, [kpiWeights]);
+  
+  // Update local state when default rates change
+  useEffect(() => {
+    setFtpLending(defaultRates.ftpLending);
+    setFtpDeposit(defaultRates.ftpDeposit);
+    setLiquidityCost(defaultRates.liquidityCost);
+  }, [defaultRates]);
 
   const handleColorChange = (mode: 'light' | 'dark', colorKey: keyof CustomColors, value: string) => {
     if (mode === 'light') {
@@ -352,6 +367,48 @@ export default function SettingsPage() {
       setFeesWeight(20);
       setKpiWeightsError(null);
       alert('Đã reset trọng số KPI về mặc định!');
+    }
+  };
+  
+  // Default Rates handlers
+  const handleDefaultRateChange = (type: 'ftpLending' | 'ftpDeposit' | 'liquidityCost', value: string) => {
+    const numValue = parseFloat(value) || 0;
+    
+    if (type === 'ftpLending') {
+      setFtpLending(numValue);
+    } else if (type === 'ftpDeposit') {
+      setFtpDeposit(numValue);
+    } else {
+      setLiquidityCost(numValue);
+    }
+  };
+  
+  const handleSaveDefaultRates = () => {
+    if (ftpLending < 0 || ftpDeposit < 0 || liquidityCost < 0) {
+      alert('Tất cả các tỷ lệ phải là số không âm!');
+      return;
+    }
+    
+    const success = updateDefaultRates({
+      ftpLending,
+      ftpDeposit,
+      liquidityCost
+    });
+    
+    if (success) {
+      alert('Đã lưu tỷ lệ mặc định thành công!');
+    } else {
+      alert('Lỗi khi lưu tỷ lệ mặc định!');
+    }
+  };
+  
+  const handleResetDefaultRates = () => {
+    if (confirm('Bạn có chắc chắn muốn reset tỷ lệ về mặc định (Giá bán vốn: 8%, Giá mua vốn: 6%, Chi phí thanh khoản: 1%)?')) {
+      resetDefaultRates();
+      setFtpLending(8.0);
+      setFtpDeposit(6.0);
+      setLiquidityCost(1.0);
+      alert('Đã reset tỷ lệ về mặc định!');
     }
   };
 
@@ -877,6 +934,93 @@ export default function SettingsPage() {
                 size="large"
               >
                 Lưu Trọng Số KPI
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+        
+        {/* Default Rates Configuration */}
+        <Card elevation={2} sx={{ mb: 4 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box display="flex" alignItems="center" gap={2} mb={3}>
+              <SettingsIcon color="primary" />
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                Cấu Hình Tỷ Lệ Mặc Định
+              </Typography>
+            </Box>
+            
+            <Alert severity="info" sx={{ mb: 3 }}>
+              Thiết lập các tỷ lệ mặc định cho FTP (Fund Transfer Pricing) và chi phí thanh khoản. 
+              Các tỷ lệ này sẽ được sử dụng làm giá trị mặc định khi tạo hợp đồng mới.
+            </Alert>
+            
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  fullWidth
+                  label="Giá bán vốn - FTP cho vay (%)"
+                  type="number"
+                  value={ftpLending}
+                  onChange={(e) => handleDefaultRateChange('ftpLending', e.target.value)}
+                  inputProps={{ min: 0, max: 100, step: 0.1 }}
+                  helperText="Lãi suất FTP áp dụng cho hoạt động cho vay"
+                />
+              </Grid>
+              
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  fullWidth
+                  label="Giá mua vốn - FTP huy động (%)"
+                  type="number"
+                  value={ftpDeposit}
+                  onChange={(e) => handleDefaultRateChange('ftpDeposit', e.target.value)}
+                  inputProps={{ min: 0, max: 100, step: 0.1 }}
+                  helperText="Lãi suất FTP áp dụng cho hoạt động huy động vốn"
+                />
+              </Grid>
+              
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  fullWidth
+                  label="Chi phí thanh khoản (%)"
+                  type="number"
+                  value={liquidityCost}
+                  onChange={(e) => handleDefaultRateChange('liquidityCost', e.target.value)}
+                  inputProps={{ min: 0, max: 100, step: 0.1 }}
+                  helperText="Chi phí thanh khoản áp dụng cho hoạt động cho vay"
+                />
+              </Grid>
+            </Grid>
+            
+            <Box sx={{ mt: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                <strong>Lưu ý:</strong>
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • Giá bán vốn: Sử dụng cho tính toán lợi nhuận cho vay<br />
+                • Giá mua vốn: Sử dụng cho tính toán lợi nhuận huy động vốn<br />
+                • Chi phí thanh khoản: Chỉ áp dụng cho cho vay, không áp dụng cho huy động vốn<br />
+                • Các tỷ lệ này có thể được điều chỉnh riêng cho từng hợp đồng
+              </Typography>
+            </Box>
+            
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={handleResetDefaultRates}
+                startIcon={<ResetIcon />}
+                color="warning"
+              >
+                Reset về mặc định
+              </Button>
+              
+              <Button
+                variant="contained"
+                onClick={handleSaveDefaultRates}
+                startIcon={<SaveIcon />}
+                size="large"
+              >
+                Lưu Tỷ Lệ Mặc Định
               </Button>
             </Box>
           </CardContent>
